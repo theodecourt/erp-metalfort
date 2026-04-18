@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.lib import repository
 from app.models.quote import CalculateRequest, QuoteResponse
 from app.services.quote_calculator import calculate
 
 router = APIRouter(prefix="/api/public", tags=["public"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/produtos")
@@ -24,7 +27,8 @@ def get_produto(slug: str):
 
 
 @router.post("/quote/calculate", response_model=QuoteResponse)
-def public_calculate(req: CalculateRequest):
+@limiter.limit("10/minute")
+def public_calculate(request: Request, req: CalculateRequest):
     bom = repository.list_bom_regras(req.produto_id)
     if not bom:
         raise HTTPException(404, "Produto sem BOM cadastrada")
