@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
-import ProductCard, { ProductCardProps } from '../../components/ProductCard/ProductCard';
+import ProductCard from '../../components/ProductCard/ProductCard';
+import type { ProductCardProps } from '../../components/ProductCard/ProductCard';
 
 export default function Landing() {
   const [produtos, setProdutos] = useState<ProductCardProps[]>([]);
