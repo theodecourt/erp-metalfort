@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "name": "literal_number",
+      "formula": 42,
+      "vars": {},
+      "expect": 42
+    },
+    {
+      "name": "var_lookup",
+      "formula": {"op": "var", "of": "x"},
+      "vars": {"x": 10},
+      "expect": 10
+    },
+    {
+      "name": "add",
+      "formula": {"op": "add", "of": [1, 2, 3]},
+      "vars": {},
+      "expect": 6
+    },
+    {
+      "name": "sub",
+      "formula": {"op": "sub", "of": [10, 3, 1]},
+      "vars": {},
+      "expect": 6
+    },
+    {
+      "name": "mul",
+      "formula": {"op": "mul", "of": [{"op": "var", "of": "area"}, 30]},
+      "vars": {"area": 18},
+      "expect": 540
+    },
+    {
+      "name": "div",
+      "formula": {"op": "div", "of": [81, 2.88]},
+      "vars": {},
+      "expect": 28.125
+    },
+    {
+      "name": "ceil",
+      "formula": {"op": "ceil", "of": {"op": "div", "of": [81, 2.88]}},
+      "vars": {},
+      "expect": 29
+    },
+    {
+      "name": "ceil_with_waste",
+      "formula": {"op": "ceil", "of": {"op": "div", "of": [81, 2.88]}, "waste": 0.07},
+      "vars": {},
+      "expect": 31.03
+    },
+    {
+      "name": "floor",
+      "formula": {"op": "floor", "of": 3.9},
+      "vars": {},
+      "expect": 3
+    },
+    {
+      "name": "round_half_up",
+      "formula": {"op": "round", "of": 2.5},
+      "vars": {},
+      "expect": 3
+    },
+    {
+      "name": "if_true",
+      "formula": {"op": "if", "cond": true, "then": 1, "else": 0},
+      "vars": {},
+      "expect": 1
+    },
+    {
+      "name": "if_var",
+      "formula": {"op": "if", "cond": {"op": "var", "of": "tem_wc"}, "then": 1, "else": 0},
+      "vars": {"tem_wc": true},
+      "expect": 1
+    },
+    {
+      "name": "gt_true",
+      "formula": {"op": "gt", "of": [5, 3]},
+      "vars": {},
+      "expect": true
+    },
+    {
+      "name": "gt_false",
+      "formula": {"op": "gt", "of": [3, 5]},
+      "vars": {},
+      "expect": false
+    },
+    {
+      "name": "split_addon",
+      "formula": {"op": "if", "cond": {"op": "gt", "of": [{"op": "var", "of": "num_splits"}, 0]}, "then": {"op": "var", "of": "num_splits"}, "else": 0},
+      "vars": {"num_splits": 2},
+      "expect": 2
+    },
+    {
+      "name": "split_addon_zero",
+      "formula": {"op": "if", "cond": {"op": "gt", "of": [{"op": "var", "of": "num_splits"}, 0]}, "then": {"op": "var", "of": "num_splits"}, "else": 0},
+      "vars": {"num_splits": 0},
+      "expect": 0
+    },
+    {
+      "name": "glasroc_36m2_planta",
+      "formula": {"op": "ceil", "of": {"op": "div", "of": [{"op": "var", "of": "area_fechamento_ext_m2"}, 2.88]}, "waste": 0.07},
+      "vars": {"area_fechamento_ext_m2": 81},
+      "expect": 31.03
+    }
+  ]
+}
