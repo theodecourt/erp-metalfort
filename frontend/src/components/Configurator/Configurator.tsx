@@ -93,8 +93,8 @@ export default function Configurator({
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
 
-        <LeverGroup label={`Pé direito (m) — sugerido: ${peSuggested.toLocaleString('pt-BR')}`}>
-          <NumberField min={2.4} max={3.5} step={0.1} value={config.pe_direito_m}
+        <LeverGroup label={`Pé direito — sugerido: ${peSuggested.toLocaleString('pt-BR')} m`}>
+          <NumberField min={2.4} max={3.5} step={0.1} unit="m" value={config.pe_direito_m}
             onChange={n => setConfig({ ...config, pe_direito_m: n })}
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>

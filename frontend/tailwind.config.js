@@ -10,6 +10,8 @@ export default {
         'mf-yellow-hover': 'var(--mf-yellow-hover)',
         'mf-bg-light': 'var(--mf-bg-light)',
         'mf-border': 'var(--mf-border)',
+        'mf-text-primary': 'var(--mf-text-primary)',
+        'mf-text-secondary': 'var(--mf-text-secondary)',
         'mf-success': 'var(--mf-success)',
         'mf-warning': 'var(--mf-warning)',
         'mf-danger': 'var(--mf-danger)',
