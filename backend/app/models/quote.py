@@ -21,6 +21,13 @@ class EsquadriasExtras(BaseModel):
     caixilhos: list[Caixilho] = Field(default_factory=list)
 
 
+class WcItens(BaseModel):
+    pia_parede: bool = False
+    pia_bancada: bool = False
+    privada: bool = True
+    chuveiro: bool = False
+
+
 class Configuracao(BaseModel):
     tamanho_modulo: Literal["3x3", "3x6", "3x9"]
     qtd_modulos: int = Field(ge=1, le=3)
@@ -30,6 +37,7 @@ class Configuracao(BaseModel):
     esquadrias_extras: EsquadriasExtras = EsquadriasExtras(portas=0)
     piso: Literal["vinilico", "ceramico", "porcelanato"] | None = "vinilico"
     tem_wc: bool = False
+    wc_itens: WcItens = WcItens()
     num_splits: int = Field(ge=0, le=6, default=0)
     # User-controlled wall meterages (default from produto via backend merge)
     comp_paredes_ext_m: float | None = Field(default=None, ge=0)

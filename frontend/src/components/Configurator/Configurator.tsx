@@ -310,9 +310,35 @@ export default function Configurator({
         <LeverGroup label="WC interno">
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={!!config.tem_wc}
-              onChange={e => setConfig({ ...config, tem_wc: e.target.checked })}/>
+              onChange={e => setConfig({
+                ...config,
+                tem_wc: e.target.checked,
+                wc_itens: e.target.checked
+                  ? (config.wc_itens ?? { pia_parede: true, pia_bancada: false, privada: true, chuveiro: false })
+                  : config.wc_itens,
+              })}/>
             <span className="text-white">Incluir WC</span>
           </label>
+          {config.tem_wc && (
+            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+              {([
+                ['pia_parede', 'Pia de parede'],
+                ['pia_bancada', 'Pia com bancada'],
+                ['privada', 'Privada'],
+                ['chuveiro', 'Chuveiro'],
+              ] as const).map(([key, label]) => (
+                <label key={key} className="inline-flex items-center gap-2 text-mf-text-secondary">
+                  <input type="checkbox"
+                    checked={!!config.wc_itens?.[key]}
+                    onChange={e => setConfig({
+                      ...config,
+                      wc_itens: { ...(config.wc_itens ?? {}), [key]: e.target.checked },
+                    })}/>
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </LeverGroup>
       </div>
 

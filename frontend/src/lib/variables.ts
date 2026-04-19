@@ -37,6 +37,12 @@ export interface Configuracao {
   };
   piso?: 'vinilico' | 'ceramico' | 'porcelanato';
   tem_wc?: boolean;
+  wc_itens?: {
+    pia_parede?: boolean;
+    pia_bancada?: boolean;
+    privada?: boolean;
+    chuveiro?: boolean;
+  };
   num_splits?: number;
   comp_paredes_ext_m?: number;
   comp_paredes_int_m?: number;
