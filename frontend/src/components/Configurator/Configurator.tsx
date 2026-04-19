@@ -65,11 +65,12 @@ function defaultConfig(produto: ProdutoWithOpcoes): Configuracao {
 }
 
 export default function Configurator({
-  produto, onConfigChange, onQuoteChange,
+  produto, onConfigChange, onQuoteChange, calculate,
 }: {
   produto: ProdutoWithOpcoes;
   onConfigChange: (c: Configuracao) => void;
   onQuoteChange: (q: { subtotal: number; total: number; itemCount: number }) => void;
+  calculate?: (body: unknown) => Promise<any>;
 }) {
   const [config, setConfig] = useState<Configuracao>(() => defaultConfig(produto));
   const [loading, setLoading] = useState(false);
@@ -77,15 +78,15 @@ export default function Configurator({
     subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [],
   });
 
+  const defaultCalculate = (body: unknown) =>
+    apiFetch<any>('/api/public/quote/calculate', { method: 'POST', body: JSON.stringify(body) });
+
   useEffect(() => {
     onConfigChange(config);
     let cancelled = false;
     setLoading(true);
-    apiFetch<any>('/api/public/quote/calculate', {
-      method: 'POST',
-      body: JSON.stringify({ produto_id: produto.id, configuracao: config }),
-    })
-      .then(r => { if (!cancelled) { setQuote(r); onQuoteChange({ subtotal: r.subtotal, total: r.total, itemCount: r.itens.length }); } })
+    (calculate ?? defaultCalculate)({ produto_id: produto.id, configuracao: config })
+      .then((r: any) => { if (!cancelled) { setQuote(r); onQuoteChange({ subtotal: r.subtotal, total: r.total, itemCount: r.itens.length }); } })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };

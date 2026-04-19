@@ -8,6 +8,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOrcamentos from './pages/admin/AdminOrcamentos';
 import AdminOrcamentoDetail from './pages/admin/AdminOrcamentoDetail';
+import AdminOrcamentoNew from './pages/admin/AdminOrcamentoNew';
 import AdminProdutos from './pages/admin/AdminProdutos';
 import AdminMateriais from './pages/admin/AdminMateriais';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<AdminDashboard />} />
             <Route path="orcamentos" element={<AdminOrcamentos />} />
+            <Route path="orcamento/new" element={<AdminOrcamentoNew />} />
             <Route path="orcamento/:id" element={<AdminOrcamentoDetail />} />
             <Route path="produtos" element={<AdminProdutos />} />
             <Route path="materiais" element={<AdminMateriais />} />
