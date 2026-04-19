@@ -5,10 +5,13 @@ from typing import Any, Literal
 from pydantic import BaseModel, EmailStr, Field
 
 
+PortaSize = Literal["60x210", "70x210", "80x210", "90x210"]
+
+
 class EsquadriasExtras(BaseModel):
     portas: int = Field(ge=0, le=4)
     janelas: int = Field(ge=0, le=6)
-    tamanho_porta: Literal["60x210", "70x210", "80x210", "90x210"] = "80x210"
+    tamanhos_portas: list[PortaSize] = Field(default_factory=list)
 
 
 class Configuracao(BaseModel):

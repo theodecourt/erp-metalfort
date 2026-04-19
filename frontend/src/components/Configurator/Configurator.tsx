@@ -126,30 +126,60 @@ export default function Configurator({
             <label className="text-sm text-mf-text-secondary">
               Portas extras:
               <NumberField min={0} max={2} value={config.esquadrias_extras?.portas ?? 0}
-                onChange={n => setConfig({ ...config, esquadrias_extras: { ...(config.esquadrias_extras ?? { janelas: 0 }), portas: n, janelas: config.esquadrias_extras?.janelas ?? 0 } })}
+                onChange={n => {
+                  const prev = config.esquadrias_extras?.tamanhos_portas ?? [];
+                  const next = n > prev.length
+                    ? [...prev, ...Array(n - prev.length).fill('80x210' as const)]
+                    : prev.slice(0, n);
+                  setConfig({ ...config, esquadrias_extras: {
+                    portas: n,
+                    janelas: config.esquadrias_extras?.janelas ?? 0,
+                    tamanhos_portas: next,
+                  } });
+                }}
                 className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
-            {(config.esquadrias_extras?.portas ?? 0) > 0 && (
-              <label className="text-sm text-mf-text-secondary">
-                Tamanho da porta:
-                <select
-                  value={config.esquadrias_extras?.tamanho_porta ?? '80x210'}
-                  onChange={e => setConfig({ ...config, esquadrias_extras: { portas: config.esquadrias_extras?.portas ?? 0, janelas: config.esquadrias_extras?.janelas ?? 0, tamanho_porta: e.target.value as any } })}
-                  className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border">
-                  <option value="60x210">60 × 210 cm (banheiro)</option>
-                  <option value="70x210">70 × 210 cm (serviço)</option>
-                  <option value="80x210">80 × 210 cm (padrão)</option>
-                  <option value="90x210">90 × 210 cm (entrada)</option>
-                </select>
-              </label>
-            )}
             <label className="text-sm text-mf-text-secondary">
               Janelas:
               <NumberField min={0} max={4} value={config.esquadrias_extras?.janelas ?? 0}
-                onChange={n => setConfig({ ...config, esquadrias_extras: { ...(config.esquadrias_extras ?? { portas: 0 }), portas: config.esquadrias_extras?.portas ?? 0, janelas: n } })}
+                onChange={n => setConfig({ ...config, esquadrias_extras: {
+                  portas: config.esquadrias_extras?.portas ?? 0,
+                  janelas: n,
+                  tamanhos_portas: config.esquadrias_extras?.tamanhos_portas ?? [],
+                } })}
                 className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
           </div>
+          {(config.esquadrias_extras?.portas ?? 0) > 0 && (
+            <div className="mt-3 flex flex-col gap-2">
+              {Array.from({ length: config.esquadrias_extras?.portas ?? 0 }).map((_, i) => {
+                const current = config.esquadrias_extras?.tamanhos_portas?.[i] ?? '80x210';
+                const totalPortas = config.esquadrias_extras?.portas ?? 0;
+                return (
+                  <label key={i} className="text-sm text-mf-text-secondary">
+                    {totalPortas === 1 ? 'Tamanho da porta:' : `Porta ${i + 1}:`}
+                    <select
+                      value={current}
+                      onChange={e => {
+                        const arr = [...(config.esquadrias_extras?.tamanhos_portas ?? Array(totalPortas).fill('80x210'))];
+                        arr[i] = e.target.value as any;
+                        setConfig({ ...config, esquadrias_extras: {
+                          portas: totalPortas,
+                          janelas: config.esquadrias_extras?.janelas ?? 0,
+                          tamanhos_portas: arr,
+                        } });
+                      }}
+                      className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border">
+                      <option value="60x210">60 × 210 cm (banheiro)</option>
+                      <option value="70x210">70 × 210 cm (serviço)</option>
+                      <option value="80x210">80 × 210 cm (padrão)</option>
+                      <option value="90x210">90 × 210 cm (entrada)</option>
+                    </select>
+                  </label>
+                );
+              })}
+            </div>
+          )}
         </LeverGroup>
 
         <LeverGroup label="Piso">

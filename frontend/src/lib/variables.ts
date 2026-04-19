@@ -13,7 +13,7 @@ export interface Configuracao {
   esquadrias_extras?: {
     portas: number;
     janelas: number;
-    tamanho_porta?: '60x210' | '70x210' | '80x210' | '90x210';
+    tamanhos_portas?: ('60x210' | '70x210' | '80x210' | '90x210')[];
   };
   piso?: 'vinilico' | 'ceramico' | 'porcelanato';
   tem_wc?: boolean;
