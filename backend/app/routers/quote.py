@@ -33,19 +33,33 @@ def internal_calculate(
 
 
 @router.post("")
-def create_internal(req: SubmitRequest, user=Depends(require_role("admin", "vendedor"))):
+def create_internal(
+    req: SubmitRequest,
+    enviar_email: bool = True,
+    user=Depends(require_role("admin", "vendedor")),
+):
+    from app.services.quote_finalize import finalize
+
+    sb = get_admin_client()
+    p = sb.table("produto").select("*").eq("id", req.produto_id).limit(1).execute().data
+    if not p:
+        raise HTTPException(404, "Produto não encontrado")
+    produto = p[0]
+
     bom = repository.list_bom_regras(req.produto_id)
-    quote = calculate(bom, req.configuracao.model_dump(), tier="full", gerenciamento_pct=8.0)
+    config = req.configuracao.model_dump()
+    quote = calculate(bom, config, tier="full", gerenciamento_pct=8.0)
     year = datetime.utcnow().year
     payload = {
         "_year": year,
         "cliente_nome": req.cliente_nome, "cliente_email": req.cliente_email,
         "cliente_telefone": req.cliente_telefone, "produto_id": req.produto_id,
-        "finalidade": req.finalidade, "configuracao_json": req.configuracao.model_dump(),
+        "finalidade": req.finalidade, "configuracao_json": config,
         "tipo": "interno", "tier_aplicado": "full",
         "valor_subtotal": quote["subtotal"],
         "valor_gerenciamento_pct": quote["gerenciamento_pct"],
-        "valor_total": quote["total"], "status": "rascunho",
+        "valor_total": quote["total"],
+        "status": "enviado" if enviar_email else "rascunho",
         "criado_por": user["id"],
     }
     orc = repository.insert_orcamento(payload)
@@ -55,6 +69,15 @@ def create_internal(req: SubmitRequest, user=Depends(require_role("admin", "vend
             "subtotal", "tier", "categoria", "ordem",
         }} for it in quote["itens"]
     ])
+
+    if enviar_email:
+        pdf_url = finalize(
+            orcamento=orc, produto=produto, itens=quote["itens"], config=config,
+            cliente_nome=req.cliente_nome, cliente_email=req.cliente_email,
+            finalidade=req.finalidade,
+        )
+        orc["pdf_url"] = pdf_url
+
     return orc
 
 

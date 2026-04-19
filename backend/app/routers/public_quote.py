@@ -73,9 +73,7 @@ def public_calculate(request: Request, req: CalculateRequest):
 @router.post("/quote/submit")
 @limiter.limit("5/minute")
 def public_submit(request: Request, req: SubmitRequest):
-    # Lazy import keeps module importable when WeasyPrint native deps are missing
-    # (e.g. macOS dev without `brew install pango`). Fails only on actual submit.
-    from app.services.pdf_generator import render_quote_pdf
+    from app.services.quote_finalize import finalize
 
     sb = get_admin_client()
     p = sb.table("produto").select("*").eq("id", req.produto_id).limit(1).execute().data
@@ -86,11 +84,6 @@ def public_submit(request: Request, req: SubmitRequest):
     bom = repository.list_bom_regras(req.produto_id)
     config = req.configuracao.model_dump()
     quote = calculate(_append_personalizados(bom, config), config, tier="core", gerenciamento_pct=8.0)
-
-    resumo_config = (
-        f"{config['tamanho_modulo']} × {config['qtd_modulos']}, pé direito "
-        f"{config['pe_direito_m']:.2f}m, piso {config['piso']}, WC: {'sim' if config['tem_wc'] else 'não'}"
-    )
 
     year = datetime.utcnow().year
     payload = {
@@ -116,19 +109,9 @@ def public_submit(request: Request, req: SubmitRequest):
         }} for it in quote["itens"]
     ])
 
-    pdf_bytes = render_quote_pdf(orcamento, produto, quote["itens"], resumo_config)
-    pdf_url = storage.upload_quote_pdf(orcamento["numero"], pdf_bytes)
-    sb.table("orcamento").update({"pdf_url": pdf_url}).eq("id", orcamento["id"]).execute()
-
-    send_cliente_email(
-        to=req.cliente_email, cliente_nome=req.cliente_nome,
-        numero=orcamento["numero"], produto_nome=produto["nome"],
-        valor_total=quote["total"], pdf_bytes=pdf_bytes,
-    )
-    send_metalfort_notification(
-        numero=orcamento["numero"], cliente_nome=req.cliente_nome,
-        cliente_email=req.cliente_email, finalidade=req.finalidade,
-        valor_total=quote["total"],
-        admin_url=f"http://localhost:5173/admin/orcamento/{orcamento['id']}",
+    pdf_url = finalize(
+        orcamento=orcamento, produto=produto, itens=quote["itens"], config=config,
+        cliente_nome=req.cliente_nome, cliente_email=req.cliente_email,
+        finalidade=req.finalidade,
     )
     return {"numero": orcamento["numero"], "pdf_url": pdf_url}

@@ -16,6 +16,7 @@ export default function AdminOrcamentoNew() {
   const [produto, setProduto] = useState<any>(null);
   const [config, setConfig] = useState<Configuracao | null>(null);
   const [lead, setLead] = useState({ nome: '', email: '', telefone: '', finalidade: 'outro' as Finalidade });
+  const [enviarEmail, setEnviarEmail] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export default function AdminOrcamentoNew() {
     if (!produto || !config) return;
     setSubmitting(true); setError(null);
     try {
-      const created = await fetchApi<any>('/api/quote', {
+      const created = await fetchApi<any>(`/api/quote?enviar_email=${enviarEmail}`, {
         method: 'POST',
         body: JSON.stringify({
           produto_id: produto.id,
@@ -111,9 +112,14 @@ export default function AdminOrcamentoNew() {
             <option value="quiosque">Quiosque</option>
             <option value="outro">Outro</option>
           </select>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={enviarEmail}
+              onChange={e => setEnviarEmail(e.target.checked)}/>
+            <span>Enviar PDF por email ao cliente (e notificar Metalfort)</span>
+          </label>
           <button type="submit" disabled={submitting || !config}
             className="bg-mf-black text-white font-bold py-3 rounded disabled:opacity-50">
-            {submitting ? 'Criando...' : 'Criar orçamento (rascunho)'}
+            {submitting ? 'Criando...' : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
           </button>
           {error && <div className="text-mf-danger text-sm">{error}</div>}
         </form>
