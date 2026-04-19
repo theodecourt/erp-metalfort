@@ -83,17 +83,30 @@ export default function Configurator({
     return { '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 }[config.tamanho_modulo];
   }, [config.tamanho_modulo]);
 
-  // Em módulo único o perímetro é determinístico: ressincroniza toda vez que
-  // o tamanho ou a quantidade voltam para 1. Em multi-módulo, o usuário decide
-  // (a face de conexão muda o total) — não sobrescrevemos o que ele digitar.
-  useEffect(() => {
-    if (config.qtd_modulos === 1) {
-      const perim = perimetroSingle(config.tamanho_modulo);
-      if (config.comp_paredes_ext_m !== perim) {
-        setConfig(prev => ({ ...prev, comp_paredes_ext_m: perim }));
+  function changeTamanho(t: '3x3' | '3x6' | '3x9') {
+    setConfig(prev => ({
+      ...prev,
+      tamanho_modulo: t,
+      pe_direito_m: ({ '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 } as const)[t],
+      // Single-module perimeter is determined by tamanho. Multi-module is
+      // whatever the user has entered — don't touch it here.
+      comp_paredes_ext_m: prev.qtd_modulos === 1 ? perimetroSingle(t) : prev.comp_paredes_ext_m,
+    }));
+  }
+
+  function changeQtd(n: number) {
+    setConfig(prev => {
+      if (n === 1) {
+        return { ...prev, qtd_modulos: n, comp_paredes_ext_m: perimetroSingle(prev.tamanho_modulo) };
       }
-    }
-  }, [config.tamanho_modulo, config.qtd_modulos]);
+      if (prev.qtd_modulos === 1) {
+        // Going from single to multi: soma de dois módulos individuais não serve,
+        // usuário precisa informar o perímetro real do conjunto.
+        return { ...prev, qtd_modulos: n, comp_paredes_ext_m: 0 };
+      }
+      return { ...prev, qtd_modulos: n };
+    });
+  }
 
   const caixilhos: Caixilho[] = config.esquadrias_extras?.caixilhos ?? [];
   const portas = config.esquadrias_extras?.portas ?? 0;
@@ -129,7 +142,7 @@ export default function Configurator({
           <div className="flex gap-2">
             {(['3x3','3x6','3x9'] as const).map(t => (
               <button key={t}
-                onClick={() => setConfig({ ...config, tamanho_modulo: t, pe_direito_m: ({'3x3':2.4,'3x6':2.7,'3x9':3.0}[t]) })}
+                onClick={() => changeTamanho(t)}
                 className={`flex-1 py-3 rounded ${config.tamanho_modulo === t ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
                 {t}
               </button>
@@ -139,7 +152,7 @@ export default function Configurator({
 
         <LeverGroup label="Quantidade de módulos">
           <NumberField min={1} max={3} value={config.qtd_modulos}
-            onChange={n => setConfig({ ...config, qtd_modulos: n })}
+            onChange={changeQtd}
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
 
@@ -164,6 +177,11 @@ export default function Configurator({
                 className="ml-2 w-24 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
           </div>
+          {config.qtd_modulos > 1 && !config.comp_paredes_ext_m && (
+            <p className="mt-2 text-xs text-mf-yellow">
+              Informe o perímetro externo total — depende da face de conexão entre os {config.qtd_modulos} módulos.
+            </p>
+          )}
         </LeverGroup>
 
         <LeverGroup label="Cor externa">
