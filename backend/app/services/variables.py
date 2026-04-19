@@ -29,10 +29,23 @@ def derive(config: dict) -> dict:
     pe = float(config["pe_direito_m"])
 
     area_planta = larg * comp * qtd
-    perimetro = 2 * (comp * qtd) + 2 * larg
     area_cobertura = area_planta
 
-    comp_parede_interna = (qtd - 1) * larg
+    # Plant-based perimeter if product carries it; otherwise falls back to a
+    # heuristic (modules in line, sharing the shorter face).
+    comp_ext_mod = config.get("planta_comp_paredes_ext_m")
+    comp_int_mod = config.get("planta_comp_paredes_int_m")
+    face_conexao = config.get("planta_face_conexao_m")
+
+    if comp_ext_mod is not None and face_conexao is not None:
+        perimetro = qtd * float(comp_ext_mod) - (qtd - 1) * 2 * float(face_conexao)
+    else:
+        perimetro = 2 * (comp * qtd) + 2 * larg
+
+    if comp_int_mod is not None:
+        comp_parede_interna = qtd * float(comp_int_mod)
+    else:
+        comp_parede_interna = (qtd - 1) * larg
 
     esq = config.get("esquadrias_extras") or {}
     portas_extras = int(esq.get("portas", 0))

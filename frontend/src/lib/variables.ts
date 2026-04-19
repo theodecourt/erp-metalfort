@@ -30,6 +30,10 @@ export interface Configuracao {
   piso?: 'vinilico' | 'ceramico' | 'porcelanato';
   tem_wc?: boolean;
   num_splits?: number;
+  // Plant metadata pulled from produto at call time (optional)
+  planta_comp_paredes_ext_m?: number;
+  planta_comp_paredes_int_m?: number;
+  planta_face_conexao_m?: number;
 }
 
 const round6 = (n: number) => +n.toFixed(6);
@@ -40,9 +44,19 @@ export function derive(config: Configuracao): Record<string, number | boolean> {
   const pe = config.pe_direito_m;
 
   const area_planta = larg * comp * qtd;
-  const perimetro = 2 * (comp * qtd) + 2 * larg;
   const area_cobertura = area_planta;
-  const comp_parede_interna = (qtd - 1) * larg;
+
+  const compExt = config.planta_comp_paredes_ext_m;
+  const compInt = config.planta_comp_paredes_int_m;
+  const faceConn = config.planta_face_conexao_m;
+
+  const perimetro = compExt !== undefined && faceConn !== undefined
+    ? qtd * compExt - (qtd - 1) * 2 * faceConn
+    : 2 * (comp * qtd) + 2 * larg;
+
+  const comp_parede_interna = compInt !== undefined
+    ? qtd * compInt
+    : (qtd - 1) * larg;
 
   const esq = config.esquadrias_extras ?? { portas: 0, janelas: 0 };
   const portas_extras = esq.portas ?? 0;

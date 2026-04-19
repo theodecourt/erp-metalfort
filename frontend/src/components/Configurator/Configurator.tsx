@@ -20,7 +20,19 @@ interface ProdutoWithOpcoes {
   nome: string;
   tipo_base: '3x3' | '3x6' | '3x9';
   pe_direito_sugerido_m: number;
+  comp_paredes_ext_m?: number | null;
+  comp_paredes_int_m?: number | null;
+  face_conexao_m?: number | null;
   opcoes: Opcao[];
+}
+
+function withPlanta(config: Configuracao, produto: ProdutoWithOpcoes): Configuracao {
+  return {
+    ...config,
+    planta_comp_paredes_ext_m: produto.comp_paredes_ext_m ?? undefined,
+    planta_comp_paredes_int_m: produto.comp_paredes_int_m ?? undefined,
+    planta_face_conexao_m: produto.face_conexao_m ?? undefined,
+  };
 }
 
 function opcaoByTipo(opcoes: Opcao[], tipo: string) {
@@ -211,7 +223,7 @@ export default function Configurator({
           itemCount={quote.itens.length}
           loading={loading}
         />
-        <AreasPanel config={config} />
+        <AreasPanel config={withPlanta(config, produto)} />
       </div>
     </div>
   );

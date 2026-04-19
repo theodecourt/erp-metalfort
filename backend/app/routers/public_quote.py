@@ -31,13 +31,29 @@ def get_produto(slug: str):
     return produto
 
 
+def _merge_planta(config: dict, produto: dict) -> dict:
+    """Carrega os campos de planta do produto dentro do config passado ao derive."""
+    out = dict(config)
+    if produto.get("comp_paredes_ext_m") is not None:
+        out["planta_comp_paredes_ext_m"] = float(produto["comp_paredes_ext_m"])
+    if produto.get("comp_paredes_int_m") is not None:
+        out["planta_comp_paredes_int_m"] = float(produto["comp_paredes_int_m"])
+    if produto.get("face_conexao_m") is not None:
+        out["planta_face_conexao_m"] = float(produto["face_conexao_m"])
+    return out
+
+
 @router.post("/quote/calculate", response_model=QuoteResponse)
 @limiter.limit("10/minute")
 def public_calculate(request: Request, req: CalculateRequest):
     bom = repository.list_bom_regras(req.produto_id)
     if not bom:
         raise HTTPException(404, "Produto sem BOM cadastrada")
-    return calculate(bom, req.configuracao.model_dump(), tier="core", gerenciamento_pct=8.0)
+    sb = get_admin_client()
+    p = sb.table("produto").select("*").eq("id", req.produto_id).limit(1).execute().data
+    produto = p[0] if p else {}
+    config = _merge_planta(req.configuracao.model_dump(), produto)
+    return calculate(bom, config, tier="core", gerenciamento_pct=8.0)
 
 
 @router.post("/quote/submit")
@@ -54,9 +70,9 @@ def public_submit(request: Request, req: SubmitRequest):
     produto = p[0]
 
     bom = repository.list_bom_regras(req.produto_id)
-    quote = calculate(bom, req.configuracao.model_dump(), tier="core", gerenciamento_pct=8.0)
+    config = _merge_planta(req.configuracao.model_dump(), produto)
+    quote = calculate(bom, config, tier="core", gerenciamento_pct=8.0)
 
-    config = req.configuracao.model_dump()
     resumo_config = (
         f"{config['tamanho_modulo']} × {config['qtd_modulos']}, pé direito "
         f"{config['pe_direito_m']:.2f}m, piso {config['piso']}, WC: {'sim' if config['tem_wc'] else 'não'}"
