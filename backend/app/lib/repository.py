@@ -37,10 +37,7 @@ def list_bom_regras(produto_id: str) -> list[dict[str, Any]]:
 
 def insert_orcamento(payload: dict[str, Any]) -> dict[str, Any]:
     sb = get_admin_client()
-    year = payload.pop("_year")
-    seq_res = sb.rpc("nextval", {"seqname": "orcamento_numero_seq"}).execute()
-    seq = seq_res.data if isinstance(seq_res.data, int) else int(seq_res.data)
-    payload["numero"] = f"ORC-{year}-{seq:04d}"
+    payload.pop("_year", None)  # DB trigger generates `numero` from year+sequence
     res = sb.table("orcamento").insert(payload).execute()
     return res.data[0]
 
