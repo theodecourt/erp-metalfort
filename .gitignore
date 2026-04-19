@@ -1,0 +1,41 @@
+# Superpowers (brainstorm/plans artifacts that aren't the docs)
+.superpowers/
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+.vite/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Supabase local data
+supabase/.branches/
+supabase/.temp/
+
+# Vercel / Railway local caches
+.vercel/
+.railway/
+
+# PDFs generated in dev
+/tmp/sent/
