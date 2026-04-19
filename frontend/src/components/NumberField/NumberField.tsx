@@ -9,6 +9,16 @@ interface Props {
   className?: string;
 }
 
+function parseNumber(text: string, step?: number): number {
+  return step && step < 1 ? parseFloat(text) : parseInt(text, 10);
+}
+
+function clamp(n: number, min?: number, max?: number): number {
+  if (min !== undefined && n < min) return min;
+  if (max !== undefined && n > max) return max;
+  return n;
+}
+
 export default function NumberField({ value, onChange, min, max, step, className }: Props) {
   const [text, setText] = useState(String(value));
 
@@ -22,13 +32,19 @@ export default function NumberField({ value, onChange, min, max, step, className
       step={step}
       value={text}
       onChange={e => {
-        setText(e.target.value);
-        const n = step && step < 1 ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
-        if (!Number.isNaN(n)) onChange(n);
+        const raw = e.target.value;
+        setText(raw);
+        const n = parseNumber(raw, step);
+        if (Number.isNaN(n)) return;
+        const clamped = clamp(n, min, max);
+        if (clamped === n) onChange(n);
       }}
       onBlur={() => {
-        const n = step && step < 1 ? parseFloat(text) : parseInt(text, 10);
-        if (Number.isNaN(n)) setText(String(value));
+        const n = parseNumber(text, step);
+        if (Number.isNaN(n)) { setText(String(value)); return; }
+        const clamped = clamp(n, min, max);
+        setText(String(clamped));
+        if (clamped !== value) onChange(clamped);
       }}
       className={className}
     />
