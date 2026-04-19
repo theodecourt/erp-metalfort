@@ -30,6 +30,17 @@ function perimetroSingle(tipo: '3x3' | '3x6' | '3x9'): number {
   return 2 * larg + 2 * comp;
 }
 
+// Para N módulos iguais em linha, com todos conectados pela mesma face, o
+// perímetro tem duas possibilidades: compartilhar pela face curta (larg) ou
+// pela face longa (comp). Para 3×3 as duas coincidem.
+function perimetrosEsperados(tipo: '3x3' | '3x6' | '3x9', qtd: number): Array<{ face: number; perim: number }> {
+  if (qtd <= 1) return [];
+  const [larg, comp] = MODULO_SIZES[tipo];
+  const pelaLarg = { face: larg, perim: 2 * larg + 2 * (comp * qtd) };
+  const pelaComp = { face: comp, perim: 2 * (larg * qtd) + 2 * comp };
+  return larg === comp ? [pelaLarg] : [pelaLarg, pelaComp];
+}
+
 function opcaoByTipo(opcoes: Opcao[], tipo: string) {
   return opcoes.find(o => o.tipo === tipo);
 }
@@ -177,11 +188,35 @@ export default function Configurator({
                 className="ml-2 w-24 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
           </div>
-          {config.qtd_modulos > 1 && !config.comp_paredes_ext_m && (
-            <p className="mt-2 text-xs text-mf-yellow">
-              Informe o perímetro externo total — depende da face de conexão entre os {config.qtd_modulos} módulos.
-            </p>
-          )}
+          {config.qtd_modulos > 1 && (() => {
+            const esperados = perimetrosEsperados(config.tamanho_modulo, config.qtd_modulos);
+            const ext = config.comp_paredes_ext_m ?? 0;
+            const match = esperados.find(e => Math.abs(e.perim - ext) < 0.01);
+            const esperadosLabel = esperados
+              .map(e => `${e.perim.toLocaleString('pt-BR')} m (face ${e.face} m)`)
+              .join(' · ');
+
+            if (!ext) {
+              return (
+                <p className="mt-2 text-xs text-mf-yellow">
+                  Informe o perímetro externo total. Para {config.qtd_modulos} módulos iguais em linha: {esperadosLabel}.
+                </p>
+              );
+            }
+            if (match) {
+              return (
+                <p className="mt-2 text-xs text-mf-success">
+                  ✓ Consistente com conexão pela face de {match.face} m.
+                </p>
+              );
+            }
+            return (
+              <p className="mt-2 text-xs text-mf-danger">
+                ⚠ Esse valor não bate com nenhuma conexão linear de módulos iguais
+                (esperado: {esperadosLabel}). Pode estar certo em layouts em L/T ou com offset — confira.
+              </p>
+            );
+          })()}
         </LeverGroup>
 
         <LeverGroup label="Cor externa">
