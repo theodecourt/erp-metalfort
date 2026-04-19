@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Configuracao } from '../../lib/variables';
 import LeverGroup from './LeverGroup';
 import PriceBox from './PriceBox';
+import AreasPanel from './AreasPanel';
 import NumberField from '../NumberField/NumberField';
 import { apiFetch } from '../../lib/api';
 
@@ -210,6 +211,7 @@ export default function Configurator({
           itemCount={quote.itens.length}
           loading={loading}
         />
+        <AreasPanel config={config} />
       </div>
     </div>
   );
