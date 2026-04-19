@@ -5,6 +5,27 @@ from typing import Any
 from app.lib.supabase import get_admin_client
 
 
+def list_materiais_ativos() -> list[dict[str, Any]]:
+    sb = get_admin_client()
+    res = (
+        sb.table("material")
+        .select("id, sku, nome, categoria, unidade, preco_unitario")
+        .eq("ativo", True)
+        .order("categoria")
+        .order("nome")
+        .execute()
+    )
+    return res.data or []
+
+
+def get_materiais_by_ids(ids: list[str]) -> dict[str, dict[str, Any]]:
+    if not ids:
+        return {}
+    sb = get_admin_client()
+    res = sb.table("material").select("*").in_("id", ids).execute()
+    return {m["id"]: m for m in (res.data or [])}
+
+
 def list_produtos_ativos() -> list[dict[str, Any]]:
     sb = get_admin_client()
     res = sb.table("produto").select("*").eq("ativo", True).order("nome").execute()

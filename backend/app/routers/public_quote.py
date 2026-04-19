@@ -22,6 +22,12 @@ def list_produtos():
     return repository.list_produtos_ativos()
 
 
+@router.get("/materiais")
+def list_materiais():
+    """Public catalogue for the 'personalizado' picker in the configurator."""
+    return repository.list_materiais_ativos()
+
+
 @router.get("/produto/{slug}")
 def get_produto(slug: str):
     produto = repository.get_produto_by_slug(slug)
@@ -31,13 +37,37 @@ def get_produto(slug: str):
     return produto
 
 
+def _append_personalizados(bom: list[dict], config: dict) -> list[dict]:
+    """Build synthetic BOM rules for the user-picked SKUs and append them."""
+    itens = config.get("itens_personalizados") or []
+    if not itens:
+        return bom
+    materiais = repository.get_materiais_by_ids([it["material_id"] for it in itens])
+    extras = []
+    for i, it in enumerate(itens):
+        mat = materiais.get(it["material_id"])
+        if not mat:
+            continue
+        extras.append({
+            "material_id": it["material_id"],
+            "material": mat,
+            # formula_json as a bare number — bom_engine returns it verbatim
+            "formula_json": float(it["qtd"]),
+            "tier": "core",
+            "categoria": "personalizado",
+            "ordem": 10000 + i,
+        })
+    return bom + extras
+
+
 @router.post("/quote/calculate", response_model=QuoteResponse)
 @limiter.limit("10/minute")
 def public_calculate(request: Request, req: CalculateRequest):
     bom = repository.list_bom_regras(req.produto_id)
     if not bom:
         raise HTTPException(404, "Produto sem BOM cadastrada")
-    return calculate(bom, req.configuracao.model_dump(), tier="core", gerenciamento_pct=8.0)
+    config = req.configuracao.model_dump()
+    return calculate(_append_personalizados(bom, config), config, tier="core", gerenciamento_pct=8.0)
 
 
 @router.post("/quote/submit")
@@ -55,7 +85,7 @@ def public_submit(request: Request, req: SubmitRequest):
 
     bom = repository.list_bom_regras(req.produto_id)
     config = req.configuracao.model_dump()
-    quote = calculate(bom, config, tier="core", gerenciamento_pct=8.0)
+    quote = calculate(_append_personalizados(bom, config), config, tier="core", gerenciamento_pct=8.0)
 
     resumo_config = (
         f"{config['tamanho_modulo']} × {config['qtd_modulos']}, pé direito "

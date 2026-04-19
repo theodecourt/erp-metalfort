@@ -24,12 +24,18 @@ export interface Caixilho {
   qtd: number;
 }
 
+export interface ItemPersonalizado {
+  material_id: string;
+  qtd: number;
+}
+
 export interface Configuracao {
   tamanho_modulo: '3x3' | '3x6' | '3x9';
   qtd_modulos: number;
   pe_direito_m: number;
   cor_externa?: string;
-  pacote_acabamento?: 'padrao' | 'premium';
+  pacote_acabamento?: 'padrao' | 'premium' | 'personalizado';
+  itens_personalizados?: ItemPersonalizado[];
   esquadrias_extras?: {
     portas: number;
     tamanhos_portas?: PortaSize[];

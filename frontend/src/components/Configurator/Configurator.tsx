@@ -3,6 +3,7 @@ import type { Caixilho, Configuracao } from '../../lib/variables';
 import LeverGroup from './LeverGroup';
 import PriceBox from './PriceBox';
 import AreasPanel from './AreasPanel';
+import PersonalizadoPicker from './PersonalizadoPicker';
 import NumberField from '../NumberField/NumberField';
 import { apiFetch } from '../../lib/api';
 
@@ -231,14 +232,20 @@ export default function Configurator({
         </LeverGroup>
 
         <LeverGroup label="Pacote de acabamento">
-          <div className="flex gap-2">
-            {(['padrao','premium'] as const).map(p => (
+          <div className="flex gap-2 flex-wrap">
+            {(['padrao','premium','personalizado'] as const).map(p => (
               <button key={p} onClick={() => setConfig({ ...config, pacote_acabamento: p })}
                 className={`px-4 py-2 rounded ${config.pacote_acabamento === p ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
                 {p}
               </button>
             ))}
           </div>
+          {config.pacote_acabamento === 'personalizado' && (
+            <PersonalizadoPicker
+              itens={config.itens_personalizados ?? []}
+              onChange={itens => setConfig({ ...config, itens_personalizados: itens })}
+            />
+          )}
         </LeverGroup>
 
         <LeverGroup label="Portas opacas extras">
