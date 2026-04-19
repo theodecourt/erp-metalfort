@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Configuracao } from '../../lib/variables';
 import LeverGroup from './LeverGroup';
 import PriceBox from './PriceBox';
+import NumberField from '../NumberField/NumberField';
 import { apiFetch } from '../../lib/api';
 
 interface Opcao {
@@ -87,14 +88,14 @@ export default function Configurator({
         </LeverGroup>
 
         <LeverGroup label="Quantidade de módulos">
-          <input type="number" min={1} max={3} value={config.qtd_modulos}
-            onChange={e => setConfig({ ...config, qtd_modulos: parseInt(e.target.value) || 1 })}
+          <NumberField min={1} max={3} value={config.qtd_modulos}
+            onChange={n => setConfig({ ...config, qtd_modulos: n })}
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
 
         <LeverGroup label={`Pé direito (m) — sugerido: ${peSuggested}`}>
-          <input type="number" min={2.4} max={3.5} step={0.1} value={config.pe_direito_m}
-            onChange={e => setConfig({ ...config, pe_direito_m: parseFloat(e.target.value) || peSuggested })}
+          <NumberField min={2.4} max={3.5} step={0.1} value={config.pe_direito_m}
+            onChange={n => setConfig({ ...config, pe_direito_m: n })}
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
 
@@ -124,14 +125,14 @@ export default function Configurator({
           <div className="flex gap-4">
             <label className="text-sm text-mf-text-secondary">
               Portas extras:
-              <input type="number" min={0} max={2} value={config.esquadrias_extras?.portas ?? 0}
-                onChange={e => setConfig({ ...config, esquadrias_extras: { portas: parseInt(e.target.value) || 0, janelas: config.esquadrias_extras?.janelas ?? 0 } })}
+              <NumberField min={0} max={2} value={config.esquadrias_extras?.portas ?? 0}
+                onChange={n => setConfig({ ...config, esquadrias_extras: { portas: n, janelas: config.esquadrias_extras?.janelas ?? 0 } })}
                 className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
             <label className="text-sm text-mf-text-secondary">
               Janelas:
-              <input type="number" min={0} max={4} value={config.esquadrias_extras?.janelas ?? 0}
-                onChange={e => setConfig({ ...config, esquadrias_extras: { portas: config.esquadrias_extras?.portas ?? 0, janelas: parseInt(e.target.value) || 0 } })}
+              <NumberField min={0} max={4} value={config.esquadrias_extras?.janelas ?? 0}
+                onChange={n => setConfig({ ...config, esquadrias_extras: { portas: config.esquadrias_extras?.portas ?? 0, janelas: n } })}
                 className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
           </div>
