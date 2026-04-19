@@ -32,14 +32,12 @@ def get_produto(slug: str):
 
 
 def _merge_planta(config: dict, produto: dict) -> dict:
-    """Carrega os campos de planta do produto dentro do config passado ao derive."""
+    """Fill wall meterages from the product when the request omitted them."""
     out = dict(config)
-    if produto.get("comp_paredes_ext_m") is not None:
-        out["planta_comp_paredes_ext_m"] = float(produto["comp_paredes_ext_m"])
-    if produto.get("comp_paredes_int_m") is not None:
-        out["planta_comp_paredes_int_m"] = float(produto["comp_paredes_int_m"])
-    if produto.get("face_conexao_m") is not None:
-        out["planta_face_conexao_m"] = float(produto["face_conexao_m"])
+    if out.get("comp_paredes_ext_m") is None and produto.get("comp_paredes_ext_m") is not None:
+        out["comp_paredes_ext_m"] = float(produto["comp_paredes_ext_m"])
+    if out.get("comp_paredes_int_m") is None and produto.get("comp_paredes_int_m") is not None:
+        out["comp_paredes_int_m"] = float(produto["comp_paredes_int_m"])
     return out
 
 

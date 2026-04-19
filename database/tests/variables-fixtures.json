@@ -2,9 +2,15 @@
   "cases": [
     {
       "name": "single_3x6_pe270",
-      "config": {"tamanho_modulo": "3x6", "qtd_modulos": 1, "pe_direito_m": 2.7,
-                 "esquadrias_extras": {"portas": 0, "janelas": 2},
-                 "tem_wc": true, "num_splits": 1},
+      "config": {
+        "tamanho_modulo": "3x6", "qtd_modulos": 1, "pe_direito_m": 2.7,
+        "comp_paredes_ext_m": 18, "comp_paredes_int_m": 0,
+        "esquadrias_extras": {
+          "portas": 0,
+          "caixilhos": [{"tipo": "janela", "largura_m": 1.2, "altura_m": 1.0, "qtd": 2}]
+        },
+        "tem_wc": true, "num_splits": 1
+      },
       "expect": {
         "area_planta_m2": 18,
         "perimetro_externo_m": 18,
@@ -17,15 +23,22 @@
         "area_parede_interna_m2": 0,
         "num_portas_ext": 1,
         "num_janelas": 2,
+        "num_portas_vidro": 0,
         "tem_wc": true,
         "num_splits": 1
       }
     },
     {
       "name": "two_3x6_in_line_pe270",
-      "config": {"tamanho_modulo": "3x6", "qtd_modulos": 2, "pe_direito_m": 2.7,
-                 "esquadrias_extras": {"portas": 1, "janelas": 3},
-                 "tem_wc": true, "num_splits": 2},
+      "config": {
+        "tamanho_modulo": "3x6", "qtd_modulos": 2, "pe_direito_m": 2.7,
+        "comp_paredes_ext_m": 30, "comp_paredes_int_m": 3,
+        "esquadrias_extras": {
+          "portas": 1,
+          "caixilhos": [{"tipo": "janela", "largura_m": 1.2, "altura_m": 1.0, "qtd": 3}]
+        },
+        "tem_wc": true, "num_splits": 2
+      },
       "expect": {
         "area_planta_m2": 36,
         "perimetro_externo_m": 30,
@@ -38,27 +51,38 @@
         "area_parede_interna_m2": 13.26,
         "num_portas_ext": 2,
         "num_janelas": 3,
+        "num_portas_vidro": 0,
         "tem_wc": true,
         "num_splits": 2
       }
     },
     {
-      "name": "single_3x9_pe300_no_wc",
-      "config": {"tamanho_modulo": "3x9", "qtd_modulos": 1, "pe_direito_m": 3.0,
-                 "esquadrias_extras": {"portas": 0, "janelas": 1},
-                 "tem_wc": false, "num_splits": 0},
+      "name": "single_3x9_pe300_porta_vidro",
+      "config": {
+        "tamanho_modulo": "3x9", "qtd_modulos": 1, "pe_direito_m": 3.0,
+        "comp_paredes_ext_m": 24, "comp_paredes_int_m": 0,
+        "esquadrias_extras": {
+          "portas": 0,
+          "caixilhos": [
+            {"tipo": "janela", "largura_m": 1.2, "altura_m": 1.0, "qtd": 1},
+            {"tipo": "porta_vidro", "largura_m": 2.0, "altura_m": 2.4, "qtd": 1}
+          ]
+        },
+        "tem_wc": false, "num_splits": 0
+      },
       "expect": {
         "area_planta_m2": 27,
         "perimetro_externo_m": 24,
         "area_fechamento_ext_bruta_m2": 72,
-        "area_fechamento_ext_m2": 68.91,
-        "area_aberturas_ext_m2": 3.09,
+        "area_fechamento_ext_m2": 64.11,
+        "area_aberturas_ext_m2": 7.89,
         "area_cobertura_m2": 27,
         "comp_parede_interna_m": 0,
         "area_parede_interna_bruta_m2": 0,
         "area_parede_interna_m2": 0,
         "num_portas_ext": 1,
         "num_janelas": 1,
+        "num_portas_vidro": 1,
         "tem_wc": false,
         "num_splits": 0
       }

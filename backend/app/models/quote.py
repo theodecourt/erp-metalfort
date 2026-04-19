@@ -8,10 +8,17 @@ from pydantic import BaseModel, EmailStr, Field
 PortaSize = Literal["60x210", "70x210", "80x210", "90x210"]
 
 
+class Caixilho(BaseModel):
+    tipo: Literal["janela", "porta_vidro"]
+    largura_m: float = Field(gt=0, le=10)
+    altura_m: float = Field(gt=0, le=5)
+    qtd: int = Field(ge=1, le=20)
+
+
 class EsquadriasExtras(BaseModel):
     portas: int = Field(ge=0)
-    janelas: int = Field(ge=0, le=6)
     tamanhos_portas: list[PortaSize] = Field(default_factory=list)
+    caixilhos: list[Caixilho] = Field(default_factory=list)
 
 
 class Configuracao(BaseModel):
@@ -20,10 +27,13 @@ class Configuracao(BaseModel):
     pe_direito_m: float = Field(ge=2.4, le=3.5)
     cor_externa: str | None = None
     pacote_acabamento: Literal["padrao", "premium"] = "padrao"
-    esquadrias_extras: EsquadriasExtras = EsquadriasExtras(portas=0, janelas=0)
+    esquadrias_extras: EsquadriasExtras = EsquadriasExtras(portas=0)
     piso: Literal["vinilico", "ceramico", "porcelanato"] | None = "vinilico"
     tem_wc: bool = False
     num_splits: int = Field(ge=0, le=6, default=0)
+    # User-controlled wall meterages (default from produto via backend merge)
+    comp_paredes_ext_m: float | None = Field(default=None, ge=0)
+    comp_paredes_int_m: float | None = Field(default=None, ge=0)
 
 
 class CalculateRequest(BaseModel):

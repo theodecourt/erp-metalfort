@@ -5,7 +5,6 @@ import { fmtDec } from '../../lib/format';
 interface Planta {
   comp_paredes_ext_m: string;
   comp_paredes_int_m: string;
-  face_conexao_m: string;
 }
 
 const toStr = (v: any) => v === null || v === undefined ? '' : String(v);
@@ -15,7 +14,7 @@ export default function AdminProdutos() {
   const fetchApi = useAuthedFetch();
   const [rows, setRows] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<Planta>({ comp_paredes_ext_m: '', comp_paredes_int_m: '', face_conexao_m: '' });
+  const [draft, setDraft] = useState<Planta>({ comp_paredes_ext_m: '', comp_paredes_int_m: '' });
 
   useEffect(() => { fetchApi<any[]>('/api/produto').then(setRows); }, []);
 
@@ -31,7 +30,6 @@ export default function AdminProdutos() {
     setDraft({
       comp_paredes_ext_m: toStr(p.comp_paredes_ext_m),
       comp_paredes_int_m: toStr(p.comp_paredes_int_m),
-      face_conexao_m: toStr(p.face_conexao_m),
     });
   }
 
@@ -39,7 +37,6 @@ export default function AdminProdutos() {
     const body: Record<string, number | null> = {
       comp_paredes_ext_m: toNum(draft.comp_paredes_ext_m),
       comp_paredes_int_m: toNum(draft.comp_paredes_int_m),
-      face_conexao_m: toNum(draft.face_conexao_m),
     };
     const r = await fetchApi<any>(`/api/produto/${id}`, {
       method: 'PATCH', body: JSON.stringify(body),
@@ -52,7 +49,7 @@ export default function AdminProdutos() {
     <div>
       <h1 className="text-2xl font-extrabold">Produtos</h1>
       <p className="text-sm text-gray-600 mt-2">
-        Planta: metragem linear de paredes externas/internas e face usada para conectar módulos adjacentes.
+        Planta: defaults de metragem linear de paredes externas/internas (o usuário pode sobrescrever no configurador).
       </p>
       <div className="mt-4 bg-white rounded border overflow-x-auto">
         <table className="w-full text-sm">
@@ -63,7 +60,6 @@ export default function AdminProdutos() {
               <th className="p-3">Pé direito</th>
               <th className="p-3">Paredes ext (m)</th>
               <th className="p-3">Paredes int (m)</th>
-              <th className="p-3">Face conexão (m)</th>
               <th className="p-3">Ativo</th>
               <th className="p-3"></th>
             </tr>
@@ -85,11 +81,6 @@ export default function AdminProdutos() {
                     {editing
                       ? <input value={draft.comp_paredes_int_m} onChange={e => setDraft({ ...draft, comp_paredes_int_m: e.target.value })} className="border rounded p-1 w-20"/>
                       : p.comp_paredes_int_m != null ? fmtDec(p.comp_paredes_int_m, 2) : <span className="text-gray-400">—</span>}
-                  </td>
-                  <td className="p-3 tabular-nums">
-                    {editing
-                      ? <input value={draft.face_conexao_m} onChange={e => setDraft({ ...draft, face_conexao_m: e.target.value })} className="border rounded p-1 w-20"/>
-                      : p.face_conexao_m != null ? fmtDec(p.face_conexao_m, 1) : <span className="text-gray-400">—</span>}
                   </td>
                   <td className="p-3">
                     <button onClick={() => toggleAtivo(p.id, p.ativo)}

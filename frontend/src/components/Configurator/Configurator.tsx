@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Configuracao } from '../../lib/variables';
+import type { Caixilho, Configuracao } from '../../lib/variables';
 import LeverGroup from './LeverGroup';
 import PriceBox from './PriceBox';
 import AreasPanel from './AreasPanel';
@@ -22,17 +22,7 @@ interface ProdutoWithOpcoes {
   pe_direito_sugerido_m: number;
   comp_paredes_ext_m?: number | null;
   comp_paredes_int_m?: number | null;
-  face_conexao_m?: number | null;
   opcoes: Opcao[];
-}
-
-function withPlanta(config: Configuracao, produto: ProdutoWithOpcoes): Configuracao {
-  return {
-    ...config,
-    planta_comp_paredes_ext_m: produto.comp_paredes_ext_m ?? undefined,
-    planta_comp_paredes_int_m: produto.comp_paredes_int_m ?? undefined,
-    planta_face_conexao_m: produto.face_conexao_m ?? undefined,
-  };
 }
 
 function opcaoByTipo(opcoes: Opcao[], tipo: string) {
@@ -41,16 +31,19 @@ function opcaoByTipo(opcoes: Opcao[], tipo: string) {
 
 function defaultConfig(produto: ProdutoWithOpcoes): Configuracao {
   const o = produto.opcoes;
+  const [larg, comp] = ({ '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const)[produto.tipo_base];
   return {
     tamanho_modulo: (opcaoByTipo(o, 'tamanho_modulo')?.default_json ?? produto.tipo_base) as any,
     qtd_modulos: opcaoByTipo(o, 'qtd_modulos')?.default_json ?? 1,
     pe_direito_m: opcaoByTipo(o, 'pe_direito')?.default_json ?? produto.pe_direito_sugerido_m,
     cor_externa: opcaoByTipo(o, 'cor')?.default_json ?? 'cinza',
     pacote_acabamento: (opcaoByTipo(o, 'pacote_acabamento')?.default_json ?? 'padrao') as any,
-    esquadrias_extras: opcaoByTipo(o, 'esquadria')?.default_json ?? { portas: 0, janelas: 0 },
+    esquadrias_extras: { portas: 0, tamanhos_portas: [], caixilhos: [] },
     piso: (opcaoByTipo(o, 'piso')?.default_json ?? 'vinilico') as any,
     tem_wc: opcaoByTipo(o, 'wc')?.default_json ?? false,
     num_splits: opcaoByTipo(o, 'ac')?.default_json ?? 0,
+    comp_paredes_ext_m: produto.comp_paredes_ext_m ?? (2 * larg + 2 * comp),
+    comp_paredes_int_m: produto.comp_paredes_int_m ?? 0,
   };
 }
 
@@ -85,6 +78,33 @@ export default function Configurator({
     return { '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 }[config.tamanho_modulo];
   }, [config.tamanho_modulo]);
 
+  const caixilhos: Caixilho[] = config.esquadrias_extras?.caixilhos ?? [];
+  const portas = config.esquadrias_extras?.portas ?? 0;
+
+  function updateEsq(patch: Partial<NonNullable<Configuracao['esquadrias_extras']>>) {
+    setConfig({
+      ...config,
+      esquadrias_extras: {
+        portas,
+        tamanhos_portas: config.esquadrias_extras?.tamanhos_portas ?? [],
+        caixilhos,
+        ...patch,
+      },
+    });
+  }
+
+  function addCaixilho() {
+    updateEsq({ caixilhos: [...caixilhos, { tipo: 'janela', largura_m: 1.2, altura_m: 1.0, qtd: 1 }] });
+  }
+
+  function updateCaixilho(i: number, patch: Partial<Caixilho>) {
+    updateEsq({ caixilhos: caixilhos.map((c, idx) => idx === i ? { ...c, ...patch } : c) });
+  }
+
+  function removeCaixilho(i: number) {
+    updateEsq({ caixilhos: caixilhos.filter((_, idx) => idx !== i) });
+  }
+
   return (
     <div className="grid md:grid-cols-[1fr_320px] gap-8">
       <div>
@@ -112,6 +132,23 @@ export default function Configurator({
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
 
+        <LeverGroup label="Paredes (metros lineares)">
+          <div className="flex flex-wrap gap-4">
+            <label className="text-sm text-mf-text-secondary">
+              Externas:
+              <NumberField min={0} step={0.1} unit="m" value={config.comp_paredes_ext_m ?? 0}
+                onChange={n => setConfig({ ...config, comp_paredes_ext_m: n })}
+                className="ml-2 w-24 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+            </label>
+            <label className="text-sm text-mf-text-secondary">
+              Internas:
+              <NumberField min={0} step={0.1} unit="m" value={config.comp_paredes_int_m ?? 0}
+                onChange={n => setConfig({ ...config, comp_paredes_int_m: n })}
+                className="ml-2 w-24 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+            </label>
+          </div>
+        </LeverGroup>
+
         <LeverGroup label="Cor externa">
           <div className="flex gap-2">
             {['branco','cinza','preto','grafite'].map(c => (
@@ -134,53 +171,32 @@ export default function Configurator({
           </div>
         </LeverGroup>
 
-        <LeverGroup label="Esquadrias extras">
-          <div className="flex flex-wrap gap-4 items-start">
-            <label className="text-sm text-mf-text-secondary">
-              Portas extras:
-              <NumberField min={0} value={config.esquadrias_extras?.portas ?? 0}
-                onChange={n => {
-                  const prev = config.esquadrias_extras?.tamanhos_portas ?? [];
-                  const next = n > prev.length
-                    ? [...prev, ...Array(n - prev.length).fill('80x210' as const)]
-                    : prev.slice(0, n);
-                  setConfig({ ...config, esquadrias_extras: {
-                    portas: n,
-                    janelas: config.esquadrias_extras?.janelas ?? 0,
-                    tamanhos_portas: next,
-                  } });
-                }}
-                className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
-            </label>
-            <label className="text-sm text-mf-text-secondary">
-              Janelas:
-              <NumberField min={0} max={4} value={config.esquadrias_extras?.janelas ?? 0}
-                onChange={n => setConfig({ ...config, esquadrias_extras: {
-                  portas: config.esquadrias_extras?.portas ?? 0,
-                  janelas: n,
-                  tamanhos_portas: config.esquadrias_extras?.tamanhos_portas ?? [],
-                } })}
-                className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
-            </label>
-          </div>
-          {(config.esquadrias_extras?.portas ?? 0) > 0 && (
+        <LeverGroup label="Portas opacas extras">
+          <label className="text-sm text-mf-text-secondary">
+            Quantidade:
+            <NumberField min={0} value={portas}
+              onChange={n => {
+                const prev = config.esquadrias_extras?.tamanhos_portas ?? [];
+                const next = n > prev.length
+                  ? [...prev, ...Array(n - prev.length).fill('80x210' as const)]
+                  : prev.slice(0, n);
+                updateEsq({ portas: n, tamanhos_portas: next });
+              }}
+              className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+          </label>
+          {portas > 0 && (
             <div className="mt-3 flex flex-col gap-2">
-              {Array.from({ length: config.esquadrias_extras?.portas ?? 0 }).map((_, i) => {
+              {Array.from({ length: portas }).map((_, i) => {
                 const current = config.esquadrias_extras?.tamanhos_portas?.[i] ?? '80x210';
-                const totalPortas = config.esquadrias_extras?.portas ?? 0;
                 return (
                   <label key={i} className="text-sm text-mf-text-secondary">
-                    {totalPortas === 1 ? 'Tamanho da porta:' : `Porta ${i + 1}:`}
+                    {portas === 1 ? 'Tamanho da porta:' : `Porta ${i + 1}:`}
                     <select
                       value={current}
                       onChange={e => {
-                        const arr = [...(config.esquadrias_extras?.tamanhos_portas ?? Array(totalPortas).fill('80x210'))];
+                        const arr = [...(config.esquadrias_extras?.tamanhos_portas ?? Array(portas).fill('80x210'))];
                         arr[i] = e.target.value as any;
-                        setConfig({ ...config, esquadrias_extras: {
-                          portas: totalPortas,
-                          janelas: config.esquadrias_extras?.janelas ?? 0,
-                          tamanhos_portas: arr,
-                        } });
+                        updateEsq({ tamanhos_portas: arr });
                       }}
                       className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border">
                       <option value="60x210">60 × 210 cm (banheiro)</option>
@@ -193,6 +209,56 @@ export default function Configurator({
               })}
             </div>
           )}
+        </LeverGroup>
+
+        <LeverGroup label="Caixilhos (janelas e portas de vidro)">
+          {caixilhos.length === 0 && (
+            <p className="text-xs text-mf-text-secondary">Nenhum caixilho. Adicione janelas ou portas de vidro abaixo.</p>
+          )}
+          <div className="flex flex-col gap-2">
+            {caixilhos.map((c, i) => (
+              <div key={i} className="flex flex-wrap items-end gap-2 bg-mf-black-soft/40 border border-mf-border rounded p-2">
+                <label className="text-xs text-mf-text-secondary">
+                  Tipo
+                  <select
+                    value={c.tipo}
+                    onChange={e => updateCaixilho(i, { tipo: e.target.value as any })}
+                    className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border">
+                    <option value="janela">Janela</option>
+                    <option value="porta_vidro">Porta de vidro</option>
+                  </select>
+                </label>
+                <label className="text-xs text-mf-text-secondary">
+                  Largura
+                  <NumberField min={0.1} step={0.1} unit="m" value={c.largura_m}
+                    onChange={n => updateCaixilho(i, { largura_m: n })}
+                    className="ml-2 w-20 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+                </label>
+                <label className="text-xs text-mf-text-secondary">
+                  Altura
+                  <NumberField min={0.1} step={0.1} unit="m" value={c.altura_m}
+                    onChange={n => updateCaixilho(i, { altura_m: n })}
+                    className="ml-2 w-20 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+                </label>
+                <label className="text-xs text-mf-text-secondary">
+                  Qtd
+                  <NumberField min={1} value={c.qtd}
+                    onChange={n => updateCaixilho(i, { qtd: n })}
+                    className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
+                </label>
+                <button type="button"
+                  onClick={() => removeCaixilho(i)}
+                  className="ml-auto text-mf-danger text-xs px-2 py-1 hover:underline">
+                  Remover
+                </button>
+              </div>
+            ))}
+          </div>
+          <button type="button"
+            onClick={addCaixilho}
+            className="mt-3 text-sm text-mf-yellow font-semibold hover:underline">
+            + Adicionar caixilho
+          </button>
         </LeverGroup>
 
         <LeverGroup label="Piso">
@@ -223,7 +289,7 @@ export default function Configurator({
           itemCount={quote.itens.length}
           loading={loading}
         />
-        <AreasPanel config={withPlanta(config, produto)} />
+        <AreasPanel config={config} />
       </div>
     </div>
   );

@@ -14,7 +14,15 @@ const PORTA_AREAS: Record<PortaSize, number> = {
 };
 export const PORTA_ENTRADA_M2 = PORTA_AREAS['90x210'];
 export const PORTA_WC_M2 = PORTA_AREAS['70x210'];
-export const JANELA_PADRAO_M2 = 1.20 * 1.00;
+
+export type CaixilhoTipo = 'janela' | 'porta_vidro';
+
+export interface Caixilho {
+  tipo: CaixilhoTipo;
+  largura_m: number;
+  altura_m: number;
+  qtd: number;
+}
 
 export interface Configuracao {
   tamanho_modulo: '3x3' | '3x6' | '3x9';
@@ -24,16 +32,14 @@ export interface Configuracao {
   pacote_acabamento?: 'padrao' | 'premium';
   esquadrias_extras?: {
     portas: number;
-    janelas: number;
     tamanhos_portas?: PortaSize[];
+    caixilhos?: Caixilho[];
   };
   piso?: 'vinilico' | 'ceramico' | 'porcelanato';
   tem_wc?: boolean;
   num_splits?: number;
-  // Plant metadata pulled from produto at call time (optional)
-  planta_comp_paredes_ext_m?: number;
-  planta_comp_paredes_int_m?: number;
-  planta_face_conexao_m?: number;
+  comp_paredes_ext_m?: number;
+  comp_paredes_int_m?: number;
 }
 
 const round6 = (n: number) => +n.toFixed(6);
@@ -46,29 +52,34 @@ export function derive(config: Configuracao): Record<string, number | boolean> {
   const area_planta = larg * comp * qtd;
   const area_cobertura = area_planta;
 
-  const compExt = config.planta_comp_paredes_ext_m;
-  const compInt = config.planta_comp_paredes_int_m;
-  const faceConn = config.planta_face_conexao_m;
-
-  const perimetro = compExt !== undefined && faceConn !== undefined
-    ? qtd * compExt - (qtd - 1) * 2 * faceConn
+  const perimetro = config.comp_paredes_ext_m !== undefined
+    ? config.comp_paredes_ext_m
     : 2 * (comp * qtd) + 2 * larg;
 
-  const comp_parede_interna = compInt !== undefined
-    ? qtd * compInt
+  const comp_parede_interna = config.comp_paredes_int_m !== undefined
+    ? config.comp_paredes_int_m
     : (qtd - 1) * larg;
 
-  const esq = config.esquadrias_extras ?? { portas: 0, janelas: 0 };
+  const esq = config.esquadrias_extras ?? { portas: 0 };
   const portas_extras = esq.portas ?? 0;
-  const num_janelas = esq.janelas ?? 0;
 
   const tamanhos = (esq.tamanhos_portas ?? []).slice(0, portas_extras);
   while (tamanhos.length < portas_extras) tamanhos.push('80x210');
 
   const area_portas_extras = tamanhos.reduce((acc, s) => acc + PORTA_AREAS[s], 0);
   const area_portas_ext = PORTA_ENTRADA_M2 + area_portas_extras;
-  const area_janelas = num_janelas * JANELA_PADRAO_M2;
-  const area_aberturas_ext = area_portas_ext + area_janelas;
+
+  const caixilhos = esq.caixilhos ?? [];
+  let area_caixilhos = 0;
+  let num_janelas = 0;
+  let num_portas_vidro = 0;
+  for (const c of caixilhos) {
+    area_caixilhos += c.largura_m * c.altura_m * c.qtd;
+    if (c.tipo === 'janela') num_janelas += c.qtd;
+    else if (c.tipo === 'porta_vidro') num_portas_vidro += c.qtd;
+  }
+
+  const area_aberturas_ext = area_portas_ext + area_caixilhos;
 
   const area_fechamento_ext_bruta = perimetro * pe;
   const area_fechamento_ext = Math.max(0, area_fechamento_ext_bruta - area_aberturas_ext);
@@ -90,6 +101,7 @@ export function derive(config: Configuracao): Record<string, number | boolean> {
     area_parede_interna_m2: round6(area_parede_interna),
     num_portas_ext: 1 + portas_extras,
     num_janelas,
+    num_portas_vidro,
     tem_wc,
     num_splits: config.num_splits ?? 0,
   };
