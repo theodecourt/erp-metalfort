@@ -4,18 +4,38 @@ from typing import Literal
 
 import jwt
 from fastapi import Depends, Header, HTTPException, status
+from jwt import PyJWKClient
 
 from app.config import settings
 from app.lib.supabase import get_admin_client
 
 Role = Literal["admin", "vendedor"]
 
+_jwks_client: PyJWKClient | None = None
+
+
+def _jwks() -> PyJWKClient:
+    global _jwks_client
+    if _jwks_client is None:
+        url = settings.supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(url)
+    return _jwks_client
+
 
 def _decode(token: str) -> dict:
     try:
+        alg = jwt.get_unverified_header(token).get("alg", "HS256")
+        if alg == "HS256":
+            # Legacy Supabase: symmetric secret
+            return jwt.decode(
+                token, settings.supabase_jwt_secret,
+                algorithms=["HS256"], audience="authenticated",
+            )
+        # Modern Supabase (ES256/RS256): fetch public key from JWKS
+        key = _jwks().get_signing_key_from_jwt(token).key
         return jwt.decode(
-            token, settings.supabase_jwt_secret,
-            algorithms=["HS256"], audience="authenticated",
+            token, key,
+            algorithms=[alg], audience="authenticated",
         )
     except jwt.PyJWTError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {e}")
