@@ -129,19 +129,20 @@ export default function Configurator({
                 onChange={n => setConfig({ ...config, esquadrias_extras: { ...(config.esquadrias_extras ?? { janelas: 0 }), portas: n, janelas: config.esquadrias_extras?.janelas ?? 0 } })}
                 className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
             </label>
-            <label className={`text-sm ${(config.esquadrias_extras?.portas ?? 0) > 0 ? 'text-mf-text-secondary' : 'text-mf-text-secondary opacity-50'}`}>
-              Tamanho da porta:
-              <select
-                disabled={(config.esquadrias_extras?.portas ?? 0) === 0}
-                value={config.esquadrias_extras?.tamanho_porta ?? '80x210'}
-                onChange={e => setConfig({ ...config, esquadrias_extras: { portas: config.esquadrias_extras?.portas ?? 0, janelas: config.esquadrias_extras?.janelas ?? 0, tamanho_porta: e.target.value as any } })}
-                className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border disabled:cursor-not-allowed">
-                <option value="60x210">60 × 210 cm (banheiro)</option>
-                <option value="70x210">70 × 210 cm (serviço)</option>
-                <option value="80x210">80 × 210 cm (padrão)</option>
-                <option value="90x210">90 × 210 cm (entrada)</option>
-              </select>
-            </label>
+            {(config.esquadrias_extras?.portas ?? 0) > 0 && (
+              <label className="text-sm text-mf-text-secondary">
+                Tamanho da porta:
+                <select
+                  value={config.esquadrias_extras?.tamanho_porta ?? '80x210'}
+                  onChange={e => setConfig({ ...config, esquadrias_extras: { portas: config.esquadrias_extras?.portas ?? 0, janelas: config.esquadrias_extras?.janelas ?? 0, tamanho_porta: e.target.value as any } })}
+                  className="ml-2 bg-mf-black-soft text-white p-1 rounded border border-mf-border">
+                  <option value="60x210">60 × 210 cm (banheiro)</option>
+                  <option value="70x210">70 × 210 cm (serviço)</option>
+                  <option value="80x210">80 × 210 cm (padrão)</option>
+                  <option value="90x210">90 × 210 cm (entrada)</option>
+                </select>
+              </label>
+            )}
             <label className="text-sm text-mf-text-secondary">
               Janelas:
               <NumberField min={0} max={4} value={config.esquadrias_extras?.janelas ?? 0}
