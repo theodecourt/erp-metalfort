@@ -58,7 +58,7 @@ class CalculateRequest(BaseModel):
 class SubmitRequest(BaseModel):
     produto_id: str
     configuracao: Configuracao
-    cliente_nome: str = Field(min_length=2, max_length=200)
+    cliente_nome: str = Field(min_length=1, max_length=200)
     cliente_email: EmailStr
     cliente_telefone: str | None = Field(default=None, max_length=40)
     finalidade: Literal["casa", "farmacia", "loja", "conveniencia", "escritorio", "quiosque", "outro"]
