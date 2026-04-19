@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
+import { fmtBRL } from '../../lib/format';
 
 export default function AdminMateriais() {
   const fetchApi = useAuthedFetch();
@@ -35,7 +36,7 @@ export default function AdminMateriais() {
                 <td className="p-3 tabular-nums">
                   {editingId === m.id
                     ? <input value={draftPrice} onChange={e => setDraftPrice(e.target.value)} className="border rounded p-1 w-24"/>
-                    : `R$ ${Number(m.preco_unitario).toFixed(2)}`}
+                    : fmtBRL(m.preco_unitario)}
                 </td>
                 <td className="p-3">
                   {editingId === m.id

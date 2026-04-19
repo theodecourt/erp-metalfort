@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
+import { fmtBRL } from '../../lib/format';
 
 export default function AdminOrcamentos() {
   const fetchApi = useAuthedFetch();
@@ -43,7 +44,7 @@ export default function AdminOrcamentos() {
                 <td className="p-3 font-mono">{o.numero}</td>
                 <td className="p-3">{o.cliente_nome}</td>
                 <td className="p-3">{o.finalidade}</td>
-                <td className="p-3 tabular-nums">R$ {Number(o.valor_total).toFixed(2)}</td>
+                <td className="p-3 tabular-nums">{fmtBRL(o.valor_total)}</td>
                 <td className="p-3">{o.status}</td>
                 <td className="p-3"><Link to={`/admin/orcamento/${o.id}`} className="text-mf-yellow font-bold">Abrir</Link></td>
               </tr>

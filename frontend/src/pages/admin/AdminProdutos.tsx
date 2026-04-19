@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
+import { fmtDec } from '../../lib/format';
 
 export default function AdminProdutos() {
   const fetchApi = useAuthedFetch();
@@ -28,7 +29,7 @@ export default function AdminProdutos() {
                 <td className="p-3 font-bold">{p.nome}</td>
                 <td className="p-3">{p.tipo_base}</td>
                 <td className="p-3">{p.finalidade}</td>
-                <td className="p-3">{p.pe_direito_sugerido_m} m</td>
+                <td className="p-3">{fmtDec(p.pe_direito_sugerido_m, 2)} m</td>
                 <td className="p-3">
                   <button onClick={() => toggleAtivo(p.id, p.ativo)}
                     className={`px-2 py-1 rounded text-xs ${p.ativo ? 'bg-mf-success' : 'bg-gray-400'} text-white`}>

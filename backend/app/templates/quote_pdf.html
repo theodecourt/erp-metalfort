@@ -36,18 +36,18 @@
         <td>{{ loop.index }}</td>
         <td>{{ it.descricao }}</td>
         <td>{{ it.unidade }}</td>
-        <td class="num">{{ "%.2f"|format(it.quantidade) }}</td>
-        <td class="num">R$ {{ "%.2f"|format(it.preco_unitario) }}</td>
-        <td class="num">R$ {{ "%.2f"|format(it.subtotal) }}</td>
+        <td class="num">{{ it.quantidade|dec }}</td>
+        <td class="num">{{ it.preco_unitario|brl }}</td>
+        <td class="num">{{ it.subtotal|brl }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <div class="totals">
-    <div class="row"><span>Subtotal</span><span>R$ {{ "%.2f"|format(orcamento.valor_subtotal) }}</span></div>
-    <div class="row"><span>Gerenciamento ({{ orcamento.valor_gerenciamento_pct }}%)</span><span>R$ {{ "%.2f"|format(orcamento.valor_total - orcamento.valor_subtotal) }}</span></div>
-    <div class="row total"><span>Total</span><span>R$ {{ "%.2f"|format(orcamento.valor_total) }}</span></div>
+    <div class="row"><span>Subtotal</span><span>{{ orcamento.valor_subtotal|brl }}</span></div>
+    <div class="row"><span>Gerenciamento ({{ orcamento.valor_gerenciamento_pct|dec }}%)</span><span>{{ (orcamento.valor_total - orcamento.valor_subtotal)|brl }}</span></div>
+    <div class="row total"><span>Total</span><span>{{ orcamento.valor_total|brl }}</span></div>
   </div>
 
   <div class="footer">Documento gerado em {{ agora }}. Válido por 30 dias. metalfort.tech</div>

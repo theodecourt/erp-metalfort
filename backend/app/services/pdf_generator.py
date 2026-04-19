@@ -7,12 +7,15 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from weasyprint import HTML
 
+from app.lib import jinja_filters
+
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
 _env = Environment(
     loader=FileSystemLoader(str(TEMPLATES_DIR)),
     autoescape=select_autoescape(["html"]),
 )
+jinja_filters.install(_env)
 
 
 def render_quote_pdf(

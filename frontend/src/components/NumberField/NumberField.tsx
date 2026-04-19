@@ -9,30 +9,38 @@ interface Props {
   className?: string;
 }
 
-export default function NumberField({ value, onChange, min, max, step, className }: Props) {
-  const [text, setText] = useState(String(value));
+const isDecimal = (step?: number) => !!step && step < 1;
 
-  useEffect(() => { setText(String(value)); }, [value]);
+const toDisplay = (n: number, decimal: boolean) =>
+  decimal ? String(n).replace('.', ',') : String(n);
+
+// Accept pt-BR ("2,7") or en ("2.7") while typing.
+const normalize = (s: string) => s.replace(',', '.');
+
+export default function NumberField({ value, onChange, min, max, step, className }: Props) {
+  const decimal = isDecimal(step);
+  const [text, setText] = useState(toDisplay(value, decimal));
+
+  useEffect(() => { setText(toDisplay(value, decimal)); }, [value, decimal]);
 
   const parse = (s: string) =>
-    step && step < 1 ? parseFloat(s) : parseInt(s, 10);
+    decimal ? parseFloat(normalize(s)) : parseInt(normalize(s), 10);
+
+  // Block characters that aren't digits, a single decimal separator, or editing keys.
+  // Prevents "e", "+", "-" etc. from sneaking past type="text".
+  const allowed = decimal ? /^[0-9]*[.,]?[0-9]*$/ : /^[0-9]*$/;
 
   return (
     <input
-      type="number"
-      min={min}
-      max={max}
-      step={step}
+      type="text"
+      inputMode={decimal ? 'decimal' : 'numeric'}
       value={text}
       onChange={e => {
         const raw = e.target.value;
+        if (raw !== '' && !allowed.test(raw)) return;  // reject invalid keystrokes
         const n = parse(raw);
-        // Hard-clamp on the upper bound while typing: user asked for "5" when
-        // max is 3 to snap to 3 instantly. The lower bound stays lenient so
-        // building up "2.7" from "2" doesn't bounce to the min mid-type.
         if (!Number.isNaN(n) && max !== undefined && n > max) {
-          const clamped = String(max);
-          setText(clamped);
+          setText(toDisplay(max, decimal));
           onChange(max);
           return;
         }
@@ -41,14 +49,12 @@ export default function NumberField({ value, onChange, min, max, step, className
       }}
       onBlur={() => {
         const n = parse(text);
-        if (Number.isNaN(n)) { setText(String(value)); return; }
+        if (Number.isNaN(n)) { setText(toDisplay(value, decimal)); return; }
         const lo = min ?? -Infinity;
         const hi = max ?? Infinity;
         const clamped = Math.max(lo, Math.min(hi, n));
-        if (clamped !== n) {
-          setText(String(clamped));
-          onChange(clamped);
-        }
+        setText(toDisplay(clamped, decimal));
+        if (clamped !== value) onChange(clamped);
       }}
       className={className}
     />

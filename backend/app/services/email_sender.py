@@ -9,6 +9,7 @@ import resend
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app.config import settings
+from app.lib import jinja_filters
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 DEV_OUTBOX = Path("/tmp/sent")
@@ -17,6 +18,7 @@ _env = Environment(
     loader=FileSystemLoader(str(TEMPLATES_DIR)),
     autoescape=select_autoescape(["html"]),
 )
+jinja_filters.install(_env)
 
 
 def _render(tpl: str, **ctx: Any) -> str:

@@ -1,5 +1,5 @@
 <p>Novo lead recebido pelo site.</p>
 <p><strong>{{ numero }}</strong> — {{ cliente_nome }} ({{ cliente_email }})<br>
 Finalidade: {{ finalidade }}<br>
-Total: R$ {{ "%.2f"|format(valor_total) }}</p>
+Total: {{ valor_total|brl }}</p>
 <p><a href="{{ admin_url }}">Abrir no admin</a></p>

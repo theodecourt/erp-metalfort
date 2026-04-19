@@ -1,9 +1,11 @@
+import { fmtBRL } from '../../lib/format';
+
 export default function PriceBox({
   subtotal, total, gerenciamentoPct, itemCount, loading,
 }: {
   subtotal: number; total: number; gerenciamentoPct: number; itemCount: number; loading: boolean;
 }) {
-  const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const fmt = (n: number) => fmtBRL(n);
   return (
     <div className="bg-mf-black-soft border border-mf-border rounded-lg p-6">
       <div className="text-xs uppercase text-mf-yellow">Orçamento preliminar</div>
