@@ -31,27 +31,13 @@ def get_produto(slug: str):
     return produto
 
 
-def _merge_planta(config: dict, produto: dict) -> dict:
-    """Fill wall meterages from the product when the request omitted them."""
-    out = dict(config)
-    if out.get("comp_paredes_ext_m") is None and produto.get("comp_paredes_ext_m") is not None:
-        out["comp_paredes_ext_m"] = float(produto["comp_paredes_ext_m"])
-    if out.get("comp_paredes_int_m") is None and produto.get("comp_paredes_int_m") is not None:
-        out["comp_paredes_int_m"] = float(produto["comp_paredes_int_m"])
-    return out
-
-
 @router.post("/quote/calculate", response_model=QuoteResponse)
 @limiter.limit("10/minute")
 def public_calculate(request: Request, req: CalculateRequest):
     bom = repository.list_bom_regras(req.produto_id)
     if not bom:
         raise HTTPException(404, "Produto sem BOM cadastrada")
-    sb = get_admin_client()
-    p = sb.table("produto").select("*").eq("id", req.produto_id).limit(1).execute().data
-    produto = p[0] if p else {}
-    config = _merge_planta(req.configuracao.model_dump(), produto)
-    return calculate(bom, config, tier="core", gerenciamento_pct=8.0)
+    return calculate(bom, req.configuracao.model_dump(), tier="core", gerenciamento_pct=8.0)
 
 
 @router.post("/quote/submit")
@@ -68,7 +54,7 @@ def public_submit(request: Request, req: SubmitRequest):
     produto = p[0]
 
     bom = repository.list_bom_regras(req.produto_id)
-    config = _merge_planta(req.configuracao.model_dump(), produto)
+    config = req.configuracao.model_dump()
     quote = calculate(bom, config, tier="core", gerenciamento_pct=8.0)
 
     resumo_config = (

@@ -20,9 +20,14 @@ interface ProdutoWithOpcoes {
   nome: string;
   tipo_base: '3x3' | '3x6' | '3x9';
   pe_direito_sugerido_m: number;
-  comp_paredes_ext_m?: number | null;
-  comp_paredes_int_m?: number | null;
   opcoes: Opcao[];
+}
+
+const MODULO_SIZES = { '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const;
+
+function perimetroSingle(tipo: '3x3' | '3x6' | '3x9'): number {
+  const [larg, comp] = MODULO_SIZES[tipo];
+  return 2 * larg + 2 * comp;
 }
 
 function opcaoByTipo(opcoes: Opcao[], tipo: string) {
@@ -31,9 +36,9 @@ function opcaoByTipo(opcoes: Opcao[], tipo: string) {
 
 function defaultConfig(produto: ProdutoWithOpcoes): Configuracao {
   const o = produto.opcoes;
-  const [larg, comp] = ({ '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const)[produto.tipo_base];
+  const tipo = (opcaoByTipo(o, 'tamanho_modulo')?.default_json ?? produto.tipo_base) as '3x3' | '3x6' | '3x9';
   return {
-    tamanho_modulo: (opcaoByTipo(o, 'tamanho_modulo')?.default_json ?? produto.tipo_base) as any,
+    tamanho_modulo: tipo,
     qtd_modulos: opcaoByTipo(o, 'qtd_modulos')?.default_json ?? 1,
     pe_direito_m: opcaoByTipo(o, 'pe_direito')?.default_json ?? produto.pe_direito_sugerido_m,
     cor_externa: opcaoByTipo(o, 'cor')?.default_json ?? 'cinza',
@@ -42,8 +47,8 @@ function defaultConfig(produto: ProdutoWithOpcoes): Configuracao {
     piso: (opcaoByTipo(o, 'piso')?.default_json ?? 'vinilico') as any,
     tem_wc: opcaoByTipo(o, 'wc')?.default_json ?? false,
     num_splits: opcaoByTipo(o, 'ac')?.default_json ?? 0,
-    comp_paredes_ext_m: produto.comp_paredes_ext_m ?? (2 * larg + 2 * comp),
-    comp_paredes_int_m: produto.comp_paredes_int_m ?? 0,
+    comp_paredes_ext_m: perimetroSingle(tipo),
+    comp_paredes_int_m: 0,
   };
 }
 
@@ -77,6 +82,18 @@ export default function Configurator({
   const peSuggested = useMemo(() => {
     return { '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 }[config.tamanho_modulo];
   }, [config.tamanho_modulo]);
+
+  // Em módulo único o perímetro é determinístico: ressincroniza toda vez que
+  // o tamanho ou a quantidade voltam para 1. Em multi-módulo, o usuário decide
+  // (a face de conexão muda o total) — não sobrescrevemos o que ele digitar.
+  useEffect(() => {
+    if (config.qtd_modulos === 1) {
+      const perim = perimetroSingle(config.tamanho_modulo);
+      if (config.comp_paredes_ext_m !== perim) {
+        setConfig(prev => ({ ...prev, comp_paredes_ext_m: perim }));
+      }
+    }
+  }, [config.tamanho_modulo, config.qtd_modulos]);
 
   const caixilhos: Caixilho[] = config.esquadrias_extras?.caixilhos ?? [];
   const portas = config.esquadrias_extras?.portas ?? 0;
