@@ -125,7 +125,7 @@ export default function Configurator({
           <div className="flex flex-wrap gap-4 items-start">
             <label className="text-sm text-mf-text-secondary">
               Portas extras:
-              <NumberField min={0} max={2} value={config.esquadrias_extras?.portas ?? 0}
+              <NumberField min={0} value={config.esquadrias_extras?.portas ?? 0}
                 onChange={n => {
                   const prev = config.esquadrias_extras?.tamanhos_portas ?? [];
                   const next = n > prev.length

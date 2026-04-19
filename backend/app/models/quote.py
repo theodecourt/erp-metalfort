@@ -9,7 +9,7 @@ PortaSize = Literal["60x210", "70x210", "80x210", "90x210"]
 
 
 class EsquadriasExtras(BaseModel):
-    portas: int = Field(ge=0, le=4)
+    portas: int = Field(ge=0)
     janelas: int = Field(ge=0, le=6)
     tamanhos_portas: list[PortaSize] = Field(default_factory=list)
 
