@@ -9,20 +9,13 @@ interface Props {
   className?: string;
 }
 
-function parseNumber(text: string, step?: number): number {
-  return step && step < 1 ? parseFloat(text) : parseInt(text, 10);
-}
-
-function clamp(n: number, min?: number, max?: number): number {
-  if (min !== undefined && n < min) return min;
-  if (max !== undefined && n > max) return max;
-  return n;
-}
-
 export default function NumberField({ value, onChange, min, max, step, className }: Props) {
   const [text, setText] = useState(String(value));
 
   useEffect(() => { setText(String(value)); }, [value]);
+
+  const parse = (s: string) =>
+    step && step < 1 ? parseFloat(s) : parseInt(s, 10);
 
   return (
     <input
@@ -33,18 +26,29 @@ export default function NumberField({ value, onChange, min, max, step, className
       value={text}
       onChange={e => {
         const raw = e.target.value;
+        const n = parse(raw);
+        // Hard-clamp on the upper bound while typing: user asked for "5" when
+        // max is 3 to snap to 3 instantly. The lower bound stays lenient so
+        // building up "2.7" from "2" doesn't bounce to the min mid-type.
+        if (!Number.isNaN(n) && max !== undefined && n > max) {
+          const clamped = String(max);
+          setText(clamped);
+          onChange(max);
+          return;
+        }
         setText(raw);
-        const n = parseNumber(raw, step);
-        if (Number.isNaN(n)) return;
-        const clamped = clamp(n, min, max);
-        if (clamped === n) onChange(n);
+        if (!Number.isNaN(n)) onChange(n);
       }}
       onBlur={() => {
-        const n = parseNumber(text, step);
+        const n = parse(text);
         if (Number.isNaN(n)) { setText(String(value)); return; }
-        const clamped = clamp(n, min, max);
-        setText(String(clamped));
-        if (clamped !== value) onChange(clamped);
+        const lo = min ?? -Infinity;
+        const hi = max ?? Infinity;
+        const clamped = Math.max(lo, Math.min(hi, n));
+        if (clamped !== n) {
+          setText(String(clamped));
+          onChange(clamped);
+        }
       }}
       className={className}
     />
