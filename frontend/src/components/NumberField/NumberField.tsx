@@ -8,7 +8,6 @@ interface Props {
   step?: number;
   className?: string;
   unit?: string;
-  showHint?: boolean;
 }
 
 const isDecimal = (step?: number) => !!step && step < 1;
@@ -19,7 +18,7 @@ const toDisplay = (n: number, decimal: boolean) =>
 const normalize = (s: string) => s.replace(',', '.');
 
 export default function NumberField({
-  value, onChange, min, max, step, className, unit, showHint = true,
+  value, onChange, min, max, step, className, unit,
 }: Props) {
   const decimal = isDecimal(step);
   const [text, setText] = useState(toDisplay(value, decimal));
@@ -42,15 +41,6 @@ export default function NumberField({
     decimal ? parseFloat(normalize(s)) : parseInt(normalize(s), 10);
 
   const allowed = decimal ? /^[0-9]*[.,]?[0-9]*$/ : /^[0-9]*$/;
-
-  const hint = () => {
-    const u = unit ? ` ${unit}` : '';
-    if (min !== undefined && max !== undefined)
-      return `mín ${toDisplay(min, decimal)}${u} · máx ${toDisplay(max, decimal)}${u}`;
-    if (max !== undefined) return `máx ${toDisplay(max, decimal)}${u}`;
-    if (min !== undefined) return `mín ${toDisplay(min, decimal)}${u}`;
-    return null;
-  };
 
   return (
     <span className="inline-block align-top">
@@ -89,11 +79,9 @@ export default function NumberField({
         }}
         className={className}
       />
-      {showHint && (
-        <span
-          className={`block text-xs mt-1 ${flash ? 'text-mf-yellow font-semibold' : 'text-mf-text-secondary'}`}
-        >
-          {flash ?? hint()}
+      {flash && (
+        <span className="block text-xs mt-1 text-mf-yellow font-semibold">
+          {flash}
         </span>
       )}
     </span>
