@@ -8,6 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 class EsquadriasExtras(BaseModel):
     portas: int = Field(ge=0, le=4)
     janelas: int = Field(ge=0, le=6)
+    tamanho_porta: Literal["60x210", "70x210", "80x210", "90x210"] = "80x210"
 
 
 class Configuracao(BaseModel):

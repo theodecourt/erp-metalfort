@@ -10,7 +10,11 @@ export interface Configuracao {
   pe_direito_m: number;
   cor_externa?: string;
   pacote_acabamento?: 'padrao' | 'premium';
-  esquadrias_extras?: { portas: number; janelas: number };
+  esquadrias_extras?: {
+    portas: number;
+    janelas: number;
+    tamanho_porta?: '60x210' | '70x210' | '80x210' | '90x210';
+  };
   piso?: 'vinilico' | 'ceramico' | 'porcelanato';
   tem_wc?: boolean;
   num_splits?: number;
