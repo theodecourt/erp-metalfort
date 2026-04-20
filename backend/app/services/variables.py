@@ -15,6 +15,8 @@ _PORTA_AREAS = {
 PORTA_ENTRADA_M2 = _PORTA_AREAS["90x210"]
 PORTA_WC_M2 = _PORTA_AREAS["70x210"]
 
+_WC_WALL_FRACTION = 1.0 / 3.0
+
 
 def _porta_area(size: str) -> float:
     return _PORTA_AREAS.get(size, _PORTA_AREAS["80x210"])
@@ -68,6 +70,12 @@ def derive(config: dict) -> dict:
     area_parede_interna_bruta = comp_parede_interna * pe * 2
     area_parede_interna = max(0.0, area_parede_interna_bruta - 2 * area_porta_wc)
 
+    # WC ocupa fração _WC_WALL_FRACTION do comprimento interno quando ativo.
+    comp_parede_wc = comp_parede_interna * _WC_WALL_FRACTION if tem_wc else 0.0
+    area_parede_wc_bruta = comp_parede_wc * pe * 2
+    area_parede_wc = max(0.0, area_parede_wc_bruta - 2 * area_porta_wc)
+    area_parede_interna_nao_wc = max(0.0, area_parede_interna - area_parede_wc)
+
     num_portas_ext = 1 + portas_extras
 
     return {
@@ -76,10 +84,13 @@ def derive(config: dict) -> dict:
         "area_fechamento_ext_bruta_m2": round(area_fechamento_ext_bruta, 6),
         "area_fechamento_ext_m2": round(area_fechamento_ext, 6),
         "area_aberturas_ext_m2": round(area_aberturas_ext, 6),
+        "area_caixilhos_m2": round(area_caixilhos, 6),
         "area_cobertura_m2": area_cobertura,
         "comp_parede_interna_m": comp_parede_interna,
         "area_parede_interna_bruta_m2": round(area_parede_interna_bruta, 6),
         "area_parede_interna_m2": round(area_parede_interna, 6),
+        "area_parede_wc_m2": round(area_parede_wc, 6),
+        "area_parede_interna_nao_wc_m2": round(area_parede_interna_nao_wc, 6),
         "num_portas_ext": num_portas_ext,
         "num_janelas": num_janelas,
         "num_portas_vidro": num_portas_vidro,
