@@ -131,7 +131,7 @@ select (select id from produto where slug='metalfort-shop') as produto_id,
 from produto_opcao o
 where o.produto_id = (select id from produto where slug='metalfort-home');
 
--- BOM regras — Farmácia Express 3x6 (Tier core + addons). 17 regras.
+-- BOM regras — Farmácia Express 3x6 (Tier core + addons). 13 regras.
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-LSF-001'),
@@ -158,80 +158,56 @@ select pid,(select id from material where sku='MT-LSF-004'),
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-FCH-001'),
-  '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}'::jsonb,
-  'core','fechamento',5 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-COB-001'),
-  '{"op":"var","of":"area_cobertura_m2"}'::jsonb,
-  'core','fechamento',6 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-COB-002'),
-  '{"op":"var","of":"area_cobertura_m2"}'::jsonb,
-  'core','fechamento',7 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-PIS-001'),
-  '{"op":"var","of":"area_planta_m2"}'::jsonb,
-  'core','acabamento',8 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-001'),
   '{"op":"var","of":"num_portas_ext"}'::jsonb,
-  'core','esquadria',9 from p;
+  'core','esquadria',5 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-002'),
   '{"op":"var","of":"num_janelas"}'::jsonb,
-  'core','esquadria',10 from p;
+  'core','esquadria',6 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-001'),
   '{"op":"if","cond":{"op":"var","of":"tem_wc"},"then":1,"else":0}'::jsonb,
-  'core','instalacoes',11 from p;
+  'core','instalacoes',7 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-003'),
   '{"op":"if","cond":{"op":"var","of":"tem_wc"},"then":1,"else":0}'::jsonb,
-  'core','esquadria',12 from p;
+  'core','esquadria',8 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-002'),'1'::jsonb,
-  'core','instalacoes',13 from p;
+  'core','instalacoes',9 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-SVC-001'),
   '{"op":"var","of":"area_planta_m2"}'::jsonb,
-  'core','servico',14 from p;
+  'core','servico',10 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-003'),
   '{"op":"if","cond":{"op":"gt","of":[{"op":"var","of":"num_splits"},0]},"then":{"op":"var","of":"num_splits"},"else":0}'::jsonb,
-  'addon','equipamento',15 from p;
+  'addon','equipamento',11 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ADD-001'),'1'::jsonb,
-  'addon','servico',16 from p;
+  'addon','servico',12 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-SVC-002'),'1'::jsonb,
-  'addon','servico',17 from p;
+  'addon','servico',13 from p;
 
--- BOM regras — Loja Modular 3x9: copia as mesmas 17 regras do produto farmácia
+-- BOM regras — Loja Modular 3x9: copia as mesmas 13 regras do produto farmácia
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select (select id from produto where slug='metalfort-shop'),
   material_id, formula_json, tier, categoria, ordem
