@@ -61,12 +61,13 @@ describe('StepConfigurator', () => {
       onQuoteChange={() => {}}
       calculate={calculate}
     />);
-    expect(screen.getByRole('button', { name: /Básico/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Premium/i })).toBeInTheDocument();
-    expect(screen.getByText(/Estrutura/)).toBeInTheDocument();
-    expect(screen.getByText(/Fechamento/)).toBeInTheDocument();
-    expect(screen.getByText(/Cobertura/)).toBeInTheDocument();
-    expect(screen.getByText(/Extras/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Básico$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Premium$/i })).toBeInTheDocument();
+    // sections use h2 headings — query by role="heading" for precision
+    expect(screen.getByRole('heading', { name: /Estrutura/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Fechamento/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Cobertura/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Extras/ })).toBeInTheDocument();
     // basico vem aplicado por default: calculate foi chamado
     await waitFor(() => expect(calculate).toHaveBeenCalled(), { timeout: 2000 });
   });
@@ -90,7 +91,7 @@ describe('StepConfigurator', () => {
       expect(last?.template_aplicado).toBe('basico');
     });
 
-    await user.click(screen.getByRole('button', { name: /Premium/i }));
+    await user.click(screen.getByRole('button', { name: /^Premium$/i }));
     await waitFor(() => {
       const last = onConfigChange.mock.calls.at(-1)?.[0];
       expect(last?.template_aplicado).toBe('premium');

@@ -188,16 +188,16 @@ export default function StepConfigurator({
   }
 
   const stepItems: StepItem[] = [
-    { id: 'estrutura', label: 'Módulo', filled: true },
-    { id: 'fechamento_ext', label: 'Parede ext.', filled: !!config.combos?.fechamento_ext },
-    { id: 'cobertura', label: 'Telhado', filled: !!config.combos?.cobertura },
-    { id: 'forro', label: 'Teto interno', filled: !!config.combos?.forro },
-    { id: 'divisoria', label: 'Paredes int.', filled: !!config.combos?.divisoria },
-    { id: 'piso', label: 'Chão', filled: !!config.combos?.piso && !!config.combos?.subpiso },
-    { id: 'esquadrias', label: 'Portas/Janelas', filled: !!config.combos?.vidro },
-    { id: 'wc', label: 'Banheiro', filled: true },
-    { id: 'acabamento', label: 'Cores', filled: !!config.cor_ext && !!config.piso_cor },
-    { id: 'extras', label: 'Adicionais', filled: true },
+    { id: 'estrutura', label: 'Estrutura', filled: true },
+    { id: 'fechamento_ext', label: 'Fechamento', filled: !!config.combos?.fechamento_ext },
+    { id: 'cobertura', label: 'Cobertura', filled: !!config.combos?.cobertura },
+    { id: 'forro', label: 'Forro', filled: !!config.combos?.forro },
+    { id: 'divisoria', label: 'Divisórias', filled: !!config.combos?.divisoria },
+    { id: 'piso', label: 'Piso', filled: !!config.combos?.piso && !!config.combos?.subpiso },
+    { id: 'esquadrias', label: 'Esquadrias', filled: !!config.combos?.vidro },
+    { id: 'wc', label: 'WC', filled: true },
+    { id: 'acabamento', label: 'Acabamento', filled: !!config.cor_ext && !!config.piso_cor },
+    { id: 'extras', label: 'Extras', filled: true },
   ];
 
   const peSuggested = ({ '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 } as const)[config.tamanho_modulo];
