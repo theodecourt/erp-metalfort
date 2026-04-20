@@ -218,7 +218,12 @@ export default function StepConfigurator({
 
       <div className="grid gap-8 md:grid-cols-[200px_1fr_320px]">
         <aside className="md:sticky md:top-4 md:self-start">
-          <StepSidebar steps={stepItems} activeId={activeId} onJump={handleJump} />
+          <div className="md:hidden overflow-x-auto -mx-4 px-4 pb-2 mb-4 border-b border-mf-border">
+            <StepSidebar steps={stepItems} activeId={activeId} onJump={handleJump} direction="horizontal" />
+          </div>
+          <div className="hidden md:block">
+            <StepSidebar steps={stepItems} activeId={activeId} onJump={handleJump} />
+          </div>
         </aside>
 
         <main>

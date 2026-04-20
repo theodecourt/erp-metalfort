@@ -8,11 +8,15 @@ interface Props {
   steps: StepItem[];
   activeId: string | null;
   onJump: (id: string) => void;
+  direction?: 'vertical' | 'horizontal';
 }
 
-export default function StepSidebar({ steps, activeId, onJump }: Props) {
+export default function StepSidebar({ steps, activeId, onJump, direction = 'vertical' }: Props) {
+  const navClass = direction === 'horizontal'
+    ? 'flex flex-row gap-1 text-sm whitespace-nowrap'
+    : 'flex flex-col gap-1 text-sm';
   return (
-    <nav aria-label="Etapas do orcamento" className="flex flex-col gap-1 text-sm">
+    <nav aria-label="Etapas do orcamento" className={navClass}>
       {steps.map((s, i) => {
         const active = s.id === activeId;
         const mark = s.filled ? '●' : '○';
