@@ -136,7 +136,7 @@ Expected: `supabase db reset` roda sem erro; mensagem final "Local database is r
 - [ ] **Step 3: Verificar que as tabelas existem**
 
 ```bash
-npx supabase db execute --stdin <<< "select table_name from information_schema.tables where table_schema='public' and table_name like 'pacote_combo%' or table_name like 'template_orcamento%' order by table_name;"
+npx supabase db query "select table_name from information_schema.tables where table_schema='public' and table_name like 'pacote_combo%' or table_name like 'template_orcamento%' order by table_name;"
 ```
 
 Expected: 4 linhas — `pacote_combo`, `pacote_combo_material`, `template_orcamento`, `template_orcamento_selecao`.
@@ -189,7 +189,7 @@ E o ponto-e-virgula vai no final da última linha nova:
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select count(*) from material where sku in ('MT-FCH-011','MT-DRW-007','MT-DRW-008','MT-FOR-005','MT-PIS-004','MT-PIS-005','MT-VID-001','MT-VID-002','MT-VID-003','MT-COB-003');"
+npx supabase db query "select count(*) from material where sku in ('MT-FCH-011','MT-DRW-007','MT-DRW-008','MT-FOR-005','MT-PIS-004','MT-PIS-005','MT-VID-001','MT-VID-002','MT-VID-003','MT-COB-003');"
 ```
 
 Expected: `10`.
@@ -228,7 +228,7 @@ O bloco `insert into produto_bom_regra (...) select (select id from produto wher
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select count(*) from produto_bom_regra where produto_id = (select id from produto where slug='metalfort-home');"
+npx supabase db query "select count(*) from produto_bom_regra where produto_id = (select id from produto where slug='metalfort-home');"
 ```
 
 Expected: `13`.
@@ -340,7 +340,7 @@ join material m on m.sku = f.sku;
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select slug, (select count(*) from pacote_combo_material pcm where pcm.pacote_combo_id = pc.id) as qtd from pacote_combo pc where categoria='fechamento_ext' order by ordem;"
+npx supabase db query "select slug, (select count(*) from pacote_combo_material pcm where pcm.pacote_combo_id = pc.id) as qtd from pacote_combo pc where categoria='fechamento_ext' order by ordem;"
 ```
 
 Expected (4 linhas):
@@ -485,7 +485,7 @@ join material m on m.sku = f.sku;
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select categoria, count(*) from pacote_combo group by categoria order by categoria;"
+npx supabase db query "select categoria, count(*) from pacote_combo group by categoria order by categoria;"
 ```
 
 Expected (até aqui):
@@ -590,7 +590,7 @@ join material m on m.sku = f.sku;
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select categoria, count(*) from pacote_combo group by categoria order by categoria;"
+npx supabase db query "select categoria, count(*) from pacote_combo group by categoria order by categoria;"
 ```
 
 Expected:
@@ -649,7 +649,7 @@ from t, (values
 
 ```bash
 make migrate
-npx supabase db execute --stdin <<< "select t.slug, count(s.*) from template_orcamento t join template_orcamento_selecao s on s.template_id = t.id group by t.slug;"
+npx supabase db query "select t.slug, count(s.*) from template_orcamento t join template_orcamento_selecao s on s.template_id = t.id group by t.slug;"
 ```
 
 Expected: 2 linhas, cada uma com `7`.
