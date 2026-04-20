@@ -18,10 +18,10 @@ update produto set
   comp_paredes_ext_m = 18,  -- 2×3 + 2×6
   comp_paredes_int_m = 1.5, -- divisória WC (~1,5 m)
   face_conexao_m = 3
-where slug = 'farmacia-express-3x6';
+where slug = 'metalfort-home';
 
 update produto set
   comp_paredes_ext_m = 24,  -- 2×3 + 2×9
   comp_paredes_int_m = 0,
   face_conexao_m = 3
-where slug = 'loja-modular-3x9';
+where slug = 'metalfort-shop';

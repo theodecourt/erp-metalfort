@@ -12,12 +12,9 @@ export interface ProductCardProps {
 export default function ProductCard(p: ProductCardProps) {
   return (
     <Link
-      to={`/produto/${p.slug}`}
+      to={`/orcamento/${p.slug}`}
       className="block rounded-lg border border-mf-border bg-mf-black-soft p-6 text-white hover:border-mf-yellow transition"
     >
-      <div className="text-xs uppercase tracking-wider text-mf-yellow mb-2">
-        {p.finalidade} · {p.tipo_base}
-      </div>
       <h3 className="text-xl font-bold">{p.nome}</h3>
       {p.descricao && <p className="mt-2 text-sm text-mf-text-secondary">{p.descricao}</p>}
       <div className="mt-4 text-mf-yellow text-sm font-semibold">Configurar orçamento →</div>
