@@ -10,21 +10,13 @@ from app.lib import repository
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, QuoteResponse, SubmitRequest
 from app.services import storage
-from app.services.combo_service import calcular_itens_bom
+from app.services.combo_service import build_combos_bom_from_selections
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.email_sender import send_cliente_email, send_metalfort_notification
 from app.services.quote_calculator import calculate
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 limiter = Limiter(key_func=get_remote_address)
-
-
-def _build_combos_bom(combos_selections: dict[str, str]) -> list[dict]:
-    if not combos_selections:
-        return []
-    slugs = list(combos_selections.values())
-    combos_by_slug = repository.get_combos_by_slugs(slugs)
-    return calcular_itens_bom(combos_selections, combos_by_slug=combos_by_slug)
 
 
 @router.get("/produtos")
@@ -75,7 +67,7 @@ def public_calculate(request: Request, req: CalculateRequest):
         raise HTTPException(404, "Produto sem BOM cadastrada")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
-    combos_bom = _build_combos_bom(config.get("combos") or {})
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
         _append_personalizados(bom, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
@@ -96,7 +88,7 @@ def public_submit(request: Request, req: SubmitRequest):
     bom = repository.list_bom_regras(req.produto_id)
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
-    combos_bom = _build_combos_bom(config.get("combos") or {})
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
         _append_personalizados(bom, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,

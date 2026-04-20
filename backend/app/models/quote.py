@@ -86,6 +86,7 @@ class QuoteItem(BaseModel):
     tier: Literal["core", "addon"]
     categoria: str
     ordem: int
+    combo_slug: str | None = None
 
 
 class QuoteResponse(BaseModel):

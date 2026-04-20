@@ -34,3 +34,21 @@ def calcular_itens_bom(
                 "ordem": base_ordem + int(m.get("ordem", 0)),
             })
     return rules
+
+
+def build_combos_bom_from_selections(
+    combos_selections: dict[str, str],
+) -> list[dict[str, Any]]:
+    """Carrega do repositorio os combos pelos slugs e converte em regras BOM sinteticas.
+
+    Wrapper de alto-nivel sobre `calcular_itens_bom` que encapsula a busca
+    no banco. Usado pelos routers que recebem `configuracao.combos`.
+    """
+    if not combos_selections:
+        return []
+    # Importacao local para evitar ciclo com modules que importam combo_service em modelos.
+    from app.lib import repository
+
+    slugs = list(combos_selections.values())
+    combos_by_slug = repository.get_combos_by_slugs(slugs)
+    return calcular_itens_bom(combos_selections, combos_by_slug=combos_by_slug)
