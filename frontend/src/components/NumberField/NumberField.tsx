@@ -67,7 +67,7 @@ export default function NumberField({
   };
 
   return (
-    <span className="inline-block align-top">
+    <span className="inline-flex items-baseline gap-1 align-top">
       <span className="relative inline-block">
         <input
           type="text"
@@ -131,8 +131,9 @@ export default function NumberField({
           </button>
         </span>
       </span>
+      {unit && <span className="text-xs text-mf-text-secondary select-none">{unit}</span>}
       {flash && (
-        <span className="block text-xs mt-1 text-mf-yellow font-semibold">
+        <span className="basis-full text-xs mt-1 text-mf-yellow font-semibold">
           {flash}
         </span>
       )}

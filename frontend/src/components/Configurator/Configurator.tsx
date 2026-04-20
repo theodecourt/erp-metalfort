@@ -167,7 +167,7 @@ export default function Configurator({
         </LeverGroup>
 
         <LeverGroup label="Quantidade de módulos">
-          <NumberField min={1} max={3} value={config.qtd_modulos}
+          <NumberField min={1} max={3} unit="módulos" value={config.qtd_modulos}
             onChange={changeQtd}
             className="w-24 bg-mf-black-soft text-white p-2 rounded border border-mf-border"/>
         </LeverGroup>
@@ -275,7 +275,7 @@ export default function Configurator({
         <LeverGroup label="Portas opacas extras">
           <label className="text-sm text-mf-text-secondary">
             Quantidade:
-            <NumberField min={0} value={portas}
+            <NumberField min={0} unit="un" value={portas}
               onChange={n => {
                 const prev = config.esquadrias_extras?.tamanhos_portas ?? [];
                 const next = n > prev.length
@@ -343,7 +343,7 @@ export default function Configurator({
                 </label>
                 <label className="text-xs text-mf-text-secondary">
                   Qtd
-                  <NumberField min={1} value={c.qtd}
+                  <NumberField min={1} unit="un" value={c.qtd}
                     onChange={n => updateCaixilho(i, { qtd: n })}
                     className="ml-2 w-16 bg-mf-black-soft text-white p-1 rounded border border-mf-border"/>
                 </label>
