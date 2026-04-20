@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
-import { fmtBRL, fmtQtd } from '../../lib/format';
+import { fmtBRL, fmtQtd, isIntegerUnit } from '../../lib/format';
+
+const CATEGORIAS = ['estrutura','fechamento','instalacoes','acabamento','esquadria','equipamento','servico'] as const;
+const UNIDADES = ['kg','m','m2','pc','cx','und','h','bd','rl','sc','ml','ct'] as const;
+
+interface NewMaterial {
+  sku: string;
+  nome: string;
+  categoria: string;
+  unidade: string;
+  preco_unitario: number;
+  estoque_minimo: number;
+}
 
 export default function AdminMateriais() {
   const fetchApi = useAuthedFetch();
@@ -8,6 +20,17 @@ export default function AdminMateriais() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPrice, setDraftPrice] = useState('');
   const [draftMin, setDraftMin] = useState('');
+
+  // Create form state
+  const [showNew, setShowNew] = useState(false);
+  const [newSku, setNewSku] = useState('');
+  const [newNome, setNewNome] = useState('');
+  const [newCategoria, setNewCategoria] = useState<typeof CATEGORIAS[number]>('estrutura');
+  const [newUnidade, setNewUnidade] = useState<typeof UNIDADES[number]>('pc');
+  const [newPreco, setNewPreco] = useState('');
+  const [newMinimo, setNewMinimo] = useState('');
+  const [newErr, setNewErr] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   async function reload() {
     const xs = await fetchApi<any[]>('/api/material');
@@ -34,9 +57,142 @@ export default function AdminMateriais() {
     await reload();
   }
 
+  function resetNewForm() {
+    setNewSku(''); setNewNome('');
+    setNewCategoria('estrutura'); setNewUnidade('pc');
+    setNewPreco(''); setNewMinimo(''); setNewErr(null);
+  }
+
+  async function createMaterial(e: React.FormEvent) {
+    e.preventDefault();
+    setNewErr(null);
+    if (!newSku.trim()) return setNewErr('SKU obrigatório');
+    if (!newNome.trim()) return setNewErr('Nome obrigatório');
+    if (!newPreco) return setNewErr('Preço obrigatório');
+    const precoNorm = newPreco.replace(',', '.');
+    const precoNum = Number(precoNorm);
+    if (Number.isNaN(precoNum) || precoNum < 0) return setNewErr('Preço inválido');
+    const minimoRaw = newMinimo.replace(',', '.');
+    const minimoNum = minimoRaw ? Number(minimoRaw) : 0;
+    if (Number.isNaN(minimoNum) || minimoNum < 0) return setNewErr('Mínimo inválido');
+
+    const body: NewMaterial = {
+      sku: newSku.trim(),
+      nome: newNome.trim(),
+      categoria: newCategoria,
+      unidade: newUnidade,
+      preco_unitario: precoNum,
+      estoque_minimo: minimoNum,
+    };
+    setCreating(true);
+    try {
+      await fetchApi<any>('/api/material', { method: 'POST', body: JSON.stringify(body) });
+      resetNewForm();
+      setShowNew(false);
+      await reload();
+    } catch (err: any) {
+      setNewErr(err.message ?? 'Erro ao criar');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const minStep = isIntegerUnit(newUnidade) ? '1' : '0.01';
+
   return (
     <div>
-      <h1 className="text-2xl font-extrabold">Materiais</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-extrabold">Materiais</h1>
+        <button
+          onClick={() => { if (showNew) resetNewForm(); setShowNew(s => !s); }}
+          className="bg-mf-yellow text-mf-black font-bold px-3 py-2 rounded text-sm"
+        >{showNew ? 'Cancelar' : '+ Novo material'}</button>
+      </div>
+
+      {showNew && (
+        <form
+          onSubmit={createMaterial}
+          className="mt-4 p-4 bg-white rounded border space-y-3"
+        >
+          <div className="grid md:grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">SKU *</span>
+              <input
+                value={newSku} onChange={e => setNewSku(e.target.value)}
+                className="block w-full border rounded px-2 py-1"
+                placeholder="MT-XXX-000"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">Nome *</span>
+              <input
+                value={newNome} onChange={e => setNewNome(e.target.value)}
+                className="block w-full border rounded px-2 py-1"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">Categoria</span>
+              <select
+                value={newCategoria}
+                onChange={e => setNewCategoria(e.target.value as typeof CATEGORIAS[number])}
+                className="block w-full border rounded px-2 py-1"
+              >
+                {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">Unidade</span>
+              <select
+                value={newUnidade}
+                onChange={e => setNewUnidade(e.target.value as typeof UNIDADES[number])}
+                className="block w-full border rounded px-2 py-1"
+              >
+                {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">Preço unitário (R$) *</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
+                value={newPreco}
+                onChange={e => {
+                  const raw = e.target.value;
+                  if (raw === '' || /^[0-9]*[.,]?[0-9]{0,2}$/.test(raw)) setNewPreco(raw);
+                }}
+                className="block w-full border rounded px-2 py-1"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-mf-text-secondary">
+                Mínimo ({newUnidade}) — 0 desativa alerta
+              </span>
+              <input
+                type="number"
+                step={minStep} min="0"
+                value={newMinimo}
+                onChange={e => setNewMinimo(e.target.value)}
+                onWheel={e => (e.target as HTMLInputElement).blur()}
+                className="block w-full border rounded px-2 py-1"
+              />
+            </label>
+          </div>
+          {newErr && <p className="text-mf-danger text-sm">{newErr}</p>}
+          <div className="flex gap-2">
+            <button
+              type="submit" disabled={creating}
+              className="bg-mf-success text-white font-bold px-3 py-2 rounded text-sm disabled:opacity-50"
+            >Criar material</button>
+            <button
+              type="button"
+              onClick={() => { resetNewForm(); setShowNew(false); }}
+              className="text-mf-text-secondary px-3 py-2 rounded text-sm"
+            >Cancelar</button>
+          </div>
+        </form>
+      )}
+
       <div className="mt-4 bg-white rounded border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-mf-black text-white text-left">
