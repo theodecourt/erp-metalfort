@@ -628,3 +628,34 @@ select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
   ('MT-VID-003', '{"op":"var","of":"area_caixilhos_m2"}', 1)
 ) as f(sku, formula, ordem)
 join material m on m.sku = f.sku;
+
+-- Templates (seleções salvas de combos por categoria)
+insert into template_orcamento (slug, nome, ordem) values
+ ('basico', 'Básico', 1),
+ ('premium', 'Premium', 2);
+
+with t as (select id from template_orcamento where slug='basico')
+insert into template_orcamento_selecao (template_id, categoria, pacote_combo_id)
+select t.id, s.categoria, (select id from pacote_combo where slug=s.slug)
+from t, (values
+  ('fechamento_ext', 'fechamento-standard'),
+  ('cobertura',      'cobertura-standard'),
+  ('forro',          'forro-standard'),
+  ('divisoria',      'divisoria-simples'),
+  ('piso',           'piso-vinilico'),
+  ('subpiso',        'subpiso-seco'),
+  ('vidro',          'vidro-simples')
+) as s(categoria, slug);
+
+with t as (select id from template_orcamento where slug='premium')
+insert into template_orcamento_selecao (template_id, categoria, pacote_combo_id)
+select t.id, s.categoria, (select id from pacote_combo where slug=s.slug)
+from t, (values
+  ('fechamento_ext', 'fechamento-premium'),
+  ('cobertura',      'cobertura-termica'),
+  ('forro',          'forro-acustico'),
+  ('divisoria',      'divisoria-acustica'),
+  ('piso',           'piso-porcelanato'),
+  ('subpiso',        'subpiso-seco'),
+  ('vidro',          'vidro-duplo')
+) as s(categoria, slug);
