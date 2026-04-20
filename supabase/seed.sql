@@ -54,7 +54,7 @@ insert into material (sku, nome, categoria, unidade, preco_unitario) values
 -- PRODUTOS
 insert into produto (slug, nome, tipo_base, finalidade, pe_direito_sugerido_m, descricao) values
  ('metalfort-home','Metalfort Home','3x6','casa',2.70,
-  'Módulos para residências, casas de veraneio, hotéis e Airbnb.'),
+  'Módulos para residências, casas de veraneio, hotéis, Airbnb e mais.'),
  ('metalfort-shop','Metalfort Shop','3x9','loja',3.00,
   'Módulos para comércios como farmácias, pet shops, lojas de conveniência e lanchonetes.');
 
