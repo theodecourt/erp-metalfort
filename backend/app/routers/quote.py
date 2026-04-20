@@ -8,6 +8,8 @@ from app.lib import repository
 from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, SubmitRequest
+from app.services.combo_service import build_combos_bom_from_selections
+from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.quote_calculator import calculate
 
 router = APIRouter(prefix="/api/quote", tags=["quote"])
@@ -28,8 +30,13 @@ def internal_calculate(
 ):
     if tier not in ("core", "full"):
         raise HTTPException(400, "tier inválido")
+    templates = repository.get_templates_by_slug()
+    config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     bom = repository.list_bom_regras(req.produto_id)
-    return calculate(bom, req.configuracao.model_dump(), tier=tier, gerenciamento_pct=8.0)
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+    return calculate(
+        bom, config, tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
+    )
 
 
 @router.post("")
@@ -46,9 +53,12 @@ def create_internal(
         raise HTTPException(404, "Produto não encontrado")
     produto = p[0]
 
+    templates = repository.get_templates_by_slug()
+    config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     bom = repository.list_bom_regras(req.produto_id)
-    config = req.configuracao.model_dump()
-    quote = calculate(bom, config, tier="full", gerenciamento_pct=8.0)
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+    quote = calculate(bom, config, tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom)
+
     year = datetime.utcnow().year
     payload = {
         "_year": year,

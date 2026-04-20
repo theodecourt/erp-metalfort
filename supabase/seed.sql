@@ -49,7 +49,18 @@ insert into material (sku, nome, categoria, unidade, preco_unitario) values
  -- Addons
  ('MT-ADD-001','Comunicação visual (logo, adesivação) — estimado','servico','und',3500.00),
  ('MT-ADD-002','Iluminação comercial especial — por ponto','equipamento','und',280.00),
- ('MT-ADD-003','Balcão fixo em steelframe + MDF (por metro linear)','equipamento','m',1200.00);
+ ('MT-ADD-003','Balcão fixo em steelframe + MDF (por metro linear)','equipamento','m',1200.00),
+ -- SKUs adicionais para combos do configurador em etapas
+ ('MT-FCH-011','Placa Infibra cimentícia 10x1200x2400mm (2,88m²)','fechamento','pc',198.00),
+ ('MT-DRW-007','Lã de rocha 50x1200x12500mm densa (15m²)','fechamento','rl',289.00),
+ ('MT-DRW-008','Placa gesso RU 12,5x1200x1800mm resistente umidade (2,16m²)','fechamento','pc',58.00),
+ ('MT-FOR-005','Placa forro perfurada acústica 600x600mm (0,36m²)','fechamento','pc',42.00),
+ ('MT-PIS-004','Contrapiso seco Knauf 18mm (m²)','acabamento','m2',78.00),
+ ('MT-PIS-005','Contrapiso cimentício pré-misturado (m²)','acabamento','m2',45.00),
+ ('MT-VID-001','Vidro laminado 6mm (m²)','esquadria','m2',185.00),
+ ('MT-VID-002','Vidro duplo 6+6mm com câmara (m²)','esquadria','m2',420.00),
+ ('MT-VID-003','Vidro temperado 8mm (m²)','esquadria','m2',310.00),
+ ('MT-COB-003','Laje seca drywall completa kit (m²)','fechamento','m2',220.00);
 
 -- PRODUTOS
 insert into produto (slug, nome, tipo_base, finalidade, pe_direito_sugerido_m, descricao) values
@@ -120,7 +131,7 @@ select (select id from produto where slug='metalfort-shop') as produto_id,
 from produto_opcao o
 where o.produto_id = (select id from produto where slug='metalfort-home');
 
--- BOM regras — Farmácia Express 3x6 (Tier core + addons). 17 regras.
+-- BOM regras — Farmácia Express 3x6 (Tier core + addons). 13 regras.
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-LSF-001'),
@@ -147,80 +158,56 @@ select pid,(select id from material where sku='MT-LSF-004'),
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-FCH-001'),
-  '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}'::jsonb,
-  'core','fechamento',5 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-COB-001'),
-  '{"op":"var","of":"area_cobertura_m2"}'::jsonb,
-  'core','fechamento',6 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-COB-002'),
-  '{"op":"var","of":"area_cobertura_m2"}'::jsonb,
-  'core','fechamento',7 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
-select pid,(select id from material where sku='MT-PIS-001'),
-  '{"op":"var","of":"area_planta_m2"}'::jsonb,
-  'core','acabamento',8 from p;
-
-with p as (select id as pid from produto where slug='metalfort-home')
-insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-001'),
   '{"op":"var","of":"num_portas_ext"}'::jsonb,
-  'core','esquadria',9 from p;
+  'core','esquadria',5 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-002'),
   '{"op":"var","of":"num_janelas"}'::jsonb,
-  'core','esquadria',10 from p;
+  'core','esquadria',6 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-001'),
   '{"op":"if","cond":{"op":"var","of":"tem_wc"},"then":1,"else":0}'::jsonb,
-  'core','instalacoes',11 from p;
+  'core','instalacoes',7 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ESQ-003'),
   '{"op":"if","cond":{"op":"var","of":"tem_wc"},"then":1,"else":0}'::jsonb,
-  'core','esquadria',12 from p;
+  'core','esquadria',8 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-002'),'1'::jsonb,
-  'core','instalacoes',13 from p;
+  'core','instalacoes',9 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-SVC-001'),
   '{"op":"var","of":"area_planta_m2"}'::jsonb,
-  'core','servico',14 from p;
+  'core','servico',10 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-INS-003'),
   '{"op":"if","cond":{"op":"gt","of":[{"op":"var","of":"num_splits"},0]},"then":{"op":"var","of":"num_splits"},"else":0}'::jsonb,
-  'addon','equipamento',15 from p;
+  'addon','equipamento',11 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-ADD-001'),'1'::jsonb,
-  'addon','servico',16 from p;
+  'addon','servico',12 from p;
 
 with p as (select id as pid from produto where slug='metalfort-home')
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select pid,(select id from material where sku='MT-SVC-002'),'1'::jsonb,
-  'addon','servico',17 from p;
+  'addon','servico',13 from p;
 
--- BOM regras — Loja Modular 3x9: copia as mesmas 17 regras do produto farmácia
+-- BOM regras — Loja Modular 3x9: copia as mesmas 13 regras do produto farmácia
 insert into produto_bom_regra (produto_id, material_id, formula_json, tier, categoria, ordem)
 select (select id from produto where slug='metalfort-shop'),
   material_id, formula_json, tier, categoria, ordem
@@ -373,3 +360,302 @@ begin
   select id, 'ajuste_negativo', 1, 'Telha quebrada na descarga', admin_id
   from material where sku = 'MT-COB-001';
 end $$;
+
+-- ===== Combos por categoria (configurador em etapas) =====
+
+-- Combos de fechamento externo
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('fechamento-standard', 'fechamento_ext', 'Standard',
+  'Glasroc-X 12,5mm + membrana + lã vidro 50mm + gesso 12,5mm. Atende NBR.', 1),
+ ('fechamento-termico', 'fechamento_ext', 'Térmico',
+  'Glasroc-X + manta refletiva aluminizada + lã vidro 100mm + gesso. Para clima extremo.', 2),
+ ('fechamento-acustico', 'fechamento_ext', 'Acústico',
+  'Glasroc-X + lã de rocha densa + gesso duplo. Hotelaria e urbano.', 3),
+ ('fechamento-premium', 'fechamento_ext', 'Premium',
+  'Cimentícia Infibra + Glasroc-X dupla + lã rocha 100mm. Fachada aparente.', 4);
+
+-- Materiais de fechamento-standard
+with c as (select id from pacote_combo where slug='fechamento-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 4),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 6),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 7),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 8),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 9)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-termico (Standard + manta refletiva, lã dobrada)
+with c as (select id from pacote_combo where slug='fechamento-termico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2]}}', 4),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-003', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}]}', 6),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 7),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 8),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 9),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 10)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-acustico (Standard + lã de rocha densa + gesso interno duplo)
+with c as (select id from pacote_combo where slug='fechamento-acustico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 4),
+  ('MT-DRW-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-001', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}]}', 6),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 7),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 8),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 9)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-premium (Infibra + Glasroc dupla + lã rocha + gesso RU + acabamento premium)
+with c as (select id from pacote_combo where slug='fechamento-premium')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-011', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 2),
+  ('MT-FCH-003', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}]}', 3),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 4),
+  ('MT-FCH-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2]}}', 5),
+  ('MT-FCH-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 6),
+  ('MT-DRW-007', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}]}', 7),
+  ('MT-DRW-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 8),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 9),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 10),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 11),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 12)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de cobertura
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('cobertura-standard', 'cobertura', 'Standard',
+  'Telha termoacústica TP40 30mm + acessórios. Atende NBR.', 1),
+ ('cobertura-termica', 'cobertura', 'Térmica',
+  'Telha TP40 50mm (isolante reforçado) + acessórios. Para clima extremo.', 2),
+ ('cobertura-laje', 'cobertura', 'Laje seca',
+  'Laje seca em drywall, cobertura plana. Aceita terraço.', 3);
+
+with c as (select id from pacote_combo where slug='cobertura-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-001', '{"op":"var","of":"area_cobertura_m2"}', 1),
+  ('MT-COB-002', '{"op":"var","of":"area_cobertura_m2"}', 2)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='cobertura-termica')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-001', '{"op":"mul","of":[1.35,{"op":"var","of":"area_cobertura_m2"}]}', 1),
+  ('MT-COB-002', '{"op":"var","of":"area_cobertura_m2"}', 2)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='cobertura-laje')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-003', '{"op":"var","of":"area_cobertura_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de forro
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('forro-standard', 'forro', 'Standard',
+  'Gesso liso 12,5mm com perfis F530 + pendurais. Acabamento pintura.', 1),
+ ('forro-acustico', 'forro', 'Acústico',
+  'Placa perfurada acústica + lã de vidro. Para ambientes barulhentos.', 2),
+ ('forro-sem', 'forro', 'Sem forro',
+  'Sem forro — pé-direito aparente. Zero material.', 3);
+
+with c as (select id from pacote_combo where slug='forro-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2.16]},"waste":0.07}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},30]}}', 2),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},50]}}', 3),
+  ('MT-FOR-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2]}}', 4),
+  ('MT-FOR-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},4]}}', 5),
+  ('MT-FOR-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},1]}}', 6),
+  ('MT-FOR-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"perimetro_externo_m"},3]}}', 7)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='forro-acustico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FOR-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},0.36]},"waste":0.05}', 1),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},15]}}', 2),
+  ('MT-FOR-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2]}}', 3),
+  ('MT-FOR-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},4]}}', 4),
+  ('MT-FOR-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},1]}}', 5),
+  ('MT-FOR-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"perimetro_externo_m"},3]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- forro-sem: nenhum material.
+
+-- Combos de divisória
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('divisoria-simples', 'divisoria', 'Simples',
+  'Chapa gesso 12,5mm única cada lado + lã vidro 50mm entre montantes.', 1),
+ ('divisoria-acustica', 'divisoria', 'Acústica',
+  'Chapa gesso dupla cada lado + lã de rocha densa. STC elevado.', 2);
+
+with c as (select id from pacote_combo where slug='divisoria-simples')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 2),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},50]}}', 4),
+  ('MT-DRW-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},3]}}', 5),
+  ('MT-DRW-006', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},0.6]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='divisoria-acustica')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"mul","of":[4,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}]}', 2),
+  ('MT-DRW-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},50]}}', 4),
+  ('MT-DRW-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},3]}}', 5),
+  ('MT-DRW-006', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},0.6]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combo de divisória do WC (auto-aplicado quando tem_wc)
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('divisoria-umida', 'divisoria_wc', 'Úmida',
+  'Placa gesso RU (resistente à umidade) na parede do WC.', 1);
+
+with c as (select id from pacote_combo where slug='divisoria-umida')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-008', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},15]}}', 2),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},50]}}', 4)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de piso
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('piso-vinilico', 'piso', 'Vinílico', 'LVT 3mm — econômico e prático.', 1),
+ ('piso-ceramico', 'piso', 'Cerâmico', 'Cerâmica 60x60 — bom custo-benefício.', 2),
+ ('piso-porcelanato', 'piso', 'Porcelanato', 'Porcelanato 60x60 — alto padrão.', 3);
+
+with c as (select id from pacote_combo where slug='piso-vinilico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-001', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='piso-ceramico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-002', '{"op":"mul","of":[{"op":"var","of":"area_planta_m2"},1.07]}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='piso-porcelanato')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-003', '{"op":"mul","of":[{"op":"var","of":"area_planta_m2"},1.07]}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de subpiso
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('subpiso-seco', 'subpiso', 'Seco', 'Contrapiso seco Knauf 18mm. Instalação rápida.', 1),
+ ('subpiso-umido', 'subpiso', 'Úmido', 'Contrapiso cimentício pré-misturado. Convencional.', 2);
+
+with c as (select id from pacote_combo where slug='subpiso-seco')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-004', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='subpiso-umido')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-005', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de vidro
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('vidro-simples', 'vidro', 'Simples', 'Vidro laminado 6mm.', 1),
+ ('vidro-duplo', 'vidro', 'Duplo', 'Vidro duplo 6+6mm com câmara de ar. Termoacústico.', 2),
+ ('vidro-temperado', 'vidro', 'Temperado', 'Temperado 8mm. Alta resistência.', 3);
+
+with c as (select id from pacote_combo where slug='vidro-simples')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-001', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='vidro-duplo')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-002', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='vidro-temperado')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-003', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Templates (seleções salvas de combos por categoria)
+insert into template_orcamento (slug, nome, ordem) values
+ ('basico', 'Básico', 1),
+ ('premium', 'Premium', 2);
+
+with t as (select id from template_orcamento where slug='basico')
+insert into template_orcamento_selecao (template_id, categoria, pacote_combo_id)
+select t.id, s.categoria, (select id from pacote_combo where slug=s.slug)
+from t, (values
+  ('fechamento_ext', 'fechamento-standard'),
+  ('cobertura',      'cobertura-standard'),
+  ('forro',          'forro-standard'),
+  ('divisoria',      'divisoria-simples'),
+  ('piso',           'piso-vinilico'),
+  ('subpiso',        'subpiso-seco'),
+  ('vidro',          'vidro-simples')
+) as s(categoria, slug);
+
+with t as (select id from template_orcamento where slug='premium')
+insert into template_orcamento_selecao (template_id, categoria, pacote_combo_id)
+select t.id, s.categoria, (select id from pacote_combo where slug=s.slug)
+from t, (values
+  ('fechamento_ext', 'fechamento-premium'),
+  ('cobertura',      'cobertura-termica'),
+  ('forro',          'forro-acustico'),
+  ('divisoria',      'divisoria-acustica'),
+  ('piso',           'piso-porcelanato'),
+  ('subpiso',        'subpiso-seco'),
+  ('vidro',          'vidro-duplo')
+) as s(categoria, slug);

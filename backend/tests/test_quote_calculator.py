@@ -69,3 +69,67 @@ def test_calculate_skips_zero_quantities():
     out = calculate(bom, config, tier="full", gerenciamento_pct=8.0)
     assert out["itens"] == []
     assert out["subtotal"] == 0
+
+
+def test_calculate_unions_geometry_bom_with_combos_bom():
+    geometry_bom = [
+        {
+            "material_id": "m1",
+            "material": _material("m1", "Perfil LSF", "MT-LSF-001", "kg", 14.0),
+            "formula_json": {"op": "mul", "of": [{"op": "var", "of": "area_planta_m2"}, 30]},
+            "tier": "core",
+            "categoria": "estrutura",
+            "ordem": 1,
+        },
+    ]
+    combos_bom = [
+        {
+            "material_id": "m2",
+            "material": _material("m2", "Glasroc-X", "MT-FCH-001", "pc", 219.90),
+            "formula_json": {"op": "ceil", "of": {"op": "div", "of": [
+                {"op": "var", "of": "area_fechamento_ext_m2"}, 2.88,
+            ]}},
+            "tier": "core",
+            "categoria": "fechamento_ext",
+            "combo_slug": "fechamento-standard",
+            "ordem": 101,
+        },
+    ]
+    config = {
+        "tamanho_modulo": "3x6", "qtd_modulos": 1, "pe_direito_m": 2.7,
+        "esquadrias_extras": {"portas": 0, "janelas": 0},
+        "tem_wc": False, "num_splits": 0,
+    }
+    result = calculate(
+        geometry_bom, config, tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
+    )
+    assert len(result["itens"]) == 2
+    skus = {i["descricao"] for i in result["itens"]}
+    assert "Perfil LSF" in skus
+    assert "Glasroc-X" in skus
+    # primeiro item e da geometria (ordem=1), segundo do combo (ordem=101)
+    assert result["itens"][0]["descricao"] == "Perfil LSF"
+    assert result["itens"][1]["descricao"] == "Glasroc-X"
+    # combo items carry combo_slug
+    glasroc = next(i for i in result["itens"] if i["descricao"] == "Glasroc-X")
+    assert glasroc.get("combo_slug") == "fechamento-standard"
+
+
+def test_calculate_without_combos_bom_stays_backward_compatible():
+    bom = [
+        {
+            "material_id": "m1",
+            "material": _material("m1", "Perfil LSF", "MT-LSF-001", "kg", 14.0),
+            "formula_json": {"op": "mul", "of": [{"op": "var", "of": "area_planta_m2"}, 30]},
+            "tier": "core",
+            "categoria": "estrutura",
+            "ordem": 1,
+        },
+    ]
+    config = {
+        "tamanho_modulo": "3x6", "qtd_modulos": 1, "pe_direito_m": 2.7,
+        "esquadrias_extras": {"portas": 0, "janelas": 0},
+        "tem_wc": False, "num_splits": 0,
+    }
+    result = calculate(bom, config, tier="core", gerenciamento_pct=8.0)
+    assert len(result["itens"]) == 1

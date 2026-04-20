@@ -10,6 +10,8 @@ from app.lib import repository
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, QuoteResponse, SubmitRequest
 from app.services import storage
+from app.services.combo_service import build_combos_bom_from_selections
+from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.email_sender import send_cliente_email, send_metalfort_notification
 from app.services.quote_calculator import calculate
 
@@ -24,7 +26,6 @@ def list_produtos():
 
 @router.get("/materiais")
 def list_materiais():
-    """Public catalogue for the 'personalizado' picker in the configurator."""
     return repository.list_materiais_ativos()
 
 
@@ -38,7 +39,6 @@ def get_produto(slug: str):
 
 
 def _append_personalizados(bom: list[dict], config: dict) -> list[dict]:
-    """Build synthetic BOM rules for the user-picked SKUs and append them."""
     itens = config.get("itens_personalizados") or []
     if not itens:
         return bom
@@ -51,7 +51,6 @@ def _append_personalizados(bom: list[dict], config: dict) -> list[dict]:
         extras.append({
             "material_id": it["material_id"],
             "material": mat,
-            # formula_json as a bare number — bom_engine returns it verbatim
             "formula_json": float(it["qtd"]),
             "tier": "core",
             "categoria": "personalizado",
@@ -66,8 +65,13 @@ def public_calculate(request: Request, req: CalculateRequest):
     bom = repository.list_bom_regras(req.produto_id)
     if not bom:
         raise HTTPException(404, "Produto sem BOM cadastrada")
-    config = req.configuracao.model_dump()
-    return calculate(_append_personalizados(bom, config), config, tier="core", gerenciamento_pct=8.0)
+    templates = repository.get_templates_by_slug()
+    config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+    return calculate(
+        _append_personalizados(bom, config), config,
+        tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
+    )
 
 
 @router.post("/quote/submit")
@@ -82,8 +86,13 @@ def public_submit(request: Request, req: SubmitRequest):
     produto = p[0]
 
     bom = repository.list_bom_regras(req.produto_id)
-    config = req.configuracao.model_dump()
-    quote = calculate(_append_personalizados(bom, config), config, tier="core", gerenciamento_pct=8.0)
+    templates = repository.get_templates_by_slug()
+    config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+    quote = calculate(
+        _append_personalizados(bom, config), config,
+        tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
+    )
 
     year = datetime.utcnow().year
     payload = {
