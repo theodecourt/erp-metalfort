@@ -9,7 +9,11 @@ export default function AdminMateriais() {
   const [draftPrice, setDraftPrice] = useState('');
   const [draftMin, setDraftMin] = useState('');
 
-  useEffect(() => { fetchApi<any[]>('/api/material').then(setRows); }, []);
+  async function reload() {
+    const xs = await fetchApi<any[]>('/api/material');
+    setRows(xs.filter(m => m.ativo));
+  }
+  useEffect(() => { reload(); }, []);
 
   async function save(id: string) {
     const r = await fetchApi<any>(`/api/material/${id}`, {
@@ -21,6 +25,13 @@ export default function AdminMateriais() {
     });
     setRows(rows.map(x => x.id === id ? r : x));
     setEditingId(null);
+  }
+
+  async function remove(m: any) {
+    if (!confirm(`Apagar "${m.sku} · ${m.nome}"?\n\nIsso vai tirá-lo do catálogo e do estoque. Movimentos antigos ficam preservados.`)) return;
+    await fetchApi<any>(`/api/material/${m.id}`, { method: 'DELETE' });
+    setEditingId(null);
+    await reload();
   }
 
   return (
@@ -70,7 +81,11 @@ export default function AdminMateriais() {
                 </td>
                 <td className="p-3">
                   {editingId === m.id
-                    ? <button onClick={() => save(m.id)} className="bg-mf-success text-white px-2 py-1 rounded text-xs">Salvar</button>
+                    ? <div className="flex gap-2">
+                        <button onClick={() => save(m.id)} className="bg-mf-success text-white px-2 py-1 rounded text-xs">Salvar</button>
+                        <button onClick={() => setEditingId(null)} className="text-mf-text-secondary px-2 py-1 rounded text-xs">Cancelar</button>
+                        <button onClick={() => remove(m)} className="bg-mf-danger text-white px-2 py-1 rounded text-xs ml-auto">Apagar</button>
+                      </div>
                     : <button onClick={() => {
                         setEditingId(m.id);
                         setDraftPrice(String(m.preco_unitario));
