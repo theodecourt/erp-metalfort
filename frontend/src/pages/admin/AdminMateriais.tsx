@@ -52,6 +52,7 @@ export default function AdminMateriais() {
                         type="number" step="0.01" min="0"
                         value={draftPrice}
                         onChange={e => setDraftPrice(e.target.value)}
+                        onWheel={e => (e.target as HTMLInputElement).blur()}
                         className="border rounded p-1 w-24"
                       />
                     : fmtBRL(m.preco_unitario)}
@@ -62,6 +63,7 @@ export default function AdminMateriais() {
                         type="number" step="0.001" min="0"
                         value={draftMin}
                         onChange={e => setDraftMin(e.target.value)}
+                        onWheel={e => (e.target as HTMLInputElement).blur()}
                         className="border rounded p-1 w-24"
                       />
                     : (Number(m.estoque_minimo) > 0 ? fmtQtd(m.estoque_minimo, m.unidade) : '—')}

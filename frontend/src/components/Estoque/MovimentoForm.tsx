@@ -113,6 +113,7 @@ export default function MovimentoForm({
           className="block w-full border rounded px-2 py-1"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
+          onWheel={(e) => (e.target as HTMLInputElement).blur()}
         />
       </label>
 
