@@ -441,3 +441,117 @@ select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
   ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 12)
 ) as f(sku, formula, ordem)
 join material m on m.sku = f.sku;
+
+-- Combos de cobertura
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('cobertura-standard', 'cobertura', 'Standard',
+  'Telha termoacústica TP40 30mm + acessórios. Atende NBR.', 1),
+ ('cobertura-termica', 'cobertura', 'Térmica',
+  'Telha TP40 50mm (isolante reforçado) + acessórios. Para clima extremo.', 2),
+ ('cobertura-laje', 'cobertura', 'Laje seca',
+  'Laje seca em drywall, cobertura plana. Aceita terraço.', 3);
+
+with c as (select id from pacote_combo where slug='cobertura-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-001', '{"op":"var","of":"area_cobertura_m2"}', 1),
+  ('MT-COB-002', '{"op":"var","of":"area_cobertura_m2"}', 2)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='cobertura-termica')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-001', '{"op":"mul","of":[1.35,{"op":"var","of":"area_cobertura_m2"}]}', 1),
+  ('MT-COB-002', '{"op":"var","of":"area_cobertura_m2"}', 2)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='cobertura-laje')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-COB-003', '{"op":"var","of":"area_cobertura_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de forro
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('forro-standard', 'forro', 'Standard',
+  'Gesso liso 12,5mm com perfis F530 + pendurais. Acabamento pintura.', 1),
+ ('forro-acustico', 'forro', 'Acústico',
+  'Placa perfurada acústica + lã de vidro. Para ambientes barulhentos.', 2),
+ ('forro-sem', 'forro', 'Sem forro',
+  'Sem forro — pé-direito aparente. Zero material.', 3);
+
+with c as (select id from pacote_combo where slug='forro-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2.16]},"waste":0.07}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},30]}}', 2),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},50]}}', 3),
+  ('MT-FOR-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2]}}', 4),
+  ('MT-FOR-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},4]}}', 5),
+  ('MT-FOR-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},1]}}', 6),
+  ('MT-FOR-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"perimetro_externo_m"},3]}}', 7)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='forro-acustico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FOR-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},0.36]},"waste":0.05}', 1),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},15]}}', 2),
+  ('MT-FOR-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},2]}}', 3),
+  ('MT-FOR-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},4]}}', 4),
+  ('MT-FOR-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_planta_m2"},1]}}', 5),
+  ('MT-FOR-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"perimetro_externo_m"},3]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- forro-sem: nenhum material.
+
+-- Combos de divisória
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('divisoria-simples', 'divisoria', 'Simples',
+  'Chapa gesso 12,5mm única cada lado + lã vidro 50mm entre montantes.', 1),
+ ('divisoria-acustica', 'divisoria', 'Acústica',
+  'Chapa gesso dupla cada lado + lã de rocha densa. STC elevado.', 2);
+
+with c as (select id from pacote_combo where slug='divisoria-simples')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 2),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},50]}}', 4),
+  ('MT-DRW-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},3]}}', 5),
+  ('MT-DRW-006', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},0.6]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='divisoria-acustica')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-001', '{"op":"mul","of":[4,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}]}', 2),
+  ('MT-DRW-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_interna_nao_wc_m2"},50]}}', 4),
+  ('MT-DRW-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},3]}}', 5),
+  ('MT-DRW-006', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"comp_parede_interna_m"},0.6]}}', 6)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combo de divisória do WC (auto-aplicado quando tem_wc)
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('divisoria-umida', 'divisoria_wc', 'Úmida',
+  'Placa gesso RU (resistente à umidade) na parede do WC.', 1);
+
+with c as (select id from pacote_combo where slug='divisoria-umida')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-DRW-008', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},2.16]},"waste":0.07}]}', 1),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},15]}}', 2),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},15]}}', 3),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},50]}}', 4)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
