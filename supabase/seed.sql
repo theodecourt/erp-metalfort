@@ -54,9 +54,9 @@ insert into material (sku, nome, categoria, unidade, preco_unitario) values
 -- PRODUTOS
 insert into produto (slug, nome, tipo_base, finalidade, pe_direito_sugerido_m, descricao) values
  ('metalfort-home','Metalfort Home','3x6','casa',2.70,
-  'Módulo padronizado para farmácia de rua. 18m² úteis, turn-key comercial.'),
+  'Módulos para residências, casas de veraneio, hotéis e Airbnb.'),
  ('metalfort-shop','Metalfort Shop','3x9','loja',3.00,
-  'Módulo para loja de conveniência ou showroom pequeno. 27m² úteis.');
+  'Módulos para comércios como farmácias, pet shops, lojas de conveniência e lanchonetes.');
 
 -- OPCOES (9 alavancas para Farmácia Express 3x6)
 insert into produto_opcao (produto_id, tipo, label, valores_possiveis_json, default_json, ordem)
