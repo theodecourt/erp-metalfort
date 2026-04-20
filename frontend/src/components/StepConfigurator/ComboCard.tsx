@@ -8,9 +8,10 @@ interface Props {
   unitLabel: string; // ex: "m² parede", "m²", "un"
   delta: number;     // diferenca no total do orcamento vs Standard da mesma categoria
   onSelect: () => void;
+  ariaLabel?: string; // override do accessible name (evita colisao com outros botoes)
 }
 
-export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta, onSelect }: Props) {
+export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta, onSelect, ariaLabel }: Props) {
   const mark = selected ? '●' : '○';
   const baseBorder = selected ? 'border-mf-yellow' : 'border-mf-border hover:border-mf-text-secondary';
   const signed = delta > 0 ? '+' : delta < 0 ? '-' : '';
@@ -19,6 +20,7 @@ export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
+      aria-label={ariaLabel}
       className={`text-left w-full bg-mf-black-soft border-2 ${baseBorder} rounded-lg p-4 transition-colors`}
     >
       <div className="flex items-center gap-2 text-mf-yellow text-sm font-bold">

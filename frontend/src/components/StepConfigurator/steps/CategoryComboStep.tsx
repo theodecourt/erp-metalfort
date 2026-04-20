@@ -38,6 +38,7 @@ export default function CategoryComboStep({ categoria, unitLabel, unitVar, combo
             unitLabel={unitLabel}
             delta={delta}
             onSelect={() => onSelect(combo.slug)}
+            ariaLabel={`Escolher pacote ${categoria} #${combo.ordem}`}
           />
         );
       })}
