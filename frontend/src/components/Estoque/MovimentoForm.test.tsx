@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import MovimentoForm from './MovimentoForm';
 
-const materiais = [{ id: 'mat1', sku: 'MT-X', nome: 'Placa X' }];
+const materiais = [{ id: 'mat1', sku: 'MT-X', nome: 'Placa X', unidade: 'pc' }];
 const fornecedores = [{ id: 'f1', nome: 'Casa do Construtor' }];
 const orcamentos = [{ id: 'o1', numero: 'ORC-1', cliente_nome: 'Cli' }];
 

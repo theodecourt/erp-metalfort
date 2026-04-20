@@ -13,8 +13,11 @@ export const fmtInt = (n: number | string): string =>
 // Units sold/counted as whole items — quantity always integer.
 const INTEGER_UNITS = new Set(['pc', 'cx', 'und', 'bd', 'rl', 'sc', 'ct']);
 
+export const isIntegerUnit = (unidade: string | null | undefined): boolean =>
+  INTEGER_UNITS.has((unidade ?? '').toLowerCase());
+
 // Formats an estoque quantity based on material unit:
 //   integer units (pc, cx, und, ...) → no decimals
 //   measured units  (kg, m, m2, ...) → 2 decimals
 export const fmtQtd = (n: number | string, unidade: string | null | undefined): string =>
-  INTEGER_UNITS.has((unidade ?? '').toLowerCase()) ? fmtInt(n) : fmtDec(n, 2);
+  isIntegerUnit(unidade) ? fmtInt(n) : fmtDec(n, 2);

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { MovimentoInput, MovimentoTipo } from '../../lib/estoque';
+import { isIntegerUnit } from '../../lib/format';
 
-export interface MaterialOption { id: string; sku: string; nome: string; }
+export interface MaterialOption { id: string; sku: string; nome: string; unidade: string; }
 export interface FornecedorOption { id: string; nome: string; }
 export interface OrcamentoOption { id: string; numero: string; cliente_nome: string; }
 
@@ -27,6 +28,10 @@ export default function MovimentoForm({
   const [observacao, setObservacao] = useState('');
   const [err, setErr] = useState<string | null>(null);
 
+  const selectedMaterial = materiais.find((m) => m.id === materialId);
+  const qtdInteger = isIntegerUnit(selectedMaterial?.unidade);
+  const qtdStep = qtdInteger ? '1' : '0.01';
+
   function handleOrcamentoChange(id: string) {
     setOrcamentoId(id);
     const orc = orcamentos.find((o) => o.id === id);
@@ -38,6 +43,9 @@ export default function MovimentoForm({
     setErr(null);
     if (!materialId) return setErr('Selecione um material');
     if (!quantidade || Number(quantidade) <= 0) return setErr('Quantidade precisa ser > 0');
+    if (qtdInteger && !Number.isInteger(Number(quantidade))) {
+      return setErr(`Quantidade precisa ser inteira para a unidade "${selectedMaterial?.unidade}"`);
+    }
 
     let body: MovimentoInput;
     if (tipo === 'compra') {
@@ -94,10 +102,12 @@ export default function MovimentoForm({
       </label>
 
       <label className="block">
-        <span className="text-xs text-mf-text-secondary">Quantidade</span>
+        <span className="text-xs text-mf-text-secondary">
+          Quantidade {selectedMaterial ? <span className="ml-1">({selectedMaterial.unidade})</span> : null}
+        </span>
         <input
           aria-label="Quantidade"
-          type="number" step="0.001" min="0"
+          type="number" step={qtdStep} min="0"
           className="block w-full border rounded px-2 py-1"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
