@@ -27,10 +27,6 @@ export default function AdminEstoqueMovimentos() {
     ),
     [materiais],
   );
-  const fornecedorById = useMemo(
-    () => Object.fromEntries(fornecedores.map((f) => [f.id, f.nome])),
-    [fornecedores],
-  );
 
   async function reload() {
     const apiFilters = {
@@ -93,7 +89,7 @@ export default function AdminEstoqueMovimentos() {
       )}
       {movimentos === null
         ? <p>Carregando…</p>
-        : <MovimentoList movimentos={movimentos} materialById={materialById} fornecedorById={fornecedorById} />}
+        : <MovimentoList movimentos={movimentos} materialById={materialById} />}
     </div>
   );
 }
