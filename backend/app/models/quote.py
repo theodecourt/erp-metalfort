@@ -37,11 +37,13 @@ class Configuracao(BaseModel):
     tamanho_modulo: Literal["3x3", "3x6", "3x9"]
     qtd_modulos: int = Field(ge=1, le=3)
     pe_direito_m: float = Field(ge=2.4, le=3.5)
-    cor_externa: str | None = None
+    acabamento_ext: Literal["textura", "pintura", "cimenticia"] | None = "textura"
+    cor_ext: str | None = None
     pacote_acabamento: Literal["padrao", "premium", "personalizado"] = "padrao"
     itens_personalizados: list[ItemPersonalizado] = Field(default_factory=list)
     esquadrias_extras: EsquadriasExtras = EsquadriasExtras(portas=0)
     piso: Literal["vinilico", "ceramico", "porcelanato"] | None = "vinilico"
+    piso_cor: str | None = None
     tem_wc: bool = False
     wc_itens: WcItens = WcItens()
     num_splits: int = Field(ge=0, le=6, default=0)

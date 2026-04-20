@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Caixilho, Configuracao } from '../../lib/variables';
+import type { AcabamentoExt, Caixilho, Configuracao, Piso } from '../../lib/variables';
+import { ACABAMENTO_EXT_CORES, PISO_CORES } from '../../lib/variables';
 import LeverGroup from './LeverGroup';
 import PriceBox from './PriceBox';
 import AreasPanel from './AreasPanel';
@@ -53,10 +54,12 @@ function defaultConfig(produto: ProdutoWithOpcoes): Configuracao {
     tamanho_modulo: tipo,
     qtd_modulos: opcaoByTipo(o, 'qtd_modulos')?.default_json ?? 1,
     pe_direito_m: opcaoByTipo(o, 'pe_direito')?.default_json ?? produto.pe_direito_sugerido_m,
-    cor_externa: opcaoByTipo(o, 'cor')?.default_json ?? 'cinza',
+    acabamento_ext: 'textura',
+    cor_ext: ACABAMENTO_EXT_CORES['textura'][0],
     pacote_acabamento: (opcaoByTipo(o, 'pacote_acabamento')?.default_json ?? 'padrao') as any,
     esquadrias_extras: { portas: 0, tamanhos_portas: [], caixilhos: [] },
-    piso: (opcaoByTipo(o, 'piso')?.default_json ?? 'vinilico') as any,
+    piso: (opcaoByTipo(o, 'piso')?.default_json ?? 'vinilico') as Piso,
+    piso_cor: PISO_CORES[(opcaoByTipo(o, 'piso')?.default_json ?? 'vinilico') as Piso][0],
     tem_wc: opcaoByTipo(o, 'wc')?.default_json ?? false,
     num_splits: opcaoByTipo(o, 'ac')?.default_json ?? 0,
     comp_paredes_ext_m: perimetroSingle(tipo),
@@ -221,15 +224,35 @@ export default function Configurator({
           })()}
         </LeverGroup>
 
-        <LeverGroup label="Cor externa">
-          <div className="flex gap-2">
-            {['branco','cinza','preto','grafite'].map(c => (
-              <button key={c} onClick={() => setConfig({ ...config, cor_externa: c })}
-                className={`px-4 py-2 rounded ${config.cor_externa === c ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
-                {c}
+        <LeverGroup label="Acabamento externo">
+          <div className="flex gap-2 flex-wrap">
+            {(['textura','pintura','cimenticia'] as const).map(a => (
+              <button key={a}
+                onClick={() => setConfig({
+                  ...config,
+                  acabamento_ext: a,
+                  cor_ext: ACABAMENTO_EXT_CORES[a][0],
+                })}
+                className={`px-4 py-2 rounded capitalize ${config.acabamento_ext === a ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
+                {a}
               </button>
             ))}
           </div>
+          {config.acabamento_ext && (
+            <div className="mt-3">
+              <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
+                Cor do {config.acabamento_ext}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {ACABAMENTO_EXT_CORES[config.acabamento_ext as AcabamentoExt].map(c => (
+                  <button key={c} onClick={() => setConfig({ ...config, cor_ext: c })}
+                    className={`px-3 py-1.5 rounded text-sm ${config.cor_ext === c ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </LeverGroup>
 
         <LeverGroup label="Pacote de acabamento">
@@ -340,14 +363,34 @@ export default function Configurator({
         </LeverGroup>
 
         <LeverGroup label="Piso">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {(['vinilico','ceramico','porcelanato'] as const).map(p => (
-              <button key={p} onClick={() => setConfig({ ...config, piso: p })}
-                className={`px-4 py-2 rounded ${config.piso === p ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
+              <button key={p}
+                onClick={() => setConfig({
+                  ...config,
+                  piso: p,
+                  piso_cor: PISO_CORES[p][0],
+                })}
+                className={`px-4 py-2 rounded capitalize ${config.piso === p ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
                 {p}
               </button>
             ))}
           </div>
+          {config.piso && (
+            <div className="mt-3">
+              <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
+                Cor do {config.piso}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {PISO_CORES[config.piso as Piso].map(c => (
+                  <button key={c} onClick={() => setConfig({ ...config, piso_cor: c })}
+                    className={`px-3 py-1.5 rounded text-sm ${config.piso_cor === c ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'}`}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </LeverGroup>
 
         <LeverGroup label="WC interno">

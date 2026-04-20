@@ -29,11 +29,29 @@ export interface ItemPersonalizado {
   qtd: number;
 }
 
+export type Piso = 'vinilico' | 'ceramico' | 'porcelanato';
+export type AcabamentoExt = 'textura' | 'pintura' | 'cimenticia';
+
+// Paletas — cada material tem sua própria lista de cores possíveis.
+// Futuramente isso pode vir da tabela material (cores_disponiveis_json).
+export const PISO_CORES: Record<Piso, string[]> = {
+  vinilico: ['carvalho claro', 'carvalho escuro', 'cinza', 'bege'],
+  ceramico: ['branco', 'bege', 'cinza claro', 'grafite'],
+  porcelanato: ['branco polido', 'cinza', 'marmorizado', 'preto absoluto'],
+};
+
+export const ACABAMENTO_EXT_CORES: Record<AcabamentoExt, string[]> = {
+  textura: ['branco', 'cinza claro', 'cinza médio', 'grafite'],
+  pintura: ['branco', 'cinza', 'bege', 'preto', 'amarelo metalfort'],
+  cimenticia: ['cinza natural', 'cinza claro'],
+};
+
 export interface Configuracao {
   tamanho_modulo: '3x3' | '3x6' | '3x9';
   qtd_modulos: number;
   pe_direito_m: number;
-  cor_externa?: string;
+  acabamento_ext?: AcabamentoExt;
+  cor_ext?: string;
   pacote_acabamento?: 'padrao' | 'premium' | 'personalizado';
   itens_personalizados?: ItemPersonalizado[];
   esquadrias_extras?: {
@@ -41,7 +59,8 @@ export interface Configuracao {
     tamanhos_portas?: PortaSize[];
     caixilhos?: Caixilho[];
   };
-  piso?: 'vinilico' | 'ceramico' | 'porcelanato';
+  piso?: Piso;
+  piso_cor?: string;
   tem_wc?: boolean;
   wc_itens?: {
     pia_parede?: boolean;
