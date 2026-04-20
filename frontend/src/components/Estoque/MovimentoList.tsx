@@ -1,4 +1,5 @@
 import type { Movimento } from '../../lib/estoque';
+import { fmtQtd } from '../../lib/format';
 
 const TIPO_LABEL: Record<string, string> = {
   compra: 'Compra',
@@ -14,12 +15,14 @@ const TIPO_SIGN: Record<string, string> = {
   ajuste_negativo: '−',
 };
 
+export interface MaterialInfo { nome: string; unidade: string; }
+
 interface Props {
   movimentos: Movimento[];
-  materialNameById: Record<string, string>;
+  materialById: Record<string, MaterialInfo>;
 }
 
-export default function MovimentoList({ movimentos, materialNameById }: Props) {
+export default function MovimentoList({ movimentos, materialById }: Props) {
   if (!movimentos.length) {
     return <p className="text-mf-text-secondary text-sm">Nenhum movimento encontrado.</p>;
   }
@@ -35,19 +38,22 @@ export default function MovimentoList({ movimentos, materialNameById }: Props) {
         </tr>
       </thead>
       <tbody>
-        {movimentos.map((m) => (
+        {movimentos.map((m) => {
+          const info = materialById[m.material_id];
+          return (
           <tr key={m.id} className="border-t border-mf-border/20">
             <td className="py-2">{new Date(m.created_at).toLocaleString('pt-BR')}</td>
             <td>{TIPO_LABEL[m.tipo] ?? m.tipo}</td>
-            <td>{materialNameById[m.material_id] ?? m.material_id}</td>
-            <td className="text-right">{TIPO_SIGN[m.tipo]}{m.quantidade}</td>
+            <td>{info?.nome ?? m.material_id}</td>
+            <td className="text-right">{TIPO_SIGN[m.tipo]}{fmtQtd(m.quantidade, info?.unidade)}</td>
             <td className="text-mf-text-secondary">
               {m.tipo === 'compra' && m.nota_fiscal ? `NF ${m.nota_fiscal}` : ''}
               {m.tipo === 'saida_obra' ? m.destino ?? '' : ''}
               {m.tipo.startsWith('ajuste') ? m.observacao ?? '' : ''}
             </td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
   );

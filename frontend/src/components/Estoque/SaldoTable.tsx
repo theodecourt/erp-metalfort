@@ -1,5 +1,5 @@
 import type { SaldoRow } from '../../lib/estoque';
-import { fmtDec } from '../../lib/format';
+import { fmtQtd } from '../../lib/format';
 
 interface Props {
   rows: SaldoRow[];
@@ -29,10 +29,10 @@ export default function SaldoTable({ rows }: Props) {
               <td>{r.nome}</td>
               <td className="text-mf-text-secondary">{r.categoria}</td>
               <td className={`text-right ${negativo ? 'text-mf-danger' : ''}`}>
-                {fmtDec(saldoNum, 3)}
+                {fmtQtd(saldoNum, r.unidade)}
               </td>
               <td className="text-right text-mf-text-secondary">
-                {Number(r.estoque_minimo) > 0 ? fmtDec(Number(r.estoque_minimo), 3) : '—'}
+                {Number(r.estoque_minimo) > 0 ? fmtQtd(r.estoque_minimo, r.unidade) : '—'}
               </td>
               <td>{r.unidade}</td>
               <td>

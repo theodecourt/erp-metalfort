@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
-import { fmtBRL, fmtDec } from '../../lib/format';
+import { fmtBRL, fmtQtd } from '../../lib/format';
 
 export default function AdminMateriais() {
   const fetchApi = useAuthedFetch();
@@ -64,7 +64,7 @@ export default function AdminMateriais() {
                         onChange={e => setDraftMin(e.target.value)}
                         className="border rounded p-1 w-24"
                       />
-                    : (Number(m.estoque_minimo) > 0 ? fmtDec(m.estoque_minimo, 3) : '—')}
+                    : (Number(m.estoque_minimo) > 0 ? fmtQtd(m.estoque_minimo, m.unidade) : '—')}
                 </td>
                 <td className="p-3">
                   {editingId === m.id

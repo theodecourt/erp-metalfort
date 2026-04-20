@@ -8,7 +8,7 @@ import MovimentoFiltros, { type FiltrosState } from '../../components/Estoque/Mo
 import MovimentoList from '../../components/Estoque/MovimentoList';
 import MovimentoForm from '../../components/Estoque/MovimentoForm';
 
-interface MaterialLite { id: string; sku: string; nome: string; }
+interface MaterialLite { id: string; sku: string; nome: string; unidade: string; }
 interface OrcamentoLite { id: string; numero: string; cliente_nome: string; }
 
 export default function AdminEstoqueMovimentos() {
@@ -21,8 +21,10 @@ export default function AdminEstoqueMovimentos() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const materialNameById = useMemo(
-    () => Object.fromEntries(materiais.map((m) => [m.id, `${m.sku} · ${m.nome}`])),
+  const materialById = useMemo(
+    () => Object.fromEntries(
+      materiais.map((m) => [m.id, { nome: `${m.sku} · ${m.nome}`, unidade: m.unidade }]),
+    ),
     [materiais],
   );
 
@@ -87,7 +89,7 @@ export default function AdminEstoqueMovimentos() {
       )}
       {movimentos === null
         ? <p>Carregando…</p>
-        : <MovimentoList movimentos={movimentos} materialNameById={materialNameById} />}
+        : <MovimentoList movimentos={movimentos} materialById={materialById} />}
     </div>
   );
 }

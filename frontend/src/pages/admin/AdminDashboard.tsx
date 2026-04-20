@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
-import { fmtBRL } from '../../lib/format';
+import { fmtBRL, fmtQtd } from '../../lib/format';
 import { estoqueApi, type Movimento, type SaldoRow } from '../../lib/estoque';
 
 const TIPO_LABEL: Record<string, string> = {
@@ -16,11 +16,15 @@ export default function AdminDashboard() {
   const [recentes, setRecentes] = useState<any[]>([]);
   const [lowCount, setLowCount] = useState<number | null>(null);
   const [lastMovs, setLastMovs] = useState<Movimento[]>([]);
+  const [unidadeById, setUnidadeById] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchApi<any[]>('/api/quote').then(xs => setRecentes(xs.slice(0, 10)));
     estoqueApi.listSaldo(fetchApi, { abaixoMinimo: true }).then((r: SaldoRow[]) => setLowCount(r.length));
     estoqueApi.listMovimentos(fetchApi, { limit: 5 }).then(setLastMovs);
+    fetchApi<any[]>('/api/material').then(ms => {
+      setUnidadeById(Object.fromEntries(ms.map(m => [m.id, m.unidade])));
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -46,7 +50,7 @@ export default function AdminDashboard() {
                   <li key={m.id} className="truncate">
                     <span className="text-mf-text-secondary">{new Date(m.created_at).toLocaleDateString('pt-BR')}</span>{' '}
                     <strong>{TIPO_LABEL[m.tipo] ?? m.tipo}</strong>{' '}
-                    · {m.quantidade}
+                    · {fmtQtd(m.quantidade, unidadeById[m.material_id])}
                   </li>
                 ))
               : <li className="text-mf-text-secondary">nenhum</li>}

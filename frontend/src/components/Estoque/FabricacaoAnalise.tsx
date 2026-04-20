@@ -1,4 +1,5 @@
 import type { FabricacaoAnalise as Analise } from '../../lib/estoque';
+import { fmtQtd } from '../../lib/format';
 
 interface Props { analise: Analise; }
 
@@ -34,9 +35,9 @@ export default function FabricacaoAnalise({ analise }: Props) {
               >
                 <td className="py-2 font-mono text-xs">{l.sku}</td>
                 <td>{l.nome}</td>
-                <td className="text-right">{l.necessario}</td>
-                <td className="text-right">{l.saldo_atual}</td>
-                <td className={`text-right ${isFalta ? 'font-bold text-mf-danger' : ''}`}>{l.falta}</td>
+                <td className="text-right">{fmtQtd(l.necessario, l.unidade)}</td>
+                <td className="text-right">{fmtQtd(l.saldo_atual, l.unidade)}</td>
+                <td className={`text-right ${isFalta ? 'font-bold text-mf-danger' : ''}`}>{fmtQtd(l.falta, l.unidade)}</td>
                 <td className="text-right">{isFalta ? `R$ ${moeda(l.custo_reposicao_linha)}` : '—'}</td>
               </tr>
             );
