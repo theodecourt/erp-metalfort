@@ -46,6 +46,18 @@ export const ACABAMENTO_EXT_CORES: Record<AcabamentoExt, string[]> = {
   cimenticia: ['cinza natural', 'cinza claro'],
 };
 
+export type ComboCategoria =
+  | 'fechamento_ext'
+  | 'cobertura'
+  | 'forro'
+  | 'divisoria'
+  | 'divisoria_wc'
+  | 'piso'
+  | 'subpiso'
+  | 'vidro';
+
+export type TemplateSlug = 'basico' | 'premium' | 'personalizado';
+
 export interface Configuracao {
   tamanho_modulo: '3x3' | '3x6' | '3x9';
   qtd_modulos: number;
@@ -54,6 +66,9 @@ export interface Configuracao {
   cor_ext?: string;
   pacote_acabamento?: 'padrao' | 'premium' | 'personalizado';
   itens_personalizados?: ItemPersonalizado[];
+  // Configurador em etapas:
+  template_aplicado?: TemplateSlug;
+  combos?: Partial<Record<ComboCategoria, string>>;
   esquadrias_extras?: {
     portas: number;
     tamanhos_portas?: PortaSize[];

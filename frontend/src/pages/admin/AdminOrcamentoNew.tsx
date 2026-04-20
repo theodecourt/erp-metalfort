@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
 import { apiFetch } from '../../lib/api';
-import Configurator from '../../components/Configurator/Configurator';
+import StepConfigurator from '../../components/StepConfigurator/StepConfigurator';
 import type { Configuracao } from '../../lib/variables';
 
 type Finalidade = 'casa' | 'farmacia' | 'loja' | 'conveniencia' | 'escritorio' | 'quiosque' | 'outro';
@@ -80,7 +80,7 @@ export default function AdminOrcamentoNew() {
 
       {produto && (
         <div className="mt-6 bg-mf-black text-white rounded-lg p-6">
-          <Configurator
+          <StepConfigurator
             produto={produto}
             onConfigChange={setConfig}
             onQuoteChange={() => {}}
