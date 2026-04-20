@@ -15,6 +15,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/orcamentos" className={linkClass}>Orçamentos</NavLink>
           <NavLink to="/admin/produtos" className={linkClass}>Produtos</NavLink>
           <NavLink to="/admin/materiais" className={linkClass}>Materiais</NavLink>
+          <NavLink to="/admin/estoque" className={linkClass}>Estoque</NavLink>
           <button onClick={signOut} className="ml-4 text-sm text-mf-text-secondary hover:text-white">Sair</button>
         </nav>
       </header>

@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 
 router = APIRouter(prefix="/api/material", tags=["material"])
+
+_ALLOWED_FIELDS = {
+    "sku", "nome", "categoria", "unidade", "preco_unitario",
+    "estoque_minimo", "ativo",
+}
 
 
 @router.get("")
@@ -14,14 +19,20 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
 
 @router.post("")
 def create(body: dict, user=Depends(require_role("admin"))):
+    payload = {k: v for k, v in body.items() if k in _ALLOWED_FIELDS}
+    if "sku" not in payload or "nome" not in payload:
+        raise HTTPException(400, "sku e nome são obrigatórios")
     sb = get_admin_client()
-    return sb.table("material").insert(body).execute().data[0]
+    return sb.table("material").insert(payload).execute().data[0]
 
 
 @router.patch("/{material_id}")
 def patch(material_id: str, body: dict, user=Depends(require_role("admin"))):
+    payload = {k: v for k, v in body.items() if k in _ALLOWED_FIELDS}
+    if not payload:
+        raise HTTPException(400, "nothing to update")
     sb = get_admin_client()
-    sb.table("material").update(body).eq("id", material_id).execute()
+    sb.table("material").update(payload).eq("id", material_id).execute()
     return sb.table("material").select("*").eq("id", material_id).limit(1).execute().data[0]
 
 

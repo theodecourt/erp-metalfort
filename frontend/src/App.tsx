@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Landing from './pages/public/Landing';
 import ConfigurarOrcamento from './pages/public/ConfigurarOrcamento';
 import Obrigado from './pages/public/Obrigado';
@@ -10,6 +10,12 @@ import AdminOrcamentoDetail from './pages/admin/AdminOrcamentoDetail';
 import AdminOrcamentoNew from './pages/admin/AdminOrcamentoNew';
 import AdminProdutos from './pages/admin/AdminProdutos';
 import AdminMateriais from './pages/admin/AdminMateriais';
+import AdminEstoqueLayout from './pages/admin/AdminEstoqueLayout';
+import AdminEstoqueSaldo from './pages/admin/AdminEstoqueSaldo';
+import AdminEstoqueMovimentos from './pages/admin/AdminEstoqueMovimentos';
+import AdminEstoqueFornecedores from './pages/admin/AdminEstoqueFornecedores';
+import AdminEstoqueFabricacaoPicker from './pages/admin/AdminEstoqueFabricacaoPicker';
+import AdminEstoqueFabricacao from './pages/admin/AdminEstoqueFabricacao';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './lib/auth';
 
@@ -30,6 +36,14 @@ export default function App() {
             <Route path="orcamento/:id" element={<AdminOrcamentoDetail />} />
             <Route path="produtos" element={<AdminProdutos />} />
             <Route path="materiais" element={<AdminMateriais />} />
+            <Route path="estoque" element={<AdminEstoqueLayout />}>
+              <Route index element={<Navigate to="saldo" replace />} />
+              <Route path="saldo" element={<AdminEstoqueSaldo />} />
+              <Route path="movimentos" element={<AdminEstoqueMovimentos />} />
+              <Route path="fornecedores" element={<AdminEstoqueFornecedores />} />
+              <Route path="fabricacao" element={<AdminEstoqueFabricacaoPicker />} />
+              <Route path="fabricacao/:orcamento_id" element={<AdminEstoqueFabricacao />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

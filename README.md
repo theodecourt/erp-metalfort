@@ -54,7 +54,53 @@ database/tests/  # fixtures compartilhadas por Py/TS
 docs/        # specs + plans
 ```
 
-## Próximas ondas (não incluídas neste MVP)
-- Onda 2 — controle de estoque (saldos + movimentações)
+## Onda 2 — Controle de Estoque
+
+Adicionada em 2026-04. Admin-only. Design: `docs/superpowers/specs/2026-04-19-erp-metalfort-onda2-design.md`.
+
+### Capacidades
+
+- CRUD de **fornecedor** (`/admin/estoque/fornecedores`).
+- Lançamento de 4 tipos de **movimento** (`/admin/estoque/movimentos`):
+  - `compra` (exige preço e fornecedor).
+  - `saida_obra` (exige destino; aceita `orcamento_id` para amarrar à venda).
+  - `ajuste_positivo` / `ajuste_negativo` (exigem justificativa).
+- **Saldo** calculado via view SQL (`estoque_saldo_v`) a partir do ledger imutável `estoque_movimento`. Visualização em `/admin/estoque/saldo`.
+- Alerta **"abaixo do mínimo"** por material (campo `material.estoque_minimo`; 0 desativa o alerta).
+- **Análise de fabricação** (`/admin/estoque/fabricacao/:orcamento_id`): compara BOM congelada do orçamento (onda 1) com saldo atual, aponta o que falta e o custo de reposição.
+- Botão "Análise de fabricação" direto do detalhe do orçamento.
+- Dashboard ganha dois cards: contagem de materiais abaixo do mínimo + últimos 5 movimentos.
+
+### Fluxo rápido
+
+```bash
+make dev
+# no browser:
+#  1) /admin/login (admin@metalfort.tech / metalfort2026!)
+#  2) /admin/estoque/saldo → ver saldo; filtrar "só abaixo do mínimo"
+#  3) /admin/estoque/movimentos → "Novo movimento" → Compra → atualiza saldo
+#  4) /admin/orcamento/:id → "Análise de fabricação" → vê o que precisa comprar
+```
+
+### Arquitetura
+
+- **DB:** `supabase/migrations/005_estoque.sql` (tabelas, enum, view, CHECKs, RLS admin-only).
+- **Backend:** `app/models/estoque.py`, `app/services/estoque.py`, `app/routers/estoque.py`, `app/routers/fornecedor.py`.
+- **Frontend:** `src/components/Estoque/*`, `src/pages/admin/AdminEstoque*.tsx`, `src/lib/estoque.ts`.
+
+### Testes de integração (opcionais)
+
+Os testes HTTP contra Supabase + uvicorn são gated por `RUN_INTEGRATION=1`:
+
+```bash
+make dev   # em um terminal
+RUN_INTEGRATION=1 \
+  SUPABASE_URL=http://127.0.0.1:54321 \
+  SUPABASE_ANON_KEY=$(grep SUPABASE_PUBLISHABLE_KEY backend/.env | cut -d= -f2 | tr -d ' ') \
+  (cd backend && uv run pytest tests/test_estoque_api.py -v)
+```
+
+## Próximas ondas
+
 - Onda 3 — acompanhamento de obras (consumo real por projeto)
 - Onda 4 — editor visual de layout interno

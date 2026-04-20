@@ -283,3 +283,93 @@ begin
   select id, 'Admin Dev', 'admin', true from auth.users where email='admin@metalfort.tech'
   on conflict (id) do nothing;
 end $$;
+
+-- ===== Onda 2: estoque =====
+
+-- Fornecedores
+insert into fornecedor (nome, cnpj, contato_nome, contato_email, contato_fone) values
+  ('Casa do Construtor', '12.345.678/0001-90', 'João Silva', 'joao@casaconstrutor.com.br', '(11) 94000-0001'),
+  ('Metalúrgica Santos', '98.765.432/0001-10', 'Maria Santos', 'vendas@metalsantos.com.br', '(11) 94000-0002'),
+  ('Aço Forte',          '55.444.333/0001-22', 'Carlos Lima',  'carlos@acoforte.com.br',    '(11) 94000-0003');
+
+-- Minimums for representative SKUs (others stay 0 = unmonitored)
+update material set estoque_minimo = 40  where sku = 'MT-FCH-001';  -- Placa Glasroc-X
+update material set estoque_minimo = 500 where sku = 'MT-LSF-001';  -- Perfil LSF (kg)
+update material set estoque_minimo = 3   where sku = 'MT-LSF-002';  -- Parafuso metal/metal (cx)
+update material set estoque_minimo = 30  where sku = 'MT-DRW-001';  -- Placa gesso 12,5
+update material set estoque_minimo = 20  where sku = 'MT-COB-001';  -- Telha TP40 PIR
+update material set estoque_minimo = 40  where sku = 'MT-PIS-001';  -- LVT
+update material set estoque_minimo = 2   where sku = 'MT-INS-001';  -- Kit hidráulico WC
+update material set estoque_minimo = 2   where sku = 'MT-INS-002';  -- Kit elétrico 10 pontos
+update material set estoque_minimo = 2   where sku = 'MT-INS-003';  -- Split 12k BTU
+update material set estoque_minimo = 5   where sku = 'MT-FCH-005';  -- Manta asfáltica
+
+-- Example movements: creates initial stock for dev/demo.
+-- Uses admin dev user (email admin@metalfort.tech) and fornecedores above.
+do $$
+declare
+  admin_id uuid := (select id from auth.users where email = 'admin@metalfort.tech' limit 1);
+  casa_id  uuid := (select id from fornecedor where nome = 'Casa do Construtor');
+  metal_id uuid := (select id from fornecedor where nome = 'Metalúrgica Santos');
+  forte_id uuid := (select id from fornecedor where nome = 'Aço Forte');
+  any_orc  uuid := (select id from orcamento order by created_at limit 1);
+begin
+  if admin_id is null then
+    raise notice 'admin user missing, skipping estoque movements';
+    return;
+  end if;
+
+  -- Compras (saldo inicial)
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 60, 219.90, casa_id, 'NF-1001', admin_id
+  from material where sku = 'MT-FCH-001';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 800, 14.00, metal_id, 'NF-1002', admin_id
+  from material where sku = 'MT-LSF-001';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 5, 112.00, forte_id, 'NF-1003', admin_id
+  from material where sku = 'MT-LSF-002';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 50, 37.00, casa_id, 'NF-1004', admin_id
+  from material where sku = 'MT-DRW-001';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 30, 110.00, forte_id, 'NF-1005', admin_id
+  from material where sku = 'MT-COB-001';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 100, 89.00, casa_id, 'NF-1006', admin_id
+  from material where sku = 'MT-PIS-001';
+
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, preco_unitario, fornecedor_id, nota_fiscal, criado_por)
+  select id, 'compra', 3, 1800.00, casa_id, 'NF-1007', admin_id
+  from material where sku = 'MT-INS-001';
+
+  -- Intentionally leave Placa Glasroc-X (MT-FCH-001) "below minimum" after a partial sale
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, destino, orcamento_id, criado_por)
+  select id, 'saida_obra', 45, 'Farmácia Tatuí (exemplo)', any_orc, admin_id
+  from material where sku = 'MT-FCH-001';
+
+  -- An ajuste positivo (found 2 extra kits)
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, observacao, criado_por)
+  select id, 'ajuste_positivo', 2, 'Encontrados no inventário físico', admin_id
+  from material where sku = 'MT-INS-001';
+
+  -- An ajuste negativo (broken telha)
+  insert into estoque_movimento
+    (material_id, tipo, quantidade, observacao, criado_por)
+  select id, 'ajuste_negativo', 1, 'Telha quebrada na descarga', admin_id
+  from material where sku = 'MT-COB-001';
+end $$;

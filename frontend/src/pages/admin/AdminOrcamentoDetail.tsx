@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
 import { fmtBRL } from '../../lib/format';
 
@@ -28,8 +28,9 @@ export default function AdminOrcamentoDetail() {
       <div className="mt-2 text-sm">Finalidade: <strong>{orc.finalidade}</strong> · Tipo: <strong>{orc.tipo}</strong> · Status: <strong>{orc.status}</strong></div>
       <div className="mt-4 text-3xl font-extrabold tabular-nums">{fmtBRL(orc.valor_total)}</div>
 
-      <div className="mt-6 flex gap-2">
+      <div className="mt-6 flex gap-2 flex-wrap">
         {orc.pdf_url && <a href={orc.pdf_url} target="_blank" rel="noreferrer" className="bg-mf-black text-white px-4 py-2 rounded">Abrir PDF</a>}
+        <Link to={`/admin/estoque/fabricacao/${orc.id}`} className="bg-mf-black text-white px-4 py-2 rounded font-bold">Análise de fabricação</Link>
         <button onClick={() => setStatus('aprovado')} className="bg-mf-success text-white px-4 py-2 rounded">Aprovar</button>
         <button onClick={() => setStatus('perdido')} className="bg-mf-danger text-white px-4 py-2 rounded">Perdido</button>
       </div>
