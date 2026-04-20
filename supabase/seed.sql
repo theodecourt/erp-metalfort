@@ -49,7 +49,18 @@ insert into material (sku, nome, categoria, unidade, preco_unitario) values
  -- Addons
  ('MT-ADD-001','Comunicação visual (logo, adesivação) — estimado','servico','und',3500.00),
  ('MT-ADD-002','Iluminação comercial especial — por ponto','equipamento','und',280.00),
- ('MT-ADD-003','Balcão fixo em steelframe + MDF (por metro linear)','equipamento','m',1200.00);
+ ('MT-ADD-003','Balcão fixo em steelframe + MDF (por metro linear)','equipamento','m',1200.00),
+ -- SKUs adicionais para combos do configurador em etapas
+ ('MT-FCH-011','Placa Infibra cimentícia 10x1200x2400mm (2,88m²)','fechamento','pc',198.00),
+ ('MT-DRW-007','Lã de rocha 50x1200x12500mm densa (15m²)','fechamento','rl',289.00),
+ ('MT-DRW-008','Placa gesso RU 12,5x1200x1800mm resistente umidade (2,16m²)','fechamento','pc',58.00),
+ ('MT-FOR-005','Placa forro perfurada acústica 600x600mm (0,36m²)','fechamento','pc',42.00),
+ ('MT-PIS-004','Contrapiso seco Knauf 18mm (m²)','acabamento','m2',78.00),
+ ('MT-PIS-005','Contrapiso cimentício pré-misturado (m²)','acabamento','m2',45.00),
+ ('MT-VID-001','Vidro laminado 6mm (m²)','esquadria','m2',185.00),
+ ('MT-VID-002','Vidro duplo 6+6mm com câmara (m²)','esquadria','m2',420.00),
+ ('MT-VID-003','Vidro temperado 8mm (m²)','esquadria','m2',310.00),
+ ('MT-COB-003','Laje seca drywall completa kit (m²)','fechamento','m2',220.00);
 
 -- PRODUTOS
 insert into produto (slug, nome, tipo_base, finalidade, pe_direito_sugerido_m, descricao) values
