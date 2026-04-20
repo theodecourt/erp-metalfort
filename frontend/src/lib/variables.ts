@@ -75,6 +75,8 @@ export interface Configuracao {
 
 const round6 = (n: number) => +n.toFixed(6);
 
+const WC_WALL_FRACTION = 1 / 3;
+
 export function derive(config: Configuracao): Record<string, number | boolean> {
   const [larg, comp] = SIZES[config.tamanho_modulo];
   const qtd = config.qtd_modulos;
@@ -120,16 +122,24 @@ export function derive(config: Configuracao): Record<string, number | boolean> {
   const area_parede_interna_bruta = comp_parede_interna * pe * 2;
   const area_parede_interna = Math.max(0, area_parede_interna_bruta - 2 * area_porta_wc);
 
+  const comp_parede_wc = tem_wc ? comp_parede_interna * WC_WALL_FRACTION : 0;
+  const area_parede_wc_bruta = comp_parede_wc * pe * 2;
+  const area_parede_wc = Math.max(0, area_parede_wc_bruta - 2 * area_porta_wc);
+  const area_parede_interna_nao_wc = Math.max(0, area_parede_interna - area_parede_wc);
+
   return {
     area_planta_m2: area_planta,
     perimetro_externo_m: perimetro,
     area_fechamento_ext_bruta_m2: round6(area_fechamento_ext_bruta),
     area_fechamento_ext_m2: round6(area_fechamento_ext),
     area_aberturas_ext_m2: round6(area_aberturas_ext),
+    area_caixilhos_m2: round6(area_caixilhos),
     area_cobertura_m2: area_cobertura,
     comp_parede_interna_m: comp_parede_interna,
     area_parede_interna_bruta_m2: round6(area_parede_interna_bruta),
     area_parede_interna_m2: round6(area_parede_interna),
+    area_parede_wc_m2: round6(area_parede_wc),
+    area_parede_interna_nao_wc_m2: round6(area_parede_interna_nao_wc),
     num_portas_ext: 1 + portas_extras,
     num_janelas,
     num_portas_vidro,
