@@ -360,3 +360,84 @@ begin
   select id, 'ajuste_negativo', 1, 'Telha quebrada na descarga', admin_id
   from material where sku = 'MT-COB-001';
 end $$;
+
+-- ===== Combos por categoria (configurador em etapas) =====
+
+-- Combos de fechamento externo
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('fechamento-standard', 'fechamento_ext', 'Standard',
+  'Glasroc-X 12,5mm + membrana + lã vidro 50mm + gesso 12,5mm. Atende NBR.', 1),
+ ('fechamento-termico', 'fechamento_ext', 'Térmico',
+  'Glasroc-X + manta refletiva aluminizada + lã vidro 100mm + gesso. Para clima extremo.', 2),
+ ('fechamento-acustico', 'fechamento_ext', 'Acústico',
+  'Glasroc-X + lã de rocha densa + gesso duplo. Hotelaria e urbano.', 3),
+ ('fechamento-premium', 'fechamento_ext', 'Premium',
+  'Cimentícia Infibra + Glasroc-X dupla + lã rocha 100mm. Fachada aparente.', 4);
+
+-- Materiais de fechamento-standard
+with c as (select id from pacote_combo where slug='fechamento-standard')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 4),
+  ('MT-DRW-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 6),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 7),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 8),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 9)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-termico (Standard + manta refletiva, lã dobrada)
+with c as (select id from pacote_combo where slug='fechamento-termico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2]}}', 4),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-003', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}]}', 6),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 7),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 8),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 9),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 10)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-acustico (Standard + lã de rocha densa + gesso interno duplo)
+with c as (select id from pacote_combo where slug='fechamento-acustico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-003', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}', 2),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 3),
+  ('MT-FCH-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 4),
+  ('MT-DRW-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}', 5),
+  ('MT-DRW-001', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}]}', 6),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 7),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 8),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 9)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Materiais de fechamento-premium (Infibra + Glasroc dupla + lã rocha + gesso RU + acabamento premium)
+with c as (select id from pacote_combo where slug='fechamento-premium')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-FCH-011', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 1),
+  ('MT-FCH-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.88]},"waste":0.07}', 2),
+  ('MT-FCH-003', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},30]}}]}', 3),
+  ('MT-FCH-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},83.51]}}', 4),
+  ('MT-FCH-005', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2]}}', 5),
+  ('MT-FCH-007', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 6),
+  ('MT-DRW-007', '{"op":"mul","of":[2,{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},15]}}]}', 7),
+  ('MT-DRW-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 8),
+  ('MT-DRW-001', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},2.16]},"waste":0.07}', 9),
+  ('MT-DRW-002', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 10),
+  ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},50]}}', 11),
+  ('MT-FCH-008', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_fechamento_ext_m2"},20]}}', 12)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
