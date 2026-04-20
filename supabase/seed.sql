@@ -555,3 +555,76 @@ select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
   ('MT-DRW-004', '{"op":"ceil","of":{"op":"div","of":[{"op":"var","of":"area_parede_wc_m2"},50]}}', 4)
 ) as f(sku, formula, ordem)
 join material m on m.sku = f.sku;
+
+-- Combos de piso
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('piso-vinilico', 'piso', 'Vinílico', 'LVT 3mm — econômico e prático.', 1),
+ ('piso-ceramico', 'piso', 'Cerâmico', 'Cerâmica 60x60 — bom custo-benefício.', 2),
+ ('piso-porcelanato', 'piso', 'Porcelanato', 'Porcelanato 60x60 — alto padrão.', 3);
+
+with c as (select id from pacote_combo where slug='piso-vinilico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-001', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='piso-ceramico')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-002', '{"op":"mul","of":[{"op":"var","of":"area_planta_m2"},1.07]}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='piso-porcelanato')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-003', '{"op":"mul","of":[{"op":"var","of":"area_planta_m2"},1.07]}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de subpiso
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('subpiso-seco', 'subpiso', 'Seco', 'Contrapiso seco Knauf 18mm. Instalação rápida.', 1),
+ ('subpiso-umido', 'subpiso', 'Úmido', 'Contrapiso cimentício pré-misturado. Convencional.', 2);
+
+with c as (select id from pacote_combo where slug='subpiso-seco')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-004', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='subpiso-umido')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-PIS-005', '{"op":"var","of":"area_planta_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+-- Combos de vidro
+insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
+ ('vidro-simples', 'vidro', 'Simples', 'Vidro laminado 6mm.', 1),
+ ('vidro-duplo', 'vidro', 'Duplo', 'Vidro duplo 6+6mm com câmara de ar. Termoacústico.', 2),
+ ('vidro-temperado', 'vidro', 'Temperado', 'Temperado 8mm. Alta resistência.', 3);
+
+with c as (select id from pacote_combo where slug='vidro-simples')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-001', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='vidro-duplo')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-002', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
+
+with c as (select id from pacote_combo where slug='vidro-temperado')
+insert into pacote_combo_material (pacote_combo_id, material_id, formula_json, ordem)
+select c.id, m.id, f.formula::jsonb, f.ordem from c, (values
+  ('MT-VID-003', '{"op":"var","of":"area_caixilhos_m2"}', 1)
+) as f(sku, formula, ordem)
+join material m on m.sku = f.sku;
