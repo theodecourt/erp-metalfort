@@ -51,8 +51,10 @@ export default function MovimentoForm({
     if (tipo === 'compra') {
       if (!precoUnit) return setErr('Preço unitário obrigatório');
       if (!fornecedorId) return setErr('Fornecedor obrigatório');
+      const precoNormalized = precoUnit.replace(',', '.');
+      if (Number.isNaN(Number(precoNormalized))) return setErr('Preço unitário inválido');
       body = {
-        tipo, material_id: materialId, quantidade, preco_unitario: precoUnit,
+        tipo, material_id: materialId, quantidade, preco_unitario: precoNormalized,
         fornecedor_id: fornecedorId,
         nota_fiscal: notaFiscal || null, observacao: observacao || null,
       };
@@ -120,10 +122,18 @@ export default function MovimentoForm({
             <span className="text-xs text-mf-text-secondary">Preço unitário (R$)</span>
             <input
               aria-label="Preço unitário"
-              type="number" step="0.01" min="0"
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
               className="block w-full border rounded px-2 py-1"
               value={precoUnit}
-              onChange={(e) => setPrecoUnit(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                // Allow empty, or digits with at most one , or . and up to 2 decimals
+                if (raw === '' || /^[0-9]*[.,]?[0-9]{0,2}$/.test(raw)) {
+                  setPrecoUnit(raw);
+                }
+              }}
             />
           </label>
           <label className="block">
