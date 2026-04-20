@@ -39,8 +39,18 @@ class Configuracao(BaseModel):
     pe_direito_m: float = Field(ge=2.4, le=3.5)
     acabamento_ext: Literal["textura", "pintura", "cimenticia"] | None = "textura"
     cor_ext: str | None = None
-    pacote_acabamento: Literal["padrao", "premium", "personalizado"] = "padrao"
+
+    # LEGADO (onda 1): pre-combos. Mantido opcional para retrocompatibilidade.
+    # O adapter `normalize_configuracao` traduz para `combos` antes do calculo.
+    pacote_acabamento: Literal["padrao", "premium", "personalizado"] | None = None
     itens_personalizados: list[ItemPersonalizado] = Field(default_factory=list)
+
+    # Configurador em etapas: slug do template aplicado na origem (so UI).
+    template_aplicado: Literal["basico", "premium", "personalizado"] | None = None
+    # Configurador em etapas: combo selecionado por categoria; keys:
+    # fechamento_ext, cobertura, forro, divisoria, divisoria_wc, piso, subpiso, vidro.
+    combos: dict[str, str] = Field(default_factory=dict)
+
     esquadrias_extras: EsquadriasExtras = EsquadriasExtras(portas=0)
     piso: Literal["vinilico", "ceramico", "porcelanato"] | None = "vinilico"
     piso_cor: str | None = None
