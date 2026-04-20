@@ -70,7 +70,7 @@ export default function MovimentoForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-3 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-3 max-w-2xl">
       <label className="block">
         <span className="text-xs text-mf-text-secondary">Tipo</span>
         <select
