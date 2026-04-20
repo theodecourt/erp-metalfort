@@ -1,4 +1,4 @@
-# Configurador em etapas — onda 3 (admin)
+# Configurador em etapas (painel admin)
 
 **Data:** 2026-04-20
 **Escopo:** painel interno (`/admin/orcamento/novo`). Site público permanece intocado nesta onda.

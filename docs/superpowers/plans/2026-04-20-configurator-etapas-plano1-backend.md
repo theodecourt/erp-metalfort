@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Entregar o modelo de dados + cálculo de BOM para combos/templates da onda 3, sem tocar na UI. Ao final, um `POST /api/quote/calculate` com `configuracao.combos = {...}` retorna BOM correta (união de regras de geometria + materiais dos combos selecionados), e o site público continua funcionando via adapter de legado.
+**Goal:** Entregar o modelo de dados + cálculo de BOM para combos/templates, sem tocar na UI. Ao final, um `POST /api/quote/calculate` com `configuracao.combos = {...}` retorna BOM correta (união de regras de geometria + materiais dos combos selecionados), e o site público continua funcionando via adapter de legado.
 
 **Architecture:** Quatro tabelas novas (`pacote_combo`, `pacote_combo_material`, `template_orcamento`, `template_orcamento_selecao`). Regras combo-governadas (fechamento, cobertura, forro, piso, divisória) saem de `produto_bom_regra` e viram linhas em `pacote_combo_material`. Um serviço `combo_service` avalia essas linhas como BOM sintética que se une ao restante (geometria). Adapter `normalize_configuracao` traduz o schema legado (`pacote_acabamento`) para o novo (`combos`) na entrada dos endpoints.
 
@@ -46,7 +46,7 @@
 
 ```sql
 -- supabase/migrations/006_combos.sql
--- Onda 3: combos por categoria + templates (selecoes salvas).
+-- Combos por categoria + templates (selecoes salvas) para o configurador em etapas.
 
 -- pacote_combo: um combo por categoria (ex: "fechamento-premium").
 create table pacote_combo (
@@ -160,7 +160,7 @@ git commit -m "feat(db): migration 006 - tabelas de combos e templates"
 Localizar a primeira linha `-- Addons` (próximo ao fim da seção de materiais de onda 1, antes de `-- PRODUTOS`). Antes de `-- PRODUTOS`, adicionar:
 
 ```sql
- -- Onda 3: SKUs adicionais para combos
+ -- SKUs adicionais para combos do configurador em etapas
  ('MT-FCH-011','Placa Infibra cimentícia 10x1200x2400mm (2,88m²)','fechamento','pc',198.00),
  ('MT-DRW-007','Lã de rocha 50x1200x12500mm densa (15m²)','fechamento','rl',289.00),
  ('MT-DRW-008','Placa gesso RU 12,5x1200x1800mm resistente umidade (2,16m²)','fechamento','pc',58.00),
@@ -198,7 +198,7 @@ Expected: `10`.
 
 ```bash
 git add supabase/seed.sql
-git commit -m "feat(db): adiciona 10 SKUs novos para combos de onda 3"
+git commit -m "feat(db): adiciona 10 SKUs novos para combos do configurador"
 ```
 
 ---
@@ -254,7 +254,7 @@ Objetivo: inserir 4 combos de `fechamento_ext` (Standard, Térmico, Acústico, P
 Apensar ao final do arquivo:
 
 ```sql
--- ===== Onda 3: combos por categoria =====
+-- ===== Combos por categoria (configurador em etapas) =====
 
 -- Combos de fechamento externo
 insert into pacote_combo (slug, categoria, nome, descricao, ordem) values
@@ -879,7 +879,7 @@ class Configuracao(BaseModel):
     acabamento_ext: Literal["textura", "pintura", "cimenticia"] | None = "textura"
     cor_ext: str | None = None
 
-    # LEGADO (onda 1): pre-onda 3. Mantido opcional para retrocompatibilidade.
+    # LEGADO (onda 1): pre-combos. Mantido opcional para retrocompatibilidade.
     # O adapter `normalize_configuracao` traduz para `combos` antes do calculo.
     pacote_acabamento: Literal["padrao", "premium", "personalizado"] | None = None
     itens_personalizados: list[ItemPersonalizado] = Field(default_factory=list)
