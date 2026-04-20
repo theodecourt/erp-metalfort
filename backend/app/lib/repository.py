@@ -69,3 +69,98 @@ def insert_orcamento_itens(orcamento_id: str, itens: list[dict[str, Any]]) -> No
     sb = get_admin_client()
     rows = [{**it, "orcamento_id": orcamento_id} for it in itens]
     sb.table("orcamento_item").insert(rows).execute()
+
+
+def list_combos() -> list[dict[str, Any]]:
+    """Retorna todos os combos ativos com lista de (material, formula) por combo."""
+    sb = get_admin_client()
+    combos = (
+        sb.table("pacote_combo")
+        .select("*")
+        .eq("ativo", True)
+        .order("categoria")
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    if not combos:
+        return []
+    combo_ids = [c["id"] for c in combos]
+    mats = (
+        sb.table("pacote_combo_material")
+        .select("*, material(*)")
+        .in_("pacote_combo_id", combo_ids)
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    by_combo: dict[str, list[dict[str, Any]]] = {}
+    for m in mats:
+        by_combo.setdefault(m["pacote_combo_id"], []).append(m)
+    for c in combos:
+        c["materiais"] = by_combo.get(c["id"], [])
+    return combos
+
+
+def get_combos_by_slugs(slugs: list[str]) -> dict[str, dict[str, Any]]:
+    """Retorna {slug: combo_com_materiais} para a lista de slugs informada."""
+    if not slugs:
+        return {}
+    sb = get_admin_client()
+    combos = (
+        sb.table("pacote_combo")
+        .select("*")
+        .in_("slug", slugs)
+        .eq("ativo", True)
+        .execute()
+        .data
+        or []
+    )
+    if not combos:
+        return {}
+    combo_ids = [c["id"] for c in combos]
+    mats = (
+        sb.table("pacote_combo_material")
+        .select("*, material(*)")
+        .in_("pacote_combo_id", combo_ids)
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    by_combo: dict[str, list[dict[str, Any]]] = {}
+    for m in mats:
+        by_combo.setdefault(m["pacote_combo_id"], []).append(m)
+    return {c["slug"]: {**c, "materiais": by_combo.get(c["id"], [])} for c in combos}
+
+
+def list_templates() -> list[dict[str, Any]]:
+    """Retorna templates com selecoes {categoria: combo_slug}."""
+    sb = get_admin_client()
+    templates = (
+        sb.table("template_orcamento").select("*").order("ordem").execute().data or []
+    )
+    if not templates:
+        return []
+    template_ids = [t["id"] for t in templates]
+    selecoes = (
+        sb.table("template_orcamento_selecao")
+        .select("*, pacote_combo(slug)")
+        .in_("template_id", template_ids)
+        .execute()
+        .data
+        or []
+    )
+    by_template: dict[str, dict[str, str]] = {}
+    for s in selecoes:
+        by_template.setdefault(s["template_id"], {})[s["categoria"]] = s["pacote_combo"]["slug"]
+    for t in templates:
+        t["selecoes"] = by_template.get(t["id"], {})
+    return templates
+
+
+def get_templates_by_slug() -> dict[str, dict[str, str]]:
+    """Retorna {template_slug: {categoria: combo_slug}} para uso do adapter."""
+    return {t["slug"]: t["selecoes"] for t in list_templates()}
