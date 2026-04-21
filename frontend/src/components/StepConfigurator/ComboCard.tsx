@@ -21,23 +21,23 @@ export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={ariaLabel}
-      className={`text-left w-full bg-mf-black-soft border-2 ${baseBorder} rounded-lg p-4 transition-colors`}
+      className={`text-left w-full h-full flex flex-col bg-mf-black-soft border-2 ${baseBorder} rounded-lg p-4 transition-colors`}
     >
       <div className="flex items-center gap-2 text-mf-yellow text-sm font-bold">
         <span aria-hidden>{mark}</span>
         <span>{combo.nome}</span>
       </div>
-      {combo.descricao && (
-        <div className="mt-2 text-sm text-mf-text-secondary">{combo.descricao}</div>
-      )}
-      <div className="mt-3 text-white font-semibold">
-        {fmtBRL(unitPrice)} <span className="text-xs text-mf-text-secondary">/ {unitLabel}</span>
+      <div className="mt-2 text-sm text-mf-text-secondary min-h-[2.75rem] leading-snug">
+        {combo.descricao ?? ''}
       </div>
-      {delta !== 0 && (
-        <div className={`mt-1 text-xs ${delta > 0 ? 'text-mf-text-secondary' : 'text-mf-success'}`}>
-          {signed}{fmtBRL(Math.abs(delta))} vs Standard
+      <div className="mt-auto pt-3">
+        <div className="text-white font-semibold">
+          {fmtBRL(unitPrice)} <span className="text-xs text-mf-text-secondary">/ {unitLabel}</span>
         </div>
-      )}
+        <div className={`mt-1 text-xs ${delta > 0 ? 'text-mf-text-secondary' : 'text-mf-success'}`}>
+          {delta !== 0 ? `${signed}${fmtBRL(Math.abs(delta))} vs Standard` : '\u00a0'}
+        </div>
+      </div>
     </button>
   );
 }
