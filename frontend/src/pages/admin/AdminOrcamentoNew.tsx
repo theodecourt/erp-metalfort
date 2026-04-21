@@ -56,20 +56,23 @@ export default function AdminOrcamentoNew() {
     }
   }
 
+  const fieldClass =
+    'w-full bg-mf-black-soft text-white placeholder:text-mf-text-secondary border border-mf-border rounded p-2 focus:outline-none focus:border-mf-yellow';
+
   return (
     <div>
-      <h1 className="text-2xl font-extrabold">Novo orçamento interno</h1>
-      <p className="text-sm text-gray-600 mt-1">
+      <h1 className="text-2xl font-extrabold text-white">Novo orçamento interno</h1>
+      <p className="text-sm text-mf-text-secondary mt-1">
         Usa o mesmo configurador do site, mas com addons (tier full) disponíveis.
       </p>
 
-      <div className="mt-6 bg-white border rounded-lg p-6">
-        <label className="block text-sm font-semibold">
-          Produto
+      <div className="mt-6 bg-mf-black text-white rounded-lg p-6 border border-mf-border">
+        <label className="block">
+          <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Produto</div>
           <select
             value={produtoSlug}
             onChange={e => setProdutoSlug(e.target.value)}
-            className="mt-1 w-full border rounded p-2 bg-white">
+            className={fieldClass}>
             <option value="">— escolha um produto —</option>
             {produtos.filter(p => p.ativo).map(p => (
               <option key={p.id} value={p.slug}>{p.nome}</option>
@@ -79,7 +82,7 @@ export default function AdminOrcamentoNew() {
       </div>
 
       {produto && (
-        <div className="mt-6 bg-mf-black text-white rounded-lg p-6">
+        <div className="mt-6 bg-mf-black text-white rounded-lg p-6 border border-mf-border">
           <StepConfigurator
             produto={produto}
             onConfigChange={setConfig}
@@ -90,20 +93,20 @@ export default function AdminOrcamentoNew() {
       )}
 
       {produto && (
-        <form onSubmit={handleSubmit} className="mt-6 bg-white border rounded-lg p-6 grid gap-3 max-w-xl">
-          <h2 className="text-lg font-bold">Dados do cliente</h2>
+        <form onSubmit={handleSubmit} className="mt-6 bg-mf-black text-white rounded-lg p-6 border border-mf-border grid gap-3 max-w-xl">
+          <h2 className="text-lg font-extrabold text-mf-yellow">Dados do cliente</h2>
           <input required placeholder="Nome" value={lead.nome}
             onChange={e => setLead({ ...lead, nome: e.target.value })}
-            className="border rounded p-2"/>
+            className={fieldClass}/>
           <input required type="email" placeholder="Email" value={lead.email}
             onChange={e => setLead({ ...lead, email: e.target.value })}
-            className="border rounded p-2"/>
+            className={fieldClass}/>
           <input placeholder="Telefone (opcional)" value={lead.telefone}
             onChange={e => setLead({ ...lead, telefone: e.target.value })}
-            className="border rounded p-2"/>
+            className={fieldClass}/>
           <select value={lead.finalidade}
             onChange={e => setLead({ ...lead, finalidade: e.target.value as Finalidade })}
-            className="border rounded p-2">
+            className={fieldClass}>
             <option value="casa">Casa</option>
             <option value="farmacia">Farmácia</option>
             <option value="loja">Loja</option>
@@ -112,13 +115,13 @@ export default function AdminOrcamentoNew() {
             <option value="quiosque">Quiosque</option>
             <option value="outro">Outro</option>
           </select>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="inline-flex items-center gap-2 text-sm text-mf-text-secondary">
             <input type="checkbox" checked={enviarEmail}
               onChange={e => setEnviarEmail(e.target.checked)}/>
             <span>Enviar PDF por email ao cliente (e notificar Metalfort)</span>
           </label>
           <button type="submit" disabled={submitting || !config}
-            className="bg-mf-black text-white font-bold py-3 rounded disabled:opacity-50">
+            className="bg-mf-yellow text-mf-black font-extrabold py-3 rounded hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed">
             {submitting ? 'Criando...' : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
           </button>
           {error && <div className="text-mf-danger text-sm">{error}</div>}
