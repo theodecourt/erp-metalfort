@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import TemplatePicker from './TemplatePicker';
-import StepSidebar, { type StepItem } from './StepSidebar';
 import StepSection from './StepSection';
 import EstruturaStep from './steps/EstruturaStep';
 import CategoryComboStep from './steps/CategoryComboStep';
@@ -8,7 +6,7 @@ import EsquadriasStep from './steps/EsquadriasStep';
 import WcStep from './steps/WcStep';
 import AcabamentoStep from './steps/AcabamentoStep';
 import ExtrasStep from './steps/ExtrasStep';
-import PriceBox from '../Configurator/PriceBox';
+import PriceBar from './PriceBar';
 import { derive, type Configuracao, type TemplateSlug } from '../../lib/variables';
 import { fetchCombos, fetchTemplates, type PacoteCombo, type TemplateOrcamento } from '../../lib/combos';
 import { apiFetch } from '../../lib/api';
@@ -24,6 +22,7 @@ interface ProdutoInput {
 
 interface Props {
   produto: ProdutoInput;
+  initialConfig?: Configuracao;         // seed de rascunho salvo (localStorage)
   initialCombos?: PacoteCombo[];        // para tests; em producao, fetched from API
   initialTemplates?: TemplateOrcamento[]; // idem
   onConfigChange: (c: Configuracao) => void;
@@ -72,26 +71,12 @@ function applyTemplateSelecoes(
   return { ...base, template_aplicado: slug, combos };
 }
 
-function combosMatchTemplate(
-  combos: Configuracao['combos'],
-  template: TemplateOrcamento | undefined,
-): boolean {
-  if (!template) return true;
-  const sel = template.selecoes;
-  const actual = combos ?? {};
-  for (const key of Object.keys(sel)) {
-    if ((actual as any)[key] !== (sel as any)[key]) return false;
-  }
-  return true;
-}
-
 export default function StepConfigurator({
-  produto, initialCombos, initialTemplates, onConfigChange, onQuoteChange, calculate,
+  produto, initialConfig, initialCombos, initialTemplates, onConfigChange, onQuoteChange, calculate,
 }: Props) {
   const [combos, setCombos] = useState<PacoteCombo[]>(initialCombos ?? []);
   const [templates, setTemplates] = useState<TemplateOrcamento[]>(initialTemplates ?? []);
-  const [config, setConfig] = useState<Configuracao>(() => defaultConfig(produto));
-  const [activeId, setActiveId] = useState<string>('estrutura');
+  const [config, setConfig] = useState<Configuracao>(() => initialConfig ?? defaultConfig(produto));
   const [loading, setLoading] = useState(false);
   const [quote, setQuote] = useState<{ subtotal: number; total: number; gerenciamento_pct: number; itens: any[] }>({
     subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [],
@@ -108,7 +93,7 @@ export default function StepConfigurator({
     })();
   }, []);
 
-  const appliedInitialTemplate = useRef(false);
+  const appliedInitialTemplate = useRef(!!initialConfig);
   useEffect(() => {
     if (appliedInitialTemplate.current || templates.length === 0) return;
     const basico = templates.find(t => t.slug === 'basico');
@@ -138,21 +123,6 @@ export default function StepConfigurator({
 
   const vars = useMemo(() => derive(config), [JSON.stringify(config)]);
 
-  const activeTemplate = templates.find(t => t.slug === config.template_aplicado);
-  const hasCustomizations = config.template_aplicado !== 'personalizado'
-    && !combosMatchTemplate(config.combos, activeTemplate);
-
-  function handleApplyTemplate(slug: TemplateSlug) {
-    const t = templates.find(x => x.slug === slug);
-    setConfig(prev => applyTemplateSelecoes(prev, t, slug));
-  }
-
-  function handleRevert() {
-    const t = templates.find(x => x.slug === config.template_aplicado);
-    if (!t) return;
-    setConfig(prev => applyTemplateSelecoes(prev, t, (config.template_aplicado ?? 'basico') as TemplateSlug));
-  }
-
   function setComboForCategoria(cat: keyof NonNullable<Configuracao['combos']>, slug: string) {
     setConfig(prev => ({
       ...prev,
@@ -160,74 +130,12 @@ export default function StepConfigurator({
     }));
   }
 
-  const sectionIds = [
-    'estrutura', 'fechamento_ext', 'cobertura', 'forro', 'divisoria',
-    'piso', 'esquadrias', 'wc', 'acabamento', 'extras',
-  ];
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      entries => {
-        const visible = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setActiveId(visible.target.id);
-      },
-      { rootMargin: '-20% 0px -70% 0px' },
-    );
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-    return () => obs.disconnect();
-  }, []);
-
-  function handleJump(id: string) {
-    const el = document.getElementById(id);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setActiveId(id);
-  }
-
-  const stepItems: StepItem[] = [
-    { id: 'estrutura', label: 'Estrutura', filled: true },
-    { id: 'fechamento_ext', label: 'Fechamento', filled: !!config.combos?.fechamento_ext },
-    { id: 'cobertura', label: 'Cobertura', filled: !!config.combos?.cobertura },
-    { id: 'forro', label: 'Forro', filled: !!config.combos?.forro },
-    { id: 'divisoria', label: 'Divisórias', filled: !!config.combos?.divisoria },
-    { id: 'piso', label: 'Piso', filled: !!config.combos?.piso && !!config.combos?.subpiso },
-    { id: 'esquadrias', label: 'Esquadrias', filled: !!config.combos?.vidro },
-    { id: 'wc', label: 'WC', filled: true },
-    { id: 'acabamento', label: 'Acabamento', filled: !!config.cor_ext && !!config.piso_cor },
-    { id: 'extras', label: 'Extras', filled: true },
-  ];
-
   const peSuggested = ({ '3x3': 2.4, '3x6': 2.7, '3x9': 3.0 } as const)[config.tamanho_modulo];
 
   return (
     <div>
-      <div className="mb-6">
-        <div className="text-sm text-mf-text-secondary">Template</div>
-        <div className="mt-2">
-          <TemplatePicker
-            active={(config.template_aplicado ?? 'basico') as TemplateSlug}
-            hasCustomizations={hasCustomizations}
-            onApply={handleApplyTemplate}
-            onRevert={handleRevert}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-8 md:grid-cols-[200px_1fr_320px]">
-        <aside className="md:sticky md:top-4 md:self-start">
-          <div className="md:hidden overflow-x-auto -mx-4 px-4 pb-2 mb-4 border-b border-mf-border">
-            <StepSidebar steps={stepItems} activeId={activeId} onJump={handleJump} direction="horizontal" />
-          </div>
-          <div className="hidden md:block">
-            <StepSidebar steps={stepItems} activeId={activeId} onJump={handleJump} />
-          </div>
-        </aside>
-
-        <main>
-          <StepSection id="estrutura" number={1} title="Estrutura & geometria">
+      <main className="min-w-0">
+          <StepSection id="estrutura" number={1} title="Estrutura & geometria" phaseEnd>
             <EstruturaStep config={config} onChange={setConfig} peSuggested={peSuggested} />
           </StepSection>
 
@@ -258,7 +166,7 @@ export default function StepConfigurator({
             />
           </StepSection>
 
-          <StepSection id="divisoria" number={5} title="Divisórias internas">
+          <StepSection id="divisoria" number={5} title="Divisórias internas" phaseEnd>
             <CategoryComboStep
               categoria="divisoria" unitLabel="m² parede" unitVar="area_parede_interna_nao_wc_m2"
               combos={combos} vars={vars}
@@ -292,7 +200,7 @@ export default function StepConfigurator({
             <EsquadriasStep config={config} onChange={setConfig} combos={combos} vars={vars} />
           </StepSection>
 
-          <StepSection id="wc" number={8} title="WC interno">
+          <StepSection id="wc" number={8} title="WC interno" phaseEnd>
             <WcStep config={config} onChange={setConfig} />
           </StepSection>
 
@@ -303,18 +211,14 @@ export default function StepConfigurator({
           <StepSection id="extras" number={10} title="Extras & instalações">
             <ExtrasStep config={config} onChange={setConfig} />
           </StepSection>
-        </main>
-
-        <aside className="md:sticky md:top-4 md:self-start space-y-4">
-          <PriceBox
-            subtotal={quote.subtotal}
-            total={quote.total}
-            gerenciamentoPct={quote.gerenciamento_pct}
-            itemCount={quote.itens.length}
-            loading={loading}
-          />
-        </aside>
-      </div>
+      </main>
+      <PriceBar
+        subtotal={quote.subtotal}
+        total={quote.total}
+        gerenciamentoPct={quote.gerenciamento_pct}
+        itemCount={quote.itens.length}
+        loading={loading}
+      />
     </div>
   );
 }

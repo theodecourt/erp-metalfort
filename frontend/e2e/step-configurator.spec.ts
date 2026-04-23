@@ -11,23 +11,15 @@ async function loginAsAdmin(page: any) {
   await page.waitForURL(/\/admin$/);
 }
 
-test('admin cria orcamento via StepConfigurator trocando template', async ({ page }) => {
+test('admin cria orcamento via StepConfigurator', async ({ page }) => {
   await loginAsAdmin(page);
 
-  await page.goto('/admin/orcamento/novo');
+  await page.goto('/admin/orcamento/new');
   await page.getByLabel(/produto/i).selectOption({ label: 'Metalfort Home' });
 
-  // sidebar desktop: botoes com labels das etapas
-  await expect(page.getByRole('button', { name: /^Estrutura$/ }).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Fechamento$/ }).first()).toBeVisible();
-
-  // Basico vem aplicado por default
-  const basico = page.getByRole('button', { name: /^Básico$/ });
-  await expect(basico).toHaveAttribute('aria-pressed', 'true');
-
-  // troca para Premium
-  await page.getByRole('button', { name: /^Premium$/ }).click();
-  await expect(page.getByRole('button', { name: /^Premium$/ })).toHaveAttribute('aria-pressed', 'true');
+  // etapas sao headings h2 dentro do configurador
+  await expect(page.getByRole('heading', { name: /Estrutura/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Fechamento/ })).toBeVisible();
 
   // preenche cliente e cria rascunho
   await page.getByPlaceholder(/Nome/).fill('Teste E2E Configurator');

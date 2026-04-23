@@ -1,5 +1,6 @@
 import NumberField from '../../NumberField/NumberField';
 import PersonalizadoPicker from '../../Configurator/PersonalizadoPicker';
+import ExtrasComerciaisPicker from './ExtrasComerciaisPicker';
 import type { Configuracao } from '../../../lib/variables';
 
 interface Props {
@@ -26,6 +27,16 @@ export default function ExtrasStep({ config, onChange }: Props) {
         <PersonalizadoPicker
           itens={config.itens_personalizados ?? []}
           onChange={itens => onChange({ ...config, itens_personalizados: itens })}
+        />
+      </div>
+
+      <div>
+        <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
+          Extras comerciais (produto e preço livre)
+        </div>
+        <ExtrasComerciaisPicker
+          itens={config.extras_comerciais ?? []}
+          onChange={extras => onChange({ ...config, extras_comerciais: extras })}
         />
       </div>
     </div>

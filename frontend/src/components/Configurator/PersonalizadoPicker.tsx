@@ -62,7 +62,7 @@ export default function PersonalizadoPicker({
   }
 
   return (
-    <div className="mt-3 border border-mf-border rounded p-3 bg-mf-black-soft/40">
+    <div className="border border-mf-border rounded p-3 bg-mf-black-soft/40">
       <div className="flex flex-wrap gap-2 items-end">
         <label className="text-xs text-mf-text-secondary flex-1 min-w-[220px]">
           SKU

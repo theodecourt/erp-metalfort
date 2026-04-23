@@ -36,12 +36,13 @@ export default function AdminOrcamentos() {
       <div className="mt-4 bg-white rounded border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-mf-black text-white text-left">
-            <tr><th className="p-3">Número</th><th className="p-3">Cliente</th><th className="p-3">Finalidade</th><th className="p-3">Total</th><th className="p-3">Status</th><th className="p-3"></th></tr>
+            <tr><th className="p-3">Número</th><th className="p-3">Data</th><th className="p-3">Cliente</th><th className="p-3">Finalidade</th><th className="p-3">Total</th><th className="p-3">Status</th><th className="p-3"></th></tr>
           </thead>
           <tbody>
             {filtered.map(o => (
               <tr key={o.id} className="border-t">
                 <td className="p-3 font-mono">{o.numero}</td>
+                <td className="p-3 tabular-nums text-gray-600">{new Date(o.created_at).toLocaleDateString('pt-BR')}</td>
                 <td className="p-3">{o.cliente_nome}</td>
                 <td className="p-3">{o.finalidade}</td>
                 <td className="p-3 tabular-nums">{fmtBRL(o.valor_total)}</td>

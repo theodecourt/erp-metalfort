@@ -29,6 +29,12 @@ export interface ItemPersonalizado {
   qtd: number;
 }
 
+export interface ExtraComercial {
+  descricao: string;
+  qtd: number;
+  preco_unitario: number;
+}
+
 export type Piso = 'vinilico' | 'ceramico' | 'porcelanato';
 export type AcabamentoExt = 'textura' | 'pintura' | 'cimenticia';
 
@@ -86,6 +92,7 @@ export interface Configuracao {
   num_splits?: number;
   comp_paredes_ext_m?: number;
   comp_paredes_int_m?: number;
+  extras_comerciais?: ExtraComercial[];
 }
 
 const round6 = (n: number) => +n.toFixed(6);

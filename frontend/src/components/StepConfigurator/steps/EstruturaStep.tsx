@@ -48,16 +48,16 @@ export default function EstruturaStep({ config, onChange, peSuggested }: Props) 
   const esperadosLabel = esperados.map(e => `${e.perim.toLocaleString('pt-BR')} m (face ${e.face} m)`).join(' · ');
 
   return (
-    <div className="grid gap-5">
-      <label className="block">
+    <div className="flex gap-10 items-start">
+      <div className="flex-none">
         <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Tamanho do módulo</div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           {(['3x3', '3x6', '3x9'] as const).map(t => (
             <button
               key={t}
               type="button"
               onClick={() => changeTamanho(t)}
-              className={`flex-1 py-3 rounded ${
+              className={`w-20 py-3 rounded ${
                 config.tamanho_modulo === t ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'
               }`}
             >
@@ -65,30 +65,32 @@ export default function EstruturaStep({ config, onChange, peSuggested }: Props) 
             </button>
           ))}
         </div>
-      </label>
+      </div>
 
-      <label className="block">
-        <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Quantidade de módulos</div>
-        <NumberField
-          min={1} max={3} unit="módulos" value={config.qtd_modulos}
-          onChange={changeQtd}
-          className="w-32 bg-mf-black-soft text-white p-2 rounded border border-mf-border"
-        />
-      </label>
+      <div className="flex-1 grid gap-5">
+        <label className="block">
+          <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Quantidade de módulos</div>
+          <NumberField
+            min={1} max={3} unit="módulos" value={config.qtd_modulos}
+            onChange={changeQtd}
+            className="w-32 bg-mf-black-soft text-white p-2 rounded border border-mf-border"
+          />
+        </label>
 
-      <label className="block">
-        <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
-          Pé direito — sugerido: {peSuggested.toLocaleString('pt-BR')} m
-        </div>
-        <NumberField
-          min={2.4} max={3.5} step={0.1} unit="m" value={config.pe_direito_m}
-          onChange={n => onChange({ ...config, pe_direito_m: n })}
-          className="w-32 bg-mf-black-soft text-white p-2 rounded border border-mf-border"
-        />
-      </label>
+        <label className="block">
+          <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
+            Pé direito
+            <span className="normal-case ml-1">— sugerido: {peSuggested.toLocaleString('pt-BR')} m</span>
+          </div>
+          <NumberField
+            min={2.4} max={3.5} step={0.1} unit="m" value={config.pe_direito_m}
+            onChange={n => onChange({ ...config, pe_direito_m: n })}
+            className="w-32 bg-mf-black-soft text-white p-2 rounded border border-mf-border"
+          />
+        </label>
 
-      <div>
-        <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Paredes (metros lineares)</div>
+        <div>
+          <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Paredes (metros lineares)</div>
         <div className="flex flex-wrap gap-4">
           <label className="text-sm text-mf-text-secondary">
             Externas:
@@ -122,6 +124,7 @@ export default function EstruturaStep({ config, onChange, peSuggested }: Props) 
             </p>
           );
         })()}
+        </div>
       </div>
     </div>
   );

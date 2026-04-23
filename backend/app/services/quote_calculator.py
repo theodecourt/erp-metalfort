@@ -59,11 +59,31 @@ def calculate(
             item["combo_slug"] = regra["combo_slug"]
         itens.append(item)
 
+    # Extras comerciais: linhas livres (transporte, instalação, taxas...) adicionadas ao subtotal.
+    # Não entram em `itens` (que representam materiais BOM/combo) — ficam num campo próprio.
+    extras_cfg = config.get("extras_comerciais") or []
+    extras_out: list[dict[str, Any]] = []
+    for idx, ex in enumerate(extras_cfg):
+        qtd = float(ex.get("qtd") or 0)
+        preco = float(ex.get("preco_unitario") or 0)
+        if qtd <= 0:
+            continue
+        sub = round(qtd * preco, 2)
+        subtotal += sub
+        extras_out.append({
+            "descricao": str(ex.get("descricao") or "").strip(),
+            "quantidade": round(qtd, 3),
+            "preco_unitario": preco,
+            "subtotal": sub,
+            "ordem": idx,
+        })
+
     subtotal = round(subtotal, 2)
     total = round(subtotal * (1 + gerenciamento_pct / 100), 2)
 
     return {
         "itens": itens,
+        "extras": extras_out,
         "variaveis": vars,
         "subtotal": subtotal,
         "gerenciamento_pct": gerenciamento_pct,

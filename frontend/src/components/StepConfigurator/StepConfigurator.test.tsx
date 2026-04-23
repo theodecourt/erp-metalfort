@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import StepConfigurator from './StepConfigurator';
 import type { PacoteCombo, TemplateOrcamento } from '../../lib/combos';
 
@@ -51,29 +50,7 @@ beforeEach(() => {
 });
 
 describe('StepConfigurator', () => {
-  it('renderiza template picker e etapas principais', async () => {
-    const calculate = vi.fn().mockResolvedValue({ subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [] });
-    render(<StepConfigurator
-      produto={produto}
-      initialCombos={combos}
-      initialTemplates={templates}
-      onConfigChange={() => {}}
-      onQuoteChange={() => {}}
-      calculate={calculate}
-    />);
-    expect(screen.getByRole('button', { name: /^Básico$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Premium$/i })).toBeInTheDocument();
-    // sections use h2 headings — query by role="heading" for precision
-    expect(screen.getByRole('heading', { name: /Estrutura/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Fechamento/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Cobertura/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Extras/ })).toBeInTheDocument();
-    // basico vem aplicado por default: calculate foi chamado
-    await waitFor(() => expect(calculate).toHaveBeenCalled(), { timeout: 2000 });
-  });
-
-  it('troca de Basico para Premium sem modal (sem customizacoes)', async () => {
-    const user = userEvent.setup();
+  it('renderiza as etapas principais e aplica defaults do template basico', async () => {
     const onConfigChange = vi.fn();
     const calculate = vi.fn().mockResolvedValue({ subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [] });
     render(<StepConfigurator
@@ -85,17 +62,18 @@ describe('StepConfigurator', () => {
       calculate={calculate}
     />);
 
-    // aguarda o template basico ser aplicado primeiro
-    await waitFor(() => {
-      const last = onConfigChange.mock.calls.at(-1)?.[0];
-      expect(last?.template_aplicado).toBe('basico');
-    });
+    // sections use h2 headings — query by role="heading" for precision
+    expect(screen.getByRole('heading', { name: /Estrutura/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Fechamento/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Cobertura/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Extras/ })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /^Premium$/i }));
+    // defaults do template basico aplicados silenciosamente (sem UI de template)
     await waitFor(() => {
       const last = onConfigChange.mock.calls.at(-1)?.[0];
-      expect(last?.template_aplicado).toBe('premium');
-      expect(last?.combos?.fechamento_ext).toBe('fechamento-premium');
+      expect(last?.combos?.fechamento_ext).toBe('fechamento-standard');
+      expect(last?.combos?.cobertura).toBe('cobertura-standard');
     });
+    await waitFor(() => expect(calculate).toHaveBeenCalled(), { timeout: 2000 });
   });
 });

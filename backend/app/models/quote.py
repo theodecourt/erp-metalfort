@@ -33,6 +33,13 @@ class ItemPersonalizado(BaseModel):
     qtd: float = Field(gt=0)
 
 
+class ExtraComercial(BaseModel):
+    """Linha extra de serviço/comercial fora do catálogo (transporte, instalação, taxa etc.)."""
+    descricao: str = Field(min_length=1, max_length=200)
+    qtd: float = Field(gt=0, default=1)
+    preco_unitario: float = Field(ge=0)
+
+
 class Configuracao(BaseModel):
     tamanho_modulo: Literal["3x3", "3x6", "3x9"]
     qtd_modulos: int = Field(ge=1, le=3)
@@ -60,6 +67,8 @@ class Configuracao(BaseModel):
     # User-controlled wall meterages (default from produto via backend merge)
     comp_paredes_ext_m: float | None = Field(default=None, ge=0)
     comp_paredes_int_m: float | None = Field(default=None, ge=0)
+    # Linhas comerciais extras (transporte, instalação, taxas etc.) fora do catálogo.
+    extras_comerciais: list[ExtraComercial] = Field(default_factory=list)
 
 
 class CalculateRequest(BaseModel):
@@ -89,8 +98,17 @@ class QuoteItem(BaseModel):
     combo_slug: str | None = None
 
 
+class QuoteExtraItem(BaseModel):
+    descricao: str
+    quantidade: float
+    preco_unitario: float
+    subtotal: float
+    ordem: int
+
+
 class QuoteResponse(BaseModel):
     itens: list[QuoteItem]
+    extras: list[QuoteExtraItem] = Field(default_factory=list)
     variaveis: dict[str, Any]
     subtotal: float
     gerenciamento_pct: float

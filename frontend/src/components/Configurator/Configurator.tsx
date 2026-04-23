@@ -265,10 +265,12 @@ export default function Configurator({
             ))}
           </div>
           {config.pacote_acabamento === 'personalizado' && (
-            <PersonalizadoPicker
-              itens={config.itens_personalizados ?? []}
-              onChange={itens => setConfig({ ...config, itens_personalizados: itens })}
-            />
+            <div className="mt-3">
+              <PersonalizadoPicker
+                itens={config.itens_personalizados ?? []}
+                onChange={itens => setConfig({ ...config, itens_personalizados: itens })}
+              />
+            </div>
           )}
         </LeverGroup>
 
