@@ -39,3 +39,6 @@ supabase/.temp/
 
 # PDFs generated in dev
 /tmp/sent/
+
+# Claude Code (per-machine agent settings)
+.claude/
