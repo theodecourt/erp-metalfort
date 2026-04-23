@@ -16,6 +16,7 @@ Veja `docs/superpowers/specs/2026-04-18-erp-metalfort-onda1-design.md` para o de
 
 ## Dev local
 
+
 ```bash
 # 1. Preparar envs (primeira vez)
 cp backend/.env.example backend/.env
