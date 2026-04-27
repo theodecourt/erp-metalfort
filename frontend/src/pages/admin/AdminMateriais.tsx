@@ -5,6 +5,10 @@ import { fmtBRL, fmtQtd, isIntegerUnit } from '../../lib/format';
 const CATEGORIAS = ['estrutura','fechamento','instalacoes','acabamento','esquadria','equipamento','servico'] as const;
 const UNIDADES = ['kg','m','m2','pc','cx','und','h','bd','rl','sc','ml','ct'] as const;
 
+// SKUs no formato CFxxxSFxxxUxxx vêm da planilha do Samuel — pintamos diferente
+// para deixar visível que a origem é importação, não cadastro manual.
+const PLANILHA_SAMUEL_SKU = /^CF\d+SF\d+U\d+$/;
+
 interface NewMaterial {
   sku: string;
   nome: string;
@@ -208,7 +212,11 @@ export default function AdminMateriais() {
           </thead>
           <tbody>
             {rows.map(m => (
-              <tr key={m.id} className="border-t">
+              <tr
+                key={m.id}
+                className={`border-t ${PLANILHA_SAMUEL_SKU.test(m.sku) ? 'bg-yellow-50' : ''}`}
+                title={PLANILHA_SAMUEL_SKU.test(m.sku) ? 'Importado da planilha Samuel ORÇAMENTO PADRÃO' : undefined}
+              >
                 <td className="p-3 font-mono">{m.sku}</td>
                 <td className="p-3">{m.nome}</td>
                 <td className="p-3">{m.categoria}</td>
