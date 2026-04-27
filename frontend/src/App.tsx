@@ -10,6 +10,8 @@ import AdminOrcamentoDetail from './pages/admin/AdminOrcamentoDetail';
 import AdminOrcamentoNew from './pages/admin/AdminOrcamentoNew';
 import AdminProdutos from './pages/admin/AdminProdutos';
 import AdminMateriais from './pages/admin/AdminMateriais';
+import AdminCombos from './pages/admin/AdminCombos';
+import AdminComboDetail from './pages/admin/AdminComboDetail';
 import AdminEstoqueLayout from './pages/admin/AdminEstoqueLayout';
 import AdminEstoqueSaldo from './pages/admin/AdminEstoqueSaldo';
 import AdminEstoqueMovimentos from './pages/admin/AdminEstoqueMovimentos';
@@ -36,6 +38,8 @@ export default function App() {
             <Route path="orcamento/:id" element={<AdminOrcamentoDetail />} />
             <Route path="produtos" element={<AdminProdutos />} />
             <Route path="materiais" element={<AdminMateriais />} />
+            <Route path="combos" element={<AdminCombos />} />
+            <Route path="combos/:id" element={<AdminComboDetail />} />
             <Route path="estoque" element={<AdminEstoqueLayout />}>
               <Route index element={<Navigate to="saldo" replace />} />
               <Route path="saldo" element={<AdminEstoqueSaldo />} />
