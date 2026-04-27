@@ -13,6 +13,7 @@ from app.services import storage
 from app.services.combo_service import build_combos_bom_from_selections
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.email_sender import send_cliente_email, send_metalfort_notification
+from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
 
 router = APIRouter(prefix="/api/public", tags=["public"])
@@ -38,27 +39,6 @@ def get_produto(slug: str):
     return produto
 
 
-def _append_personalizados(bom: list[dict], config: dict) -> list[dict]:
-    itens = config.get("itens_personalizados") or []
-    if not itens:
-        return bom
-    materiais = repository.get_materiais_by_ids([it["material_id"] for it in itens])
-    extras = []
-    for i, it in enumerate(itens):
-        mat = materiais.get(it["material_id"])
-        if not mat:
-            continue
-        extras.append({
-            "material_id": it["material_id"],
-            "material": mat,
-            "formula_json": float(it["qtd"]),
-            "tier": "core",
-            "categoria": "personalizado",
-            "ordem": 10000 + i,
-        })
-    return bom + extras
-
-
 @router.post("/quote/calculate", response_model=QuoteResponse)
 @limiter.limit("10/minute")
 def public_calculate(request: Request, req: CalculateRequest):
@@ -69,7 +49,7 @@ def public_calculate(request: Request, req: CalculateRequest):
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        _append_personalizados(bom, config), config,
+        append_personalizados(bom, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 
@@ -90,7 +70,7 @@ def public_submit(request: Request, req: SubmitRequest):
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
-        _append_personalizados(bom, config), config,
+        append_personalizados(bom, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 

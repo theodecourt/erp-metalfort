@@ -22,7 +22,7 @@ export default function ExtrasStep({ config, onChange }: Props) {
 
       <div>
         <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">
-          Material avulso (escape hatch)
+          Material extra (catálogo)
         </div>
         <PersonalizadoPicker
           itens={config.itens_personalizados ?? []}

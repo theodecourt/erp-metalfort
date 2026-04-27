@@ -10,6 +10,7 @@ from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, SubmitRequest
 from app.services.combo_service import build_combos_bom_from_selections
 from app.services.configuracao_normalizer import normalize_configuracao
+from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
 
 router = APIRouter(prefix="/api/quote", tags=["quote"])
@@ -35,7 +36,8 @@ def internal_calculate(
     bom = repository.list_bom_regras(req.produto_id)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        bom, config, tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
+        append_personalizados(bom, config), config,
+        tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 
 
@@ -57,7 +59,10 @@ def create_internal(
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     bom = repository.list_bom_regras(req.produto_id)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
-    quote = calculate(bom, config, tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom)
+    quote = calculate(
+        append_personalizados(bom, config), config,
+        tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom,
+    )
 
     year = datetime.utcnow().year
     payload = {
