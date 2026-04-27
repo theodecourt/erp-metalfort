@@ -20,11 +20,11 @@ export default function SaldoTable({ rows }: Props) {
         </tr>
       </thead>
       <tbody>
-        {rows.map((r) => {
+        {rows.map((r, idx) => {
           const saldoNum = Number(r.saldo);
           const negativo = saldoNum < 0;
           return (
-            <tr key={r.material_id} className="border-t border-mf-border/20">
+            <tr key={r.material_id} className={`border-t border-mf-border/20 ${idx % 2 === 1 ? 'bg-gray-200' : ''}`}>
               <td className="py-2 font-mono text-xs">{r.sku}</td>
               <td>{r.nome}</td>
               <td className="text-mf-text-secondary">{r.categoria}</td>

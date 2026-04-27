@@ -38,10 +38,10 @@ export default function MovimentoList({ movimentos, materialById }: Props) {
         </tr>
       </thead>
       <tbody>
-        {movimentos.map((m) => {
+        {movimentos.map((m, idx) => {
           const info = materialById[m.material_id];
           return (
-          <tr key={m.id} className="border-t border-mf-border/20">
+          <tr key={m.id} className={`border-t border-mf-border/20 ${idx % 2 === 1 ? 'bg-gray-200' : ''}`}>
             <td className="py-2">{new Date(m.created_at).toLocaleString('pt-BR')}</td>
             <td>{TIPO_LABEL[m.tipo] ?? m.tipo}</td>
             <td>{info?.nome ?? m.material_id}</td>

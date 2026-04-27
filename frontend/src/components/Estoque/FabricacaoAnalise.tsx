@@ -26,12 +26,12 @@ export default function FabricacaoAnalise({ analise }: Props) {
           </tr>
         </thead>
         <tbody>
-          {analise.itens.map((l) => {
+          {analise.itens.map((l, idx) => {
             const isFalta = l.status === 'faltante';
             return (
               <tr
                 key={l.material_id}
-                className={`border-t border-mf-border/20 ${isFalta ? 'faltante bg-mf-warning/10' : ''}`}
+                className={`border-t border-mf-border/20 ${isFalta ? 'faltante bg-mf-warning/10' : (idx % 2 === 1 ? 'bg-gray-200' : '')}`}
               >
                 <td className="py-2 font-mono text-xs">{l.sku}</td>
                 <td>{l.nome}</td>
