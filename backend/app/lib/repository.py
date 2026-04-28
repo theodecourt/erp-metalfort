@@ -209,6 +209,25 @@ def delete_combo_material(combo_id: str, material_id: str) -> None:
     ).execute()
 
 
+def list_templates_using_combo(combo_id: str) -> list[dict[str, Any]]:
+    """Templates (Basico, Premium) que selecionam este combo em alguma categoria."""
+    sb = get_admin_client()
+    res = (
+        sb.table("template_orcamento_selecao")
+        .select("template_id, categoria, template_orcamento(slug, nome)")
+        .eq("pacote_combo_id", combo_id)
+        .execute()
+    )
+    return res.data or []
+
+
+def delete_combo(combo_id: str) -> None:
+    """Apaga combo + materiais. Caller deve checar referencias antes."""
+    sb = get_admin_client()
+    sb.table("pacote_combo_material").delete().eq("pacote_combo_id", combo_id).execute()
+    sb.table("pacote_combo").delete().eq("id", combo_id).execute()
+
+
 def get_combos_by_slugs(slugs: list[str]) -> dict[str, dict[str, Any]]:
     """Retorna {slug: combo_com_materiais} para a lista de slugs informada."""
     if not slugs:

@@ -56,6 +56,7 @@ export default function AdminComboDetail() {
   const [adding, setAdding] = useState(false);
   const [editingMatId, setEditingMatId] = useState<string | null>(null);
   const [editMeta, setEditMeta] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function reload() {
     if (!id) return;
@@ -147,6 +148,10 @@ export default function AdminComboDetail() {
             }}
             className="bg-white border font-bold px-3 py-2 rounded text-sm"
           >Duplicar</button>
+          <button
+            onClick={() => setDeleting(true)}
+            className="bg-mf-danger text-white font-bold px-3 py-2 rounded text-sm"
+          >Excluir</button>
         </div>
       </div>
 
@@ -243,7 +248,83 @@ export default function AdminComboDetail() {
           onSaved={() => { setEditingMatId(null); reload(); }}
         />
       )}
+
+      {deleting && (
+        <DeleteModal
+          combo={combo}
+          onClose={() => setDeleting(false)}
+          onDeleted={() => navigate('/admin/combos')}
+        />
+      )}
     </div>
+  );
+}
+
+function DeleteModal({ combo, onClose, onDeleted }: {
+  combo: Combo;
+  onClose: () => void;
+  onDeleted: () => void;
+}) {
+  const fetchApi = useAuthedFetch();
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function doDelete(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    if (confirmText !== combo.slug) {
+      setErr(`Digite "${combo.slug}" para confirmar`);
+      return;
+    }
+    setDeleting(true);
+    try {
+      await fetchApi(`/api/admin/combos/${combo.id}`, { method: 'DELETE' });
+      onDeleted();
+    } catch (e: any) {
+      setErr(e.message ?? 'Erro ao excluir');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <Modal onClose={onClose} title="Excluir combo definitivamente">
+      <form onSubmit={doDelete} className="space-y-3">
+        <div className="bg-mf-danger/10 border border-mf-danger/30 rounded p-3 text-sm">
+          <p className="font-bold text-mf-danger">Ação irreversível.</p>
+          <p className="mt-1">
+            O combo <span className="font-mono font-bold">{combo.slug}</span> e
+            todos os seus vínculos com materiais serão apagados do banco.
+          </p>
+          <p className="mt-1 text-xs text-mf-text-secondary">
+            Se o combo está referenciado em algum template (Básico/Premium),
+            a exclusão é bloqueada — você precisa remover a seleção no template antes.
+          </p>
+        </div>
+        <label className="block">
+          <span className="text-xs text-mf-text-secondary">
+            Para confirmar, digite o slug: <span className="font-mono">{combo.slug}</span>
+          </span>
+          <input
+            value={confirmText}
+            onChange={e => setConfirmText(e.target.value)}
+            className="block w-full border rounded px-2 py-1 font-mono text-sm"
+            autoFocus
+          />
+        </label>
+        {err && <p className="text-mf-danger text-sm">{err}</p>}
+        <div className="flex gap-2 justify-end pt-2">
+          <button type="button" onClick={onClose}
+            className="text-mf-text-secondary px-3 py-2 rounded text-sm">Cancelar</button>
+          <button
+            type="submit"
+            disabled={deleting || confirmText !== combo.slug}
+            className="bg-mf-danger text-white font-bold px-3 py-2 rounded text-sm disabled:opacity-50"
+          >Excluir definitivamente</button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

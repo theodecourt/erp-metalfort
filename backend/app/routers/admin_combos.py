@@ -119,6 +119,26 @@ def duplicate(combo_id: str, user=Depends(require_role("admin"))):
     return new_combo
 
 
+@router.delete("/{combo_id}")
+def hard_delete(combo_id: str, user=Depends(require_role("admin"))):
+    combo = repository.get_combo_with_materiais(combo_id)
+    if combo is None:
+        raise HTTPException(404, "combo nao encontrado")
+    refs = repository.list_templates_using_combo(combo_id)
+    if refs:
+        templates = sorted({
+            r["template_orcamento"]["nome"] for r in refs
+            if r.get("template_orcamento")
+        })
+        raise HTTPException(
+            409,
+            f"combo referenciado em template(s): {', '.join(templates)}. "
+            "Remova a selecao no template antes de excluir.",
+        )
+    repository.delete_combo(combo_id)
+    return {"ok": True}
+
+
 @router.get("/{combo_id}/materiais")
 def list_materiais(combo_id: str, user=Depends(require_role("admin"))):
     combo = repository.get_combo_with_materiais(combo_id)
