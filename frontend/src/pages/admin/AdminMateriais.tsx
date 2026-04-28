@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
 import { fmtBRL, fmtQtd, isIntegerUnit } from '../../lib/format';
 
@@ -24,6 +24,10 @@ export default function AdminMateriais() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPrice, setDraftPrice] = useState('');
   const [draftMin, setDraftMin] = useState('');
+
+  // Filtros de listagem
+  const [search, setSearch] = useState('');
+  const [filterCat, setFilterCat] = useState<'all' | typeof CATEGORIAS[number]>('all');
 
   // Create form state
   const [showNew, setShowNew] = useState(false);
@@ -103,14 +107,43 @@ export default function AdminMateriais() {
 
   const minStep = isIntegerUnit(newUnidade) ? '1' : '0.01';
 
+  const filtered = useMemo(() => {
+    const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
+    return rows.filter(m => {
+      if (filterCat !== 'all' && m.categoria !== filterCat) return false;
+      if (terms.length === 0) return true;
+      const hay = `${m.sku} ${m.nome} ${m.categoria}`.toLowerCase();
+      return terms.every(t => hay.includes(t));
+    });
+  }, [rows, search, filterCat]);
+
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="text-2xl font-extrabold">Materiais</h1>
-        <button
-          onClick={() => { if (showNew) resetNewForm(); setShowNew(s => !s); }}
-          className="bg-mf-yellow text-mf-black font-bold px-3 py-2 rounded text-sm"
-        >{showNew ? 'Cancelar' : '+ Novo material'}</button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar SKU, nome, categoria"
+            className="border rounded px-2 py-1 text-sm w-64"
+          />
+          <select
+            value={filterCat}
+            onChange={e => setFilterCat(e.target.value as 'all' | typeof CATEGORIAS[number])}
+            className="border rounded px-2 py-1 text-sm"
+          >
+            <option value="all">Todas categorias</option>
+            {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <span className="text-xs text-mf-text-secondary tabular-nums">
+            {filtered.length} de {rows.length}
+          </span>
+          <button
+            onClick={() => { if (showNew) resetNewForm(); setShowNew(s => !s); }}
+            className="bg-mf-yellow text-mf-black font-bold px-3 py-2 rounded text-sm"
+          >{showNew ? 'Cancelar' : '+ Novo material'}</button>
+        </div>
       </div>
 
       {showNew && (
@@ -211,7 +244,12 @@ export default function AdminMateriais() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(m => (
+            {filtered.length === 0 && (
+              <tr><td className="p-4 text-mf-text-secondary" colSpan={7}>
+                {rows.length === 0 ? 'Nenhum material.' : 'Nenhum material casa com a busca/filtro.'}
+              </td></tr>
+            )}
+            {filtered.map(m => (
               <tr
                 key={m.id}
                 className={`border-t ${PLANILHA_SAMUEL_SKU.test(m.sku) ? 'bg-yellow-50' : ''}`}
