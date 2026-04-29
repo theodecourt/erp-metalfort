@@ -96,6 +96,34 @@ def create_internal(
     return orc
 
 
+@router.get("/{orcamento_id}")
+def get_orcamento(
+    orcamento_id: str,
+    user=Depends(require_role("admin", "vendedor")),
+):
+    sb = get_admin_client()
+    orc = sb.table("orcamento").select("*").eq("id", orcamento_id).limit(1).execute().data
+    if not orc:
+        raise HTTPException(404, "orçamento não encontrado")
+    orcamento = orc[0]
+    itens = (
+        sb.table("orcamento_item")
+        .select("*, material(sku, nome, unidade)")
+        .eq("orcamento_id", orcamento_id)
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    produto = (
+        sb.table("produto").select("id, slug, nome").eq("id", orcamento["produto_id"]).limit(1).execute().data
+        or [None]
+    )[0]
+    orcamento["itens"] = itens
+    orcamento["produto"] = produto
+    return orcamento
+
+
 @router.patch("/{orcamento_id}")
 def patch_orcamento(
     orcamento_id: str, body: dict,

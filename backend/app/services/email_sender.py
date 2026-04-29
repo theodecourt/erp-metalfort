@@ -51,14 +51,16 @@ def _send(to: str, subject: str, body: str, attachments: list[dict] | None = Non
 
 
 def send_cliente_email(*, to: str, cliente_nome: str, numero: str, produto_nome: str,
-                       valor_total: float, pdf_bytes: bytes) -> None:
+                       valor_total: float, pdf_bytes: bytes | None) -> None:
     body = _render("email_cliente.html",
         cliente_nome=cliente_nome, numero=numero,
         produto_nome=produto_nome, valor_total=valor_total)
-    att = [{
-        "filename": f"{numero}.pdf",
-        "content": base64.b64encode(pdf_bytes).decode("ascii"),
-    }]
+    att: list[dict] | None = None
+    if pdf_bytes is not None:
+        att = [{
+            "filename": f"{numero}.pdf",
+            "content": base64.b64encode(pdf_bytes).decode("ascii"),
+        }]
     _send(to, f"Seu orçamento Metalfort — {numero}", body, attachments=att)
 
 
