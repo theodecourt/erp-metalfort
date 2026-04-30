@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from app.config import settings
-from app.routers import admin_combos, combos, estoque, fornecedor, material, produto, public_quote, quote
+from app.routers import admin_combos, combos, compra, estoque, fornecedor, material, produto, public_quote, quote
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -30,6 +30,7 @@ app.include_router(fornecedor.router)
 app.include_router(estoque.router)
 app.include_router(combos.router)
 app.include_router(admin_combos.router)
+app.include_router(compra.router)
 
 
 @app.get("/health")

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
 import {
   estoqueApi, fornecedorApi,
@@ -69,12 +70,18 @@ export default function AdminEstoqueMovimentos() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
         <MovimentoFiltros value={filtros} onChange={setFiltros} />
-        <button
-          className="bg-mf-yellow text-mf-black font-bold px-3 py-1 rounded text-sm"
-          onClick={() => setShowForm((s) => !s)}
-        >{showForm ? 'Cancelar' : 'Novo movimento'}</button>
+        <div className="flex gap-2">
+          <Link
+            to="/admin/estoque/compra/nova"
+            className="bg-mf-success text-white font-bold px-3 py-1 rounded text-sm"
+          >+ Nova compra (NF)</Link>
+          <button
+            className="bg-mf-yellow text-mf-black font-bold px-3 py-1 rounded text-sm"
+            onClick={() => setShowForm((s) => !s)}
+          >{showForm ? 'Cancelar' : 'Novo movimento'}</button>
+        </div>
       </div>
       {showForm && (
         <div className="mb-6 p-4 bg-white rounded shadow-sm">

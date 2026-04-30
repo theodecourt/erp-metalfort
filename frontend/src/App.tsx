@@ -18,6 +18,7 @@ import AdminEstoqueMovimentos from './pages/admin/AdminEstoqueMovimentos';
 import AdminEstoqueFornecedores from './pages/admin/AdminEstoqueFornecedores';
 import AdminEstoqueFabricacaoPicker from './pages/admin/AdminEstoqueFabricacaoPicker';
 import AdminEstoqueFabricacao from './pages/admin/AdminEstoqueFabricacao';
+import AdminNovaCompra from './pages/admin/AdminNovaCompra';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './lib/auth';
 
@@ -44,6 +45,7 @@ export default function App() {
               <Route index element={<Navigate to="saldo" replace />} />
               <Route path="saldo" element={<AdminEstoqueSaldo />} />
               <Route path="movimentos" element={<AdminEstoqueMovimentos />} />
+              <Route path="compra/nova" element={<AdminNovaCompra />} />
               <Route path="fornecedores" element={<AdminEstoqueFornecedores />} />
               <Route path="fabricacao" element={<AdminEstoqueFabricacaoPicker />} />
               <Route path="fabricacao/:orcamento_id" element={<AdminEstoqueFabricacao />} />

@@ -209,6 +209,74 @@ def delete_combo_material(combo_id: str, material_id: str) -> None:
     ).execute()
 
 
+def list_fornecedores_ativos() -> list[dict[str, Any]]:
+    sb = get_admin_client()
+    res = (
+        sb.table("fornecedor").select("*").eq("ativo", True).order("nome").execute()
+    )
+    return res.data or []
+
+
+def insert_fornecedor(payload: dict[str, Any]) -> dict[str, Any]:
+    sb = get_admin_client()
+    res = sb.table("fornecedor").insert(payload).execute()
+    return res.data[0]
+
+
+def insert_material_basico(payload: dict[str, Any]) -> dict[str, Any]:
+    """Cria material com defaults sensatos (ativo=true, estoque_minimo=0)."""
+    sb = get_admin_client()
+    full = {"ativo": True, "estoque_minimo": 0, **payload}
+    res = sb.table("material").insert(full).execute()
+    return res.data[0]
+
+
+def insert_estoque_movimento(payload: dict[str, Any]) -> dict[str, Any]:
+    sb = get_admin_client()
+    res = sb.table("estoque_movimento").insert(payload).execute()
+    return res.data[0]
+
+
+def update_material_preco(material_id: str, preco: float) -> None:
+    sb = get_admin_client()
+    sb.table("material").update({"preco_unitario": preco}).eq("id", material_id).execute()
+
+
+def upsert_material_fornecedor(
+    material_id: str,
+    fornecedor_id: str,
+    sku_fornecedor: str | None,
+    descricao_fornecedor: str | None,
+    ultimo_preco: float,
+) -> None:
+    """Upsert do alias material x fornecedor com último preço pago."""
+    from datetime import datetime, timezone
+    sb = get_admin_client()
+    payload = {
+        "material_id": material_id,
+        "fornecedor_id": fornecedor_id,
+        "sku_fornecedor": sku_fornecedor,
+        "descricao_fornecedor": descricao_fornecedor,
+        "ultimo_preco": ultimo_preco,
+        "ultima_compra_em": datetime.now(timezone.utc).isoformat(),
+    }
+    sb.table("material_fornecedor").upsert(
+        payload, on_conflict="material_id,fornecedor_id"
+    ).execute()
+
+
+def list_material_aliases_by_fornecedor(fornecedor_id: str) -> list[dict[str, Any]]:
+    """Aliases registrados pra esse fornecedor — usado pra sugerir match em NF futura."""
+    sb = get_admin_client()
+    res = (
+        sb.table("material_fornecedor")
+        .select("*, material(*)")
+        .eq("fornecedor_id", fornecedor_id)
+        .execute()
+    )
+    return res.data or []
+
+
 def list_templates_using_combo(combo_id: str) -> list[dict[str, Any]]:
     """Templates (Basico, Premium) que selecionam este combo em alguma categoria."""
     sb = get_admin_client()
