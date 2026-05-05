@@ -21,6 +21,14 @@ venv/
 .env.local
 .env.*.local
 
+# Service account credentials (NUNCA commitar)
+backend/secrets/
+*.json.key
+
+# Planilhas e arquivos de dados externos (Samuel etc.)
+planilhas tito/
+planilhas/
+
 # OS
 .DS_Store
 Thumbs.db

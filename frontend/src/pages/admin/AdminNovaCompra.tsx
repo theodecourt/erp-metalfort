@@ -4,7 +4,7 @@ import { useAuthedFetch } from '../../lib/auth';
 import { fmtBRL } from '../../lib/format';
 
 const CATEGORIAS = ['estrutura','fechamento','instalacoes','acabamento','esquadria','equipamento','servico'] as const;
-const UNIDADES = ['kg','m','m2','pc','cx','und','h','bd','rl','sc','ml','ct'] as const;
+const UNIDADES = ['kg','m','m2','m3','pc','cx','und','h','bd','rl','sc','ml','ct','l','km','dia'] as const;
 
 const CATEGORIA_LABEL: Record<typeof CATEGORIAS[number], string> = {
   estrutura: 'Estrutura',
@@ -20,6 +20,7 @@ const UNIDADE_LABEL: Record<typeof UNIDADES[number], string> = {
   kg: 'quilograma',
   m: 'metro',
   m2: 'metro quadrado',
+  m3: 'metro cúbico',
   pc: 'peça',
   cx: 'caixa',
   und: 'unidade',
@@ -29,6 +30,9 @@ const UNIDADE_LABEL: Record<typeof UNIDADES[number], string> = {
   sc: 'saco',
   ml: 'mililitro',
   ct: 'cento',
+  l: 'litro',
+  km: 'quilômetro',
+  dia: 'diária',
 };
 
 interface Fornecedor { id: string; nome: string; cnpj: string | null }
@@ -99,10 +103,15 @@ export default function AdminNovaCompra() {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // Scan NF — em revisão. Fluxo de leitura via foto (Document AI + matching contra catálogo)
+  // está temporariamente desativado na UI até estabilizar tratamento de imagens
+  // grandes pelo celular e refinar o reconhecimento por fornecedor. O endpoint
+  // backend POST /api/admin/compra/parse-nf continua funcionando para uso futuro.
+
   useEffect(() => {
     (async () => {
       const [forns, mats] = await Promise.all([
-        fetchApi<Fornecedor[]>('/api/estoque/fornecedor'),
+        fetchApi<Fornecedor[]>('/api/fornecedor'),
         fetchApi<Material[]>('/api/material'),
       ]);
       setFornecedores(forns);
@@ -131,12 +140,22 @@ export default function AdminNovaCompra() {
     }, 0);
   }, [items]);
 
-  function validate(): string | null {
+  // Linha "vazia" = sem material/qtd/preco/dados — descartamos no submit em
+  // vez de bloquear (geralmente sao linhas-fantasma do scan da NF).
+  function isEmptyDraft(it: ItemDraft): boolean {
+    if (it.material_id) return false;
+    if (it.novo_material && (it.draft.sku.trim() || it.draft.nome.trim())) return false;
+    if (it.quantidade.trim() || it.preco_nf.trim()) return false;
+    if (it.sku_fornecedor.trim() || it.descricao_fornecedor.trim()) return false;
+    return true;
+  }
+
+  function validate(itemsToCheck: ItemDraft[]): string | null {
     if (fornecedorMode === 'existente' && !fornecedorId) return 'Selecione o fornecedor';
     if (fornecedorMode === 'novo' && !novoFornecedorNome.trim()) return 'Nome do fornecedor obrigatório';
-    if (items.length === 0) return 'Adicione pelo menos um item';
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
+    if (itemsToCheck.length === 0) return 'Adicione pelo menos um item preenchido';
+    for (let i = 0; i < itemsToCheck.length; i++) {
+      const it = itemsToCheck[i];
       const tag = `Item ${i + 1}`;
       if (!it.novo_material && !it.material_id) return `${tag}: escolha um material ou marque "novo"`;
       if (it.novo_material) {
@@ -158,14 +177,15 @@ export default function AdminNovaCompra() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    const v = validate();
+    const itemsForSubmit = items.filter(it => !isEmptyDraft(it));
+    const v = validate(itemsForSubmit);
     if (v) { setErr(v); return; }
     setSubmitting(true);
     try {
       const body: any = {
         nota_fiscal: notaFiscal.trim() || null,
         observacao: observacao.trim() || null,
-        itens: items.map(it => {
+        itens: itemsForSubmit.map(it => {
           const base: any = {
             quantidade: Number(it.quantidade.replace(',', '.')),
             preco_nf: Number(it.preco_nf.replace(',', '.')),
@@ -219,6 +239,21 @@ export default function AdminNovaCompra() {
         atualiza o catálogo conforme você escolher e guarda alias por fornecedor
         para reconhecer o material em NFs futuras.
       </p>
+
+      <div className="mt-4 p-3 bg-gray-100 border border-gray-300 rounded">
+        <div className="flex items-start gap-3 flex-wrap">
+          <div className="flex-1 min-w-[200px]">
+            <p className="text-sm font-bold text-mf-text-secondary">
+              📷 Escanear NF — em revisão
+            </p>
+            <p className="text-xs text-mf-text-secondary mt-1">
+              O fluxo de leitura automática via foto está em ajuste. Por enquanto,
+              preencha manualmente os campos abaixo. Voltamos com isso assim que
+              estiver mais robusto.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <form onSubmit={submit} className="mt-5 space-y-5">
         <section className="bg-white rounded border p-4 space-y-3">

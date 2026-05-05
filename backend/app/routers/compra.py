@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from app.lib import repository
@@ -160,3 +160,134 @@ def receber_compra(req: CompraRequest, user=Depends(require_role("admin"))):
 def list_aliases(fornecedor_id: str, user=Depends(require_role("admin"))):
     """Lista aliases material x fornecedor — usado pra reconhecer materiais em NFs futuras."""
     return repository.list_material_aliases_by_fornecedor(fornecedor_id)
+
+
+def _normalize_text(s: str) -> set[str]:
+    """Tokeniza texto pra fuzzy match: lowercase, sem acentos, sem pontuacao."""
+    import unicodedata
+    s = unicodedata.normalize("NFD", s).encode("ascii", "ignore").decode()
+    s = s.lower()
+    out: list[str] = []
+    cur = ""
+    for ch in s:
+        if ch.isalnum():
+            cur += ch
+        elif cur:
+            out.append(cur)
+            cur = ""
+    if cur:
+        out.append(cur)
+    # Filtra tokens muito curtos
+    return {t for t in out if len(t) >= 2}
+
+
+def _match_material(
+    item_descricao: str,
+    item_sku_fornecedor: str | None,
+    aliases_by_sku: dict[str, dict],
+    materiais: list[dict],
+) -> dict | None:
+    """Tenta achar o material no catálogo. Estratégia em camadas:
+    1. SKU do fornecedor bate exato com alias previo
+    2. Fuzzy de descricao_fornecedor previa do alias
+    3. Fuzzy de SKU/nome do material no catalogo
+    Retorna o material com pontuacao ou None.
+    """
+    # 1. Alias por SKU exato
+    if item_sku_fornecedor and item_sku_fornecedor in aliases_by_sku:
+        a = aliases_by_sku[item_sku_fornecedor]
+        if a.get("material"):
+            return {**a["material"], "_match": "alias_sku", "_score": 100}
+
+    # 2/3. Fuzzy contra descrição
+    desc_tokens = _normalize_text(item_descricao or "")
+    if not desc_tokens:
+        return None
+
+    best: tuple[float, dict] | None = None
+    for m in materiais:
+        # tokens do catalogo
+        cat_tokens = _normalize_text(f"{m.get('sku', '')} {m.get('nome', '')}")
+        if not cat_tokens:
+            continue
+        common = desc_tokens & cat_tokens
+        if not common:
+            continue
+        # Score = jaccard inflado
+        score = len(common) / len(desc_tokens | cat_tokens) * 100
+        if best is None or score > best[0]:
+            best = (score, m)
+
+    if best and best[0] >= 30:  # threshold sensato pra evitar match aleatorio
+        return {**best[1], "_match": "fuzzy", "_score": round(best[0], 1)}
+    return None
+
+
+@router.post("/parse-nf")
+async def parse_nf(
+    file: UploadFile = File(...),
+    user=Depends(require_role("admin")),
+):
+    """Recebe imagem (JPEG/PNG) ou PDF da NF, chama Document AI, faz matching
+    contra catalogo + aliases, e retorna sugestao pra UI revisar."""
+    from app.services.nf_parser import parse_nf_bytes
+
+    content = await file.read()
+    mime = file.content_type or ""
+    if not mime.startswith("image/") and mime != "application/pdf":
+        raise HTTPException(400, f"tipo de arquivo nao suportado: {mime}")
+    if len(content) > 20 * 1024 * 1024:
+        raise HTTPException(413, "arquivo > 20MB")
+
+    try:
+        parsed = parse_nf_bytes(content, mime)
+    except RuntimeError as e:
+        raise HTTPException(503, str(e)) from e
+    except Exception as e:
+        raise HTTPException(502, f"falha no Document AI: {type(e).__name__}: {e}") from e
+
+    # Tenta casar fornecedor pelo CNPJ
+    sb_fornecedor_id = None
+    fornecedores = repository.list_fornecedores_ativos()
+    cnpj = (parsed["fornecedor"].get("cnpj") or "").strip()
+    if cnpj:
+        cnpj_digits = "".join(ch for ch in cnpj if ch.isdigit())
+        for f in fornecedores:
+            f_cnpj = (f.get("cnpj") or "")
+            if "".join(ch for ch in f_cnpj if ch.isdigit()) == cnpj_digits and cnpj_digits:
+                sb_fornecedor_id = f["id"]
+                break
+
+    # Carrega aliases do fornecedor (se identificado) pra ajudar matching
+    aliases: list[dict] = []
+    aliases_by_sku: dict[str, dict] = {}
+    if sb_fornecedor_id:
+        aliases = repository.list_material_aliases_by_fornecedor(sb_fornecedor_id)
+        for a in aliases:
+            sku = (a.get("sku_fornecedor") or "").strip()
+            if sku:
+                aliases_by_sku[sku] = a
+
+    materiais = repository.list_materiais_ativos()
+
+    # Enriquece itens com sugestao de match
+    suggested_items = []
+    for it in parsed["itens"]:
+        m = _match_material(
+            it.get("descricao") or "",
+            it.get("sku_fornecedor"),
+            aliases_by_sku,
+            materiais,
+        )
+        suggested_items.append({**it, "match": m})
+
+    return {
+        "fornecedor": {
+            **parsed["fornecedor"],
+            "match_id": sb_fornecedor_id,
+        },
+        "nota_fiscal": parsed["nota_fiscal"],
+        "data": parsed["data"],
+        "valor_total": parsed["valor_total"],
+        "itens": suggested_items,
+    }

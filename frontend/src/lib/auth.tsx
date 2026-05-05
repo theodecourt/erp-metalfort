@@ -31,13 +31,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() { return useContext(Ctx); }
 
+// Em dev (LAN/celular) usamos o proxy do Vite — então caminho relativo basta.
+// Em prod, defina VITE_API_URL para a URL absoluta do backend.
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 export function useAuthedFetch() {
   const { session } = useAuth();
   return async function<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}${path}`, {
+    const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+    const baseHeaders: Record<string, string> = isFormData
+      ? {} // não setar Content-Type quando FormData (browser põe boundary)
+      : { 'Content-Type': 'application/json' };
+    const res = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: {
-        'Content-Type': 'application/json',
+        ...baseHeaders,
         Authorization: session ? `Bearer ${session.access_token}` : '',
         ...(init.headers ?? {}),
       },

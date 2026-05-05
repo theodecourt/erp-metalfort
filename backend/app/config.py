@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:5173"
     metalfort_notification_email: str = "theo@metalfort.tech"
 
+    # Google Cloud Document AI (parse de NF)
+    google_application_credentials: str = ""
+    google_cloud_project: str = ""
+    docai_location: str = "us"
+    docai_processor_id: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
