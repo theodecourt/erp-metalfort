@@ -3,7 +3,7 @@ import { useAuthedFetch } from '../../lib/auth';
 import { fmtBRL, fmtQtd, isIntegerUnit } from '../../lib/format';
 
 const CATEGORIAS = ['estrutura','fechamento','instalacoes','acabamento','esquadria','equipamento','servico'] as const;
-const UNIDADES = ['kg','m','m2','pc','cx','und','h','bd','rl','sc','ml','ct'] as const;
+const UNIDADES = ['kg','m','m2','m3','pc','cx','und','h','bd','rl','sc','ml','ct','l','km','dia'] as const;
 
 // SKUs no formato CFxxxSFxxxUxxx vêm da planilha do Samuel — pintamos diferente
 // para deixar visível que a origem é importação, não cadastro manual.
