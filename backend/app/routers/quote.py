@@ -9,6 +9,7 @@ from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, SubmitRequest
 from app.services.combo_service import build_combos_bom_from_selections
+from app.services.composicao_service import expand_composicoes_to_bom
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
@@ -34,9 +35,10 @@ def internal_calculate(
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     bom = repository.list_bom_regras(req.produto_id)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        append_personalizados(bom, config), config,
+        append_personalizados(bom + bom_composicoes, config), config,
         tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 
@@ -58,9 +60,10 @@ def create_internal(
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     bom = repository.list_bom_regras(req.produto_id)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
-        append_personalizados(bom, config), config,
+        append_personalizados(bom + bom_composicoes, config), config,
         tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 

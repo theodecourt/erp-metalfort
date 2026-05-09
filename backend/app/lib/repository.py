@@ -44,6 +44,41 @@ def list_opcoes(produto_id: str) -> list[dict[str, Any]]:
     return res.data or []
 
 
+def list_produto_composicoes(produto_id: str) -> list[dict[str, Any]]:
+    """Carrega vinculacoes produto_composicao com materiais expandidos.
+    Cada item retornado tem: produto_id, composicao_id, formula_json,
+    incluir_mo, ordem, composicao (cabecalho) e materiais (lista de
+    composicao_material com material aninhado)."""
+    sb = get_admin_client()
+    pcomps = (
+        sb.table("produto_composicao")
+        .select("*, composicao(id, codigo, descricao, modo, ativo)")
+        .eq("produto_id", produto_id)
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    if not pcomps:
+        return []
+    comp_ids = [pc["composicao_id"] for pc in pcomps if pc.get("composicao", {}).get("ativo")]
+    mats = (
+        sb.table("composicao_material")
+        .select("*, material(*)")
+        .in_("composicao_id", comp_ids)
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    by_comp: dict[str, list[dict[str, Any]]] = {}
+    for m in mats:
+        by_comp.setdefault(m["composicao_id"], []).append(m)
+    for pc in pcomps:
+        pc["materiais"] = by_comp.get(pc["composicao_id"], [])
+    return pcomps
+
+
 def list_bom_regras(produto_id: str) -> list[dict[str, Any]]:
     sb = get_admin_client()
     res = (

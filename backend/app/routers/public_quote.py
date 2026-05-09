@@ -9,10 +9,9 @@ from slowapi.util import get_remote_address
 from app.lib import repository
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, QuoteResponse, SubmitRequest
-from app.services import storage
 from app.services.combo_service import build_combos_bom_from_selections
+from app.services.composicao_service import expand_composicoes_to_bom
 from app.services.configuracao_normalizer import normalize_configuracao
-from app.services.email_sender import send_cliente_email, send_metalfort_notification
 from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
 
@@ -47,9 +46,10 @@ def public_calculate(request: Request, req: CalculateRequest):
         raise HTTPException(404, "Produto sem BOM cadastrada")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        append_personalizados(bom, config), config,
+        append_personalizados(bom + bom_composicoes, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 
@@ -68,9 +68,10 @@ def public_submit(request: Request, req: SubmitRequest):
     bom = repository.list_bom_regras(req.produto_id)
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
-        append_personalizados(bom, config), config,
+        append_personalizados(bom + bom_composicoes, config), config,
         tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 

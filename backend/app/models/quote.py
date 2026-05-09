@@ -96,6 +96,7 @@ class QuoteItem(BaseModel):
     categoria: str
     ordem: int
     combo_slug: str | None = None
+    composicao_codigo: str | None = None
 
 
 class QuoteExtraItem(BaseModel):
