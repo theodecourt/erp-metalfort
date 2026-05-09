@@ -143,6 +143,31 @@ Eram lixo de testes anteriores que estavam aparecendo no configurador público.
 
 ---
 
+### Decisão 8 — Composições alternativas ficam sem vínculo automático (dívida técnica conhecida)
+
+Das 10 composições marcadas inicialmente como "automáticas" no plano, apenas 5
+foram efetivamente vinculadas a `produto_composicao` (COMP00001-04 + COMP00019:
+estrutura LSF, treliças, pilares e insumos auxiliares).
+
+As outras 5 — COMP00005 (Telha+Manta), COMP00006 (Membrana+Cimentícia),
+COMP00007 (Lã+Gesso), COMP00008 (Cimentícia 20mm), COMP00009 (Forro Gesso) —
+ficam cadastradas em `composicao` mas **sem vínculo** com produto. Continuam
+disponíveis no banco como "biblioteca" de receitas.
+
+**Razão**: essas 5 são alternativas tecnológicas que **se sobrepõem aos combos
+existentes** do ERP (ex.: COMP00005 ↔ `cobertura-standard`, COMP00006 ↔
+`fechamento-standard`, COMP00009 ↔ `forro-standard`, etc.). Vincular como
+automáticas duplicaria materiais nos orçamentos. Hoje as alternativas continuam
+sendo cobertas pelos combos.
+
+**Dívida técnica futura (γ)**: refatorar combos para serem "cascas" em cima de
+composições, eliminando a duplicação de definição entre os dois mundos. Combos
+passariam a ser responsáveis apenas pela lógica de "alternativa que o cliente
+escolhe"; composições continuariam sendo a receita técnica. Trabalho relevante e
+arriscado, merece ciclo dedicado — não bloqueia a operação atual.
+
+---
+
 ## Convenções para futuras entradas neste documento
 
 - Sempre datar (`YYYY-MM-DD`) e numerar decisões dentro de uma seção.
