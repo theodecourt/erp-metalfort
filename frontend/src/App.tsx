@@ -12,6 +12,7 @@ import AdminProdutos from './pages/admin/AdminProdutos';
 import AdminMateriais from './pages/admin/AdminMateriais';
 import AdminCombos from './pages/admin/AdminCombos';
 import AdminComboDetail from './pages/admin/AdminComboDetail';
+import AdminComposicoes from './pages/admin/AdminComposicoes';
 import AdminEstoqueLayout from './pages/admin/AdminEstoqueLayout';
 import AdminEstoqueSaldo from './pages/admin/AdminEstoqueSaldo';
 import AdminEstoqueMovimentos from './pages/admin/AdminEstoqueMovimentos';
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="materiais" element={<AdminMateriais />} />
             <Route path="combos" element={<AdminCombos />} />
             <Route path="combos/:id" element={<AdminComboDetail />} />
+            <Route path="composicoes" element={<AdminComposicoes />} />
             <Route path="estoque" element={<AdminEstoqueLayout />}>
               <Route index element={<Navigate to="saldo" replace />} />
               <Route path="saldo" element={<AdminEstoqueSaldo />} />
