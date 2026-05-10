@@ -69,16 +69,44 @@ export default function AdminOrcamentoNew() {
   const calculateInternal = (body: unknown) =>
     fetchApi<any>('/api/quote/calculate?tier=full', { method: 'POST', body: JSON.stringify(body) });
 
+  // Estado dos prompts obrigatórios (defaults null = não respondido)
+  const [incluirFundacao, setIncluirFundacao] = useState<boolean | null>(null);
+  const [incluirProjeto, setIncluirProjeto] = useState<boolean | null>(null);
+  const [valorProjetoOverride, setValorProjetoOverride] = useState<string>('');
+
+  // Default sugerido pra valor do projeto (R$ 142 da composição COMP00028)
+  const VALOR_PROJETO_DEFAULT = 142;
+
+  const promptCompletos = incluirFundacao !== null && incluirProjeto !== null;
+  const valorOverrideNumero =
+    valorProjetoOverride.trim() === '' ? null : Number(valorProjetoOverride.replace(',', '.'));
+  const valorOverrideValido =
+    valorOverrideNumero === null || (Number.isFinite(valorOverrideNumero) && valorOverrideNumero >= 0);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!produto || !config) return;
+    if (!promptCompletos) {
+      setError('Responda "Incluir fundação?" e "Incluir projeto complementar?" antes de salvar.');
+      return;
+    }
+    if (incluirProjeto && !valorOverrideValido) {
+      setError('Valor do projeto inválido (deve ser número >= 0 ou vazio para usar default).');
+      return;
+    }
     setSubmitting(true); setError(null);
     try {
+      const configWithOverrides: Configuracao = {
+        ...config,
+        incluir_fundacao: incluirFundacao,
+        incluir_projeto: incluirProjeto,
+        valor_projeto_override: incluirProjeto ? valorOverrideNumero : null,
+      };
       const created = await fetchApi<any>(`/api/quote?enviar_email=${enviarEmail}`, {
         method: 'POST',
         body: JSON.stringify({
           produto_id: produto.id,
-          configuracao: config,
+          configuracao: configWithOverrides,
           cliente_nome: lead.nome,
           cliente_email: lead.email,
           cliente_telefone: lead.telefone,
@@ -144,6 +172,82 @@ export default function AdminOrcamentoNew() {
 
         {produto && (
           <section className="p-6 border-t border-mf-border">
+            <h2 className="text-lg font-extrabold text-mf-yellow">Itens da obra (decisão obrigatória)</h2>
+            <p className="text-xs text-mf-text-secondary mt-1 mb-4">
+              Marque explicitamente se fundação e projeto complementar entram nesta obra.
+              Sem default — força resposta consciente. Detalhes em
+              {' '}
+              <code className="text-xs">docs/regras-de-negocio.md</code>.
+            </p>
+            <div className="grid gap-4 max-w-xl">
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir fundação?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirFundacao === true}
+                      onChange={() => setIncluirFundacao(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirFundacao === false}
+                      onChange={() => setIncluirFundacao(false)}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir projeto complementar?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirProjeto === true}
+                      onChange={() => setIncluirProjeto(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirProjeto === false}
+                      onChange={() => {
+                        setIncluirProjeto(false);
+                        setValorProjetoOverride('');
+                      }}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+                {incluirProjeto && (
+                  <div className="mt-2 max-w-xs">
+                    <label className="block">
+                      <span className="text-xs text-mf-text-secondary">
+                        Valor (R$). Deixe vazio para usar default (R$ {VALOR_PROJETO_DEFAULT.toFixed(2)}) —
+                        digite 0 se cliente já tem projeto.
+                      </span>
+                      <input
+                        value={valorProjetoOverride}
+                        onChange={e => setValorProjetoOverride(e.target.value)}
+                        placeholder={`${VALOR_PROJETO_DEFAULT}`}
+                        inputMode="decimal"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {produto && (
+          <section className="p-6 border-t border-mf-border">
             <form onSubmit={handleSubmit} className="grid gap-3 max-w-xl">
               <h2 className="text-lg font-extrabold text-mf-yellow">Dados do cliente</h2>
               <input required placeholder="Nome" value={lead.nome}
@@ -171,9 +275,15 @@ export default function AdminOrcamentoNew() {
                   onChange={e => setEnviarEmail(e.target.checked)}/>
                 <span>Enviar PDF por email ao cliente (e notificar Metalfort)</span>
               </label>
-              <button type="submit" disabled={submitting || !config}
+              <button
+                type="submit"
+                disabled={submitting || !config || !promptCompletos || !valorOverrideValido}
                 className="bg-mf-yellow text-mf-black font-extrabold py-3 rounded hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                {submitting ? 'Criando...' : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
+                {submitting
+                  ? 'Criando...'
+                  : !promptCompletos
+                  ? 'Responda fundação e projeto antes'
+                  : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
               </button>
               {error && <div className="text-mf-danger text-sm">{error}</div>}
             </form>

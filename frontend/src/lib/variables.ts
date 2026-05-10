@@ -93,6 +93,11 @@ export interface Configuracao {
   comp_paredes_ext_m?: number;
   comp_paredes_int_m?: number;
   extras_comerciais?: ExtraComercial[];
+  // Composições opcionais por orçamento (admin only) — null = não respondido,
+  // bloqueia salvar. Em fluxo público é forçado a false no backend.
+  incluir_fundacao?: boolean | null;
+  incluir_projeto?: boolean | null;
+  valor_projeto_override?: number | null;
 }
 
 const round6 = (n: number) => +n.toFixed(6);

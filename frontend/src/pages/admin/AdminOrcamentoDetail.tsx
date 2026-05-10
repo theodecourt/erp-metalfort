@@ -183,6 +183,9 @@ export default function AdminOrcamentoDetail() {
         )}
       </section>
 
+      <ComposicoesAplicadas config={config} />
+
+
       <section className="bg-white rounded border overflow-hidden">
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary">
@@ -274,6 +277,76 @@ function Info({ label, value, mono }: { label: string; value: string; mono?: boo
       <div className="text-xs uppercase tracking-wider text-mf-text-secondary">{label}</div>
       <div className={mono ? 'font-mono text-xs mt-1' : 'mt-1'}>{value}</div>
     </div>
+  );
+}
+
+function ComposicoesAplicadas({ config }: { config: any }) {
+  const incluirFundacao = config?.incluir_fundacao;
+  const incluirProjeto = config?.incluir_projeto;
+  const valorOverride = config?.valor_projeto_override;
+
+  // Orçamentos antigos (pré-composições) não tinham esses campos. Se ambos
+  // são undefined, escondemos o bloco.
+  if (incluirFundacao === undefined && incluirProjeto === undefined) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white rounded border p-4">
+      <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary mb-3">
+        Composições aplicadas
+      </h2>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-secondary w-44 pt-0.5 shrink-0">
+            Estrutura LSF base
+          </span>
+          <span>
+            <strong>Sempre inclusa</strong> — paineis LSF (paredes, piso, cobertura),
+            treliças e insumos auxiliares. Calculada por área da obra.
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-secondary w-44 pt-0.5 shrink-0">
+            Fundação
+          </span>
+          <span>
+            {incluirFundacao === true && (
+              <span><span className="text-mf-success font-bold">Incluída</span> — concreto C20 com volume estimado em 0,10 m × área de planta.</span>
+            )}
+            {incluirFundacao === false && (
+              <span className="text-mf-text-secondary">Não inclusa (cliente executa por conta).</span>
+            )}
+            {incluirFundacao !== true && incluirFundacao !== false && (
+              <span className="text-mf-text-secondary">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-secondary w-44 pt-0.5 shrink-0">
+            Projeto complementar
+          </span>
+          <span>
+            {incluirProjeto === true && valorOverride === null && (
+              <span><span className="text-mf-success font-bold">Incluído</span> — valor padrão R$ 142,00.</span>
+            )}
+            {incluirProjeto === true && typeof valorOverride === 'number' && (
+              <span>
+                <span className="text-mf-success font-bold">Incluído</span> — valor override <strong>{fmtBRL(valorOverride)}</strong>{' '}
+                (registrado em "Extras comerciais").
+                {valorOverride === 0 && ' Cliente já tem projeto próprio.'}
+              </span>
+            )}
+            {incluirProjeto === false && (
+              <span className="text-mf-text-secondary">Não incluso.</span>
+            )}
+            {incluirProjeto !== true && incluirProjeto !== false && (
+              <span className="text-mf-text-secondary">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }
 
