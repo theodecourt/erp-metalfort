@@ -15,7 +15,7 @@ export default function FabricacaoPicker({ orcamentos }: Props) {
   const nav = useNavigate();
   return (
     <div>
-      <p className="text-sm text-mf-text-secondary mb-3">
+      <p className="text-sm text-mf-text-muted mb-3">
         Escolha um orçamento para ver quais materiais faltam para fabricar.
       </p>
       <ul className="divide-y divide-mf-border/20">
@@ -24,7 +24,7 @@ export default function FabricacaoPicker({ orcamentos }: Props) {
             <div>
               <div className="font-mono text-xs">{o.numero}</div>
               <div>{o.cliente_nome}</div>
-              <div className="text-xs text-mf-text-secondary">{o.status}</div>
+              <div className="text-xs text-mf-text-muted">{o.status}</div>
             </div>
             <button
               className="bg-mf-yellow text-mf-black px-3 py-1 rounded text-sm font-bold"

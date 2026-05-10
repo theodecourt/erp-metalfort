@@ -35,25 +35,25 @@ export default function AdminDashboard() {
       <section className="mt-6 grid md:grid-cols-2 gap-4">
         <Link to="/admin/estoque/saldo?abaixo_minimo=true"
               className="block bg-white rounded shadow-sm p-4 hover:ring-2 hover:ring-mf-yellow">
-          <div className="text-xs text-mf-text-secondary">Estoque</div>
+          <div className="text-xs text-mf-text-muted">Estoque</div>
           <div className="text-3xl font-extrabold">{lowCount ?? '—'}</div>
-          <div className="text-sm text-mf-text-secondary">
+          <div className="text-sm text-mf-text-muted">
             {lowCount === 1 ? 'material abaixo do mínimo' : 'materiais abaixo do mínimo'}
           </div>
         </Link>
         <Link to="/admin/estoque/movimentos"
               className="block bg-white rounded shadow-sm p-4 hover:ring-2 hover:ring-mf-yellow">
-          <div className="text-xs text-mf-text-secondary">Últimos movimentos</div>
+          <div className="text-xs text-mf-text-muted">Últimos movimentos</div>
           <ul className="mt-2 text-sm space-y-1">
             {lastMovs.length
               ? lastMovs.map((m) => (
                   <li key={m.id} className="truncate">
-                    <span className="text-mf-text-secondary">{new Date(m.created_at).toLocaleDateString('pt-BR')}</span>{' '}
+                    <span className="text-mf-text-muted">{new Date(m.created_at).toLocaleDateString('pt-BR')}</span>{' '}
                     <strong>{TIPO_LABEL[m.tipo] ?? m.tipo}</strong>{' '}
                     · {fmtQtd(m.quantidade, unidadeById[m.material_id])}
                   </li>
                 ))
-              : <li className="text-mf-text-secondary">nenhum</li>}
+              : <li className="text-mf-text-muted">nenhum</li>}
           </ul>
         </Link>
       </section>

@@ -8,7 +8,7 @@ interface Props {
 export default function SaldoTable({ rows }: Props) {
   return (
     <table className="w-full text-sm tabular-nums">
-      <thead className="text-left text-mf-text-secondary">
+      <thead className="text-left text-mf-text-muted">
         <tr>
           <th className="py-2">SKU</th>
           <th>Material</th>
@@ -27,11 +27,11 @@ export default function SaldoTable({ rows }: Props) {
             <tr key={r.material_id} className={`border-t border-mf-border/20 ${idx % 2 === 1 ? 'bg-gray-200' : ''}`}>
               <td className="py-2 font-mono text-xs">{r.sku}</td>
               <td>{r.nome}</td>
-              <td className="text-mf-text-secondary">{r.categoria}</td>
+              <td className="text-mf-text-muted">{r.categoria}</td>
               <td className={`text-right ${negativo ? 'text-mf-danger' : ''}`}>
                 {fmtQtd(saldoNum, r.unidade)}
               </td>
-              <td className="text-right text-mf-text-secondary">
+              <td className="text-right text-mf-text-muted">
                 {Number(r.estoque_minimo) > 0 ? fmtQtd(r.estoque_minimo, r.unidade) : '—'}
               </td>
               <td>{r.unidade}</td>

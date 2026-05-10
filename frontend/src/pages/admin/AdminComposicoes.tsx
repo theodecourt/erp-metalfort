@@ -64,7 +64,7 @@ export default function AdminComposicoes() {
     <div>
       <header className="mb-4">
         <h1 className="text-2xl font-extrabold">Composições</h1>
-        <p className="text-sm text-mf-text-secondary mt-1">
+        <p className="text-sm text-mf-text-muted mt-1">
           Receitas técnicas de subsistemas construtivos importadas da planilha
           do Samuel. <strong>Modo automático</strong> entram sempre no orçamento;{' '}
           <strong>opcional</strong> só quando vendedor marca no novo orçamento.
@@ -87,13 +87,13 @@ export default function AdminComposicoes() {
           placeholder="Buscar por código ou descrição"
           className="border rounded px-2 py-1 text-sm flex-1 max-w-md"
         />
-        <span className="text-xs text-mf-text-secondary tabular-nums">
+        <span className="text-xs text-mf-text-muted tabular-nums">
           {filtered.length} de {composicoes.length}
         </span>
       </div>
 
       {loading ? (
-        <p className="text-mf-text-secondary">Carregando…</p>
+        <p className="text-mf-text-muted">Carregando…</p>
       ) : (
         <div className="bg-white rounded border overflow-hidden">
           <table className="w-full text-sm">
@@ -110,7 +110,7 @@ export default function AdminComposicoes() {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="p-4 text-mf-text-secondary text-center">Nenhuma composição.</td></tr>
+                <tr><td colSpan={7} className="p-4 text-mf-text-muted text-center">Nenhuma composição.</td></tr>
               ) : filtered.map((c, idx) => (
                 <tr
                   key={c.id}
@@ -129,7 +129,7 @@ export default function AdminComposicoes() {
                   </td>
                   <td className="p-3 text-right tabular-nums">{c.n_materiais}</td>
                   <td className="p-3 text-right tabular-nums">{fmtBRL(c.custo_calculado)}</td>
-                  <td className="p-3 text-right tabular-nums text-mf-text-secondary">
+                  <td className="p-3 text-right tabular-nums text-mf-text-muted">
                     {c.default_valor_override !== null ? fmtBRL(c.default_valor_override) : '—'}
                   </td>
                 </tr>
@@ -186,12 +186,12 @@ function DetailDrawer({ composicao, onClose }: { composicao: Composicao; onClose
         </header>
 
         <div className="p-5">
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary mb-3">Materiais da receita</h3>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted mb-3">Materiais da receita</h3>
           {loading ? (
-            <p className="text-mf-text-secondary">Carregando…</p>
+            <p className="text-mf-text-muted">Carregando…</p>
           ) : (
             <table className="w-full text-sm">
-              <thead className="text-left text-mf-text-secondary text-xs">
+              <thead className="text-left text-mf-text-muted text-xs">
                 <tr className="border-b">
                   <th className="py-2 w-10">#</th>
                   <th className="py-2 w-28">SKU</th>
@@ -207,7 +207,7 @@ function DetailDrawer({ composicao, onClose }: { composicao: Composicao; onClose
                   const sub = Number(m.quantidade) * Number(m.material.preco_unitario);
                   return (
                     <tr key={`${m.composicao_id}-${m.material_id}`} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                      <td className="py-2 text-mf-text-secondary">{m.ordem}</td>
+                      <td className="py-2 text-mf-text-muted">{m.ordem}</td>
                       <td className="py-2 font-mono text-xs">{m.material.sku}</td>
                       <td className="py-2">{m.material.nome}</td>
                       <td className="py-2 text-right tabular-nums">{fmtDec(m.quantidade, 3)}</td>

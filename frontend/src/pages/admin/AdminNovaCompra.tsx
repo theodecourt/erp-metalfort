@@ -230,11 +230,11 @@ export default function AdminNovaCompra() {
 
   return (
     <div>
-      <Link to="/admin/estoque/movimentos" className="text-xs text-mf-text-secondary hover:underline">
+      <Link to="/admin/estoque/movimentos" className="text-xs text-mf-text-muted hover:underline">
         ← Voltar para movimentos
       </Link>
       <h1 className="text-2xl font-extrabold mt-1">Nova compra (NF)</h1>
-      <p className="text-sm text-mf-text-secondary mt-1">
+      <p className="text-sm text-mf-text-muted mt-1">
         Registre uma nota fiscal inteira. Cada linha vira um movimento de compra,
         atualiza o catálogo conforme você escolher e guarda alias por fornecedor
         para reconhecer o material em NFs futuras.
@@ -243,10 +243,10 @@ export default function AdminNovaCompra() {
       <div className="mt-4 p-3 bg-gray-100 border border-gray-300 rounded">
         <div className="flex items-start gap-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
-            <p className="text-sm font-bold text-mf-text-secondary">
+            <p className="text-sm font-bold text-mf-text-muted">
               📷 Escanear NF — em revisão
             </p>
-            <p className="text-xs text-mf-text-secondary mt-1">
+            <p className="text-xs text-mf-text-muted mt-1">
               O fluxo de leitura automática via foto está em ajuste. Por enquanto,
               preencha manualmente os campos abaixo. Voltamos com isso assim que
               estiver mais robusto.
@@ -257,7 +257,7 @@ export default function AdminNovaCompra() {
 
       <form onSubmit={submit} className="mt-5 space-y-5">
         <section className="bg-white rounded border p-4 space-y-3">
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary">
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted">
             Fornecedor
           </h2>
           <div className="flex items-center gap-3 text-sm">
@@ -291,13 +291,13 @@ export default function AdminNovaCompra() {
           {fornecedorMode === 'novo' && (
             <div className="grid md:grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-xs text-mf-text-secondary">Nome *</span>
+                <span className="text-xs text-mf-text-muted">Nome *</span>
                 <input value={novoFornecedorNome}
                   onChange={e => setNovoFornecedorNome(e.target.value)}
                   className="block w-full border rounded px-2 py-1" />
               </label>
               <label className="block">
-                <span className="text-xs text-mf-text-secondary">CNPJ</span>
+                <span className="text-xs text-mf-text-muted">CNPJ</span>
                 <input value={novoFornecedorCnpj}
                   onChange={e => setNovoFornecedorCnpj(e.target.value)}
                   placeholder="00.000.000/0000-00"
@@ -308,12 +308,12 @@ export default function AdminNovaCompra() {
 
           <div className="grid md:grid-cols-2 gap-3 pt-2 border-t">
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Nota fiscal (nº)</span>
+              <span className="text-xs text-mf-text-muted">Nota fiscal (nº)</span>
               <input value={notaFiscal} onChange={e => setNotaFiscal(e.target.value)}
                 className="block w-full border rounded px-2 py-1" />
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Observação</span>
+              <span className="text-xs text-mf-text-muted">Observação</span>
               <input value={observacao} onChange={e => setObservacao(e.target.value)}
                 className="block w-full border rounded px-2 py-1" />
             </label>
@@ -322,7 +322,7 @@ export default function AdminNovaCompra() {
 
         <section className="bg-white rounded border">
           <div className="px-4 py-3 border-b flex items-center justify-between">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted">
               Itens ({items.length})
             </h2>
             <button type="button" onClick={addItem}
@@ -344,7 +344,7 @@ export default function AdminNovaCompra() {
             ))}
           </div>
           <div className="px-4 py-3 border-t bg-mf-yellow/30 flex justify-end items-center gap-3">
-            <span className="text-xs text-mf-text-secondary">Total da NF:</span>
+            <span className="text-xs text-mf-text-muted">Total da NF:</span>
             <span className="text-lg font-extrabold tabular-nums">{fmtBRL(total)}</span>
           </div>
         </section>
@@ -353,7 +353,7 @@ export default function AdminNovaCompra() {
 
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={() => navigate('/admin/estoque/movimentos')}
-            className="text-mf-text-secondary px-4 py-2 rounded">Cancelar</button>
+            className="text-mf-text-muted px-4 py-2 rounded">Cancelar</button>
           <button type="submit" disabled={submitting}
             className="bg-mf-success text-white font-bold px-4 py-2 rounded disabled:opacity-50">
             {submitting ? 'Salvando…' : 'Salvar compra'}
@@ -392,7 +392,7 @@ function ItemRow({
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-mf-text-secondary">
+        <span className="text-xs uppercase tracking-wider text-mf-text-muted">
           Item {idx + 1}
         </span>
         {canRemove && (
@@ -424,11 +424,11 @@ function ItemRow({
               <span>
                 <span className="font-mono text-xs">{matchedMaterial.sku}</span>
                 {' · '}{matchedMaterial.nome}
-                {' · '}<span className="text-mf-text-secondary">{matchedMaterial.unidade} · catálogo: {fmtBRL(matchedMaterial.preco_unitario)}</span>
+                {' · '}<span className="text-mf-text-muted">{matchedMaterial.unidade} · catálogo: {fmtBRL(matchedMaterial.preco_unitario)}</span>
               </span>
               <button type="button"
                 onClick={() => { onChange({ material_id: null }); setSearch(''); }}
-                className="text-xs text-mf-text-secondary hover:underline">
+                className="text-xs text-mf-text-muted hover:underline">
                 Trocar
               </button>
             </div>
@@ -450,7 +450,7 @@ function ItemRow({
                     >
                       <span className="font-mono text-xs">{m.sku}</span>
                       {' · '}{m.nome}
-                      {' · '}<span className="text-mf-text-secondary">{m.unidade}</span>
+                      {' · '}<span className="text-mf-text-muted">{m.unidade}</span>
                     </button>
                   ))}
                 </div>
@@ -463,19 +463,19 @@ function ItemRow({
       {item.novo_material && (
         <div className="grid md:grid-cols-2 gap-3 bg-yellow-50 p-3 rounded">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">SKU *</span>
+            <span className="text-xs text-mf-text-muted">SKU *</span>
             <input value={item.draft.sku}
               onChange={e => onChange({ draft: { ...item.draft, sku: e.target.value } })}
               className="block w-full border rounded px-2 py-1 font-mono text-sm" />
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Nome *</span>
+            <span className="text-xs text-mf-text-muted">Nome *</span>
             <input value={item.draft.nome}
               onChange={e => onChange({ draft: { ...item.draft, nome: e.target.value } })}
               className="block w-full border rounded px-2 py-1" />
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Categoria</span>
+            <span className="text-xs text-mf-text-muted">Categoria</span>
             <select value={item.draft.categoria}
               onChange={e => onChange({ draft: { ...item.draft, categoria: e.target.value as any } })}
               className="block w-full border rounded px-2 py-1">
@@ -485,7 +485,7 @@ function ItemRow({
             </select>
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Unidade</span>
+            <span className="text-xs text-mf-text-muted">Unidade</span>
             <select value={item.draft.unidade}
               onChange={e => onChange({ draft: { ...item.draft, unidade: e.target.value as any } })}
               className="block w-full border rounded px-2 py-1">
@@ -500,21 +500,21 @@ function ItemRow({
       {/* Qtd e preço NF */}
       <div className="grid md:grid-cols-3 gap-3">
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Quantidade *</span>
+          <span className="text-xs text-mf-text-muted">Quantidade *</span>
           <input value={item.quantidade}
             onChange={e => onChange({ quantidade: e.target.value })}
             inputMode="decimal" placeholder="0"
             className="block w-full border rounded px-2 py-1 text-sm tabular-nums" />
         </label>
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Preço NF (R$/un) *</span>
+          <span className="text-xs text-mf-text-muted">Preço NF (R$/un) *</span>
           <input value={item.preco_nf}
             onChange={e => onChange({ preco_nf: e.target.value })}
             inputMode="decimal" placeholder="0,00"
             className="block w-full border rounded px-2 py-1 text-sm tabular-nums" />
         </label>
         <div className="text-right pt-4">
-          <span className="text-xs text-mf-text-secondary block">Subtotal linha</span>
+          <span className="text-xs text-mf-text-muted block">Subtotal linha</span>
           <span className="font-bold tabular-nums">
             {fmtBRL(
               (Number(item.quantidade.replace(',', '.')) || 0) *
@@ -526,7 +526,7 @@ function ItemRow({
 
       {/* Política de catálogo */}
       <div className="bg-gray-50 rounded p-3 space-y-2">
-        <span className="text-xs uppercase tracking-wider text-mf-text-secondary">
+        <span className="text-xs uppercase tracking-wider text-mf-text-muted">
           Preço do catálogo (usado em orçamentos novos)
           {matchedMaterial && (
             <span className="ml-1 normal-case font-normal">
@@ -563,18 +563,18 @@ function ItemRow({
 
       {/* Alias por fornecedor (opcional) */}
       <details className="text-sm">
-        <summary className="cursor-pointer text-mf-text-secondary">
+        <summary className="cursor-pointer text-mf-text-muted">
           Como o fornecedor identifica este item (opcional, ajuda a reconhecer NFs futuras)
         </summary>
         <div className="grid md:grid-cols-2 gap-3 mt-2">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">SKU do fornecedor</span>
+            <span className="text-xs text-mf-text-muted">SKU do fornecedor</span>
             <input value={item.sku_fornecedor}
               onChange={e => onChange({ sku_fornecedor: e.target.value })}
               className="block w-full border rounded px-2 py-1 text-sm font-mono" />
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Descrição na NF</span>
+            <span className="text-xs text-mf-text-muted">Descrição na NF</span>
             <input value={item.descricao_fornecedor}
               onChange={e => onChange({ descricao_fornecedor: e.target.value })}
               className="block w-full border rounded px-2 py-1 text-sm" />

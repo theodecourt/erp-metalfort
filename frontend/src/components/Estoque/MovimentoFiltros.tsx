@@ -26,7 +26,7 @@ export default function MovimentoFiltros({ value, onChange }: Props) {
   return (
     <div className="flex flex-wrap gap-3 mb-4">
       <label className="text-sm">
-        <span className="block text-xs text-mf-text-secondary">Tipo</span>
+        <span className="block text-xs text-mf-text-muted">Tipo</span>
         <select
           className="border px-2 py-1 rounded"
           value={value.tipo ?? ''}
@@ -36,7 +36,7 @@ export default function MovimentoFiltros({ value, onChange }: Props) {
         </select>
       </label>
       <label className="text-sm">
-        <span className="block text-xs text-mf-text-secondary">Data inicial</span>
+        <span className="block text-xs text-mf-text-muted">Data inicial</span>
         <input
           type="date"
           className="border px-2 py-1 rounded"
@@ -45,7 +45,7 @@ export default function MovimentoFiltros({ value, onChange }: Props) {
         />
       </label>
       <label className="text-sm">
-        <span className="block text-xs text-mf-text-secondary">Data final</span>
+        <span className="block text-xs text-mf-text-muted">Data final</span>
         <input
           type="date"
           className="border px-2 py-1 rounded"

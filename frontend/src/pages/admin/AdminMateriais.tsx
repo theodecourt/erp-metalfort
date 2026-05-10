@@ -136,7 +136,7 @@ export default function AdminMateriais() {
             <option value="all">Todas categorias</option>
             {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <span className="text-xs text-mf-text-secondary tabular-nums">
+          <span className="text-xs text-mf-text-muted tabular-nums">
             {filtered.length} de {rows.length}
           </span>
           <button
@@ -153,7 +153,7 @@ export default function AdminMateriais() {
         >
           <div className="grid md:grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">SKU *</span>
+              <span className="text-xs text-mf-text-muted">SKU *</span>
               <input
                 value={newSku} onChange={e => setNewSku(e.target.value)}
                 className="block w-full border rounded px-2 py-1"
@@ -161,14 +161,14 @@ export default function AdminMateriais() {
               />
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Nome *</span>
+              <span className="text-xs text-mf-text-muted">Nome *</span>
               <input
                 value={newNome} onChange={e => setNewNome(e.target.value)}
                 className="block w-full border rounded px-2 py-1"
               />
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Categoria</span>
+              <span className="text-xs text-mf-text-muted">Categoria</span>
               <select
                 value={newCategoria}
                 onChange={e => setNewCategoria(e.target.value as typeof CATEGORIAS[number])}
@@ -178,7 +178,7 @@ export default function AdminMateriais() {
               </select>
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Unidade</span>
+              <span className="text-xs text-mf-text-muted">Unidade</span>
               <select
                 value={newUnidade}
                 onChange={e => setNewUnidade(e.target.value as typeof UNIDADES[number])}
@@ -188,7 +188,7 @@ export default function AdminMateriais() {
               </select>
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">Preço unitário (R$) *</span>
+              <span className="text-xs text-mf-text-muted">Preço unitário (R$) *</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -202,7 +202,7 @@ export default function AdminMateriais() {
               />
             </label>
             <label className="block">
-              <span className="text-xs text-mf-text-secondary">
+              <span className="text-xs text-mf-text-muted">
                 Mínimo ({newUnidade}) — 0 desativa alerta
               </span>
               <input
@@ -224,7 +224,7 @@ export default function AdminMateriais() {
             <button
               type="button"
               onClick={() => { resetNewForm(); setShowNew(false); }}
-              className="text-mf-text-secondary px-3 py-2 rounded text-sm"
+              className="text-mf-text-muted px-3 py-2 rounded text-sm"
             >Cancelar</button>
           </div>
         </form>
@@ -245,7 +245,7 @@ export default function AdminMateriais() {
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td className="p-4 text-mf-text-secondary" colSpan={7}>
+              <tr><td className="p-4 text-mf-text-muted" colSpan={7}>
                 {rows.length === 0 ? 'Nenhum material.' : 'Nenhum material casa com a busca/filtro.'}
               </td></tr>
             )}
@@ -285,7 +285,7 @@ export default function AdminMateriais() {
                   {editingId === m.id
                     ? <div className="flex gap-2">
                         <button onClick={() => save(m.id)} className="bg-mf-success text-white px-2 py-1 rounded text-xs">Salvar</button>
-                        <button onClick={() => setEditingId(null)} className="text-mf-text-secondary px-2 py-1 rounded text-xs">Cancelar</button>
+                        <button onClick={() => setEditingId(null)} className="text-mf-text-muted px-2 py-1 rounded text-xs">Cancelar</button>
                         <button onClick={() => remove(m)} className="bg-mf-danger text-white px-2 py-1 rounded text-xs ml-auto">Apagar</button>
                       </div>
                     : <button onClick={() => {

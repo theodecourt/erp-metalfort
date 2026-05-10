@@ -114,7 +114,7 @@ export default function AdminComboDetail() {
   }
 
   if (!id) return <div>Combo inválido.</div>;
-  if (loading) return <div className="text-mf-text-secondary">Carregando…</div>;
+  if (loading) return <div className="text-mf-text-muted">Carregando…</div>;
   if (err && !combo) return <div className="text-mf-danger">{err}</div>;
   if (!combo) return null;
 
@@ -122,11 +122,11 @@ export default function AdminComboDetail() {
     <div>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <Link to="/admin/combos" className="text-xs text-mf-text-secondary hover:underline">
+          <Link to="/admin/combos" className="text-xs text-mf-text-muted hover:underline">
             ← Voltar para combos
           </Link>
           <h1 className="text-2xl font-extrabold mt-1">{combo.nome}</h1>
-          <p className="text-sm text-mf-text-secondary mt-1">
+          <p className="text-sm text-mf-text-muted mt-1">
             {CATEGORIA_LABEL[combo.categoria]} · <span className="font-mono">{combo.slug}</span>
             {' · '}{combo.ativo ? 'Ativo' : 'Inativo'} · ordem {combo.ordem}
           </p>
@@ -180,7 +180,7 @@ export default function AdminComboDetail() {
           </thead>
           <tbody>
             {mats.length === 0 && (
-              <tr><td className="p-4 text-mf-text-secondary" colSpan={7}>
+              <tr><td className="p-4 text-mf-text-muted" colSpan={7}>
                 Nenhum material. Use "+ Adicionar material".
               </td></tr>
             )}
@@ -297,13 +297,13 @@ function DeleteModal({ combo, onClose, onDeleted }: {
             O combo <span className="font-mono font-bold">{combo.slug}</span> e
             todos os seus vínculos com materiais serão apagados do banco.
           </p>
-          <p className="mt-1 text-xs text-mf-text-secondary">
+          <p className="mt-1 text-xs text-mf-text-muted">
             Se o combo está referenciado em algum template (Básico/Premium),
             a exclusão é bloqueada — você precisa remover a seleção no template antes.
           </p>
         </div>
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">
+          <span className="text-xs text-mf-text-muted">
             Para confirmar, digite o slug: <span className="font-mono">{combo.slug}</span>
           </span>
           <input
@@ -316,7 +316,7 @@ function DeleteModal({ combo, onClose, onDeleted }: {
         {err && <p className="text-mf-danger text-sm">{err}</p>}
         <div className="flex gap-2 justify-end pt-2">
           <button type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm">Cancelar</button>
+            className="text-mf-text-muted px-3 py-2 rounded text-sm">Cancelar</button>
           <button
             type="submit"
             disabled={deleting || confirmText !== combo.slug}
@@ -369,23 +369,23 @@ function EditMetaModal({ combo, onClose, onSaved }: {
   return (
     <Modal onClose={onClose} title="Editar combo">
       <form onSubmit={save} className="space-y-3">
-        <p className="text-xs text-mf-text-secondary">
+        <p className="text-xs text-mf-text-muted">
           Categoria: <span className="font-mono">{CATEGORIA_LABEL[combo.categoria]}</span>
           {' · '}Slug: <span className="font-mono">{combo.slug}</span>
         </p>
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Nome *</span>
+          <span className="text-xs text-mf-text-muted">Nome *</span>
           <input value={nome} onChange={e => setNome(e.target.value)}
             className="block w-full border rounded px-2 py-1" />
         </label>
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Descrição</span>
+          <span className="text-xs text-mf-text-muted">Descrição</span>
           <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={3}
             className="block w-full border rounded px-2 py-1" />
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Ordem</span>
+            <span className="text-xs text-mf-text-muted">Ordem</span>
             <input type="number" step="1" value={ordem}
               onChange={e => setOrdem(e.target.value)}
               onWheel={e => (e.target as HTMLInputElement).blur()}
@@ -399,7 +399,7 @@ function EditMetaModal({ combo, onClose, onSaved }: {
         {err && <p className="text-mf-danger text-sm">{err}</p>}
         <div className="flex gap-2 justify-end pt-2">
           <button type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm">Cancelar</button>
+            className="text-mf-text-muted px-3 py-2 rounded text-sm">Cancelar</button>
           <button type="submit" disabled={saving}
             className="bg-mf-success text-white font-bold px-3 py-2 rounded text-sm disabled:opacity-50">
             Salvar
@@ -464,14 +464,14 @@ function AddMaterialModal({ comboId, existingMaterialIds, nextOrdem, onClose, on
     <Modal onClose={onClose} title="Adicionar material" size="lg">
       <form onSubmit={save} className="space-y-3">
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Buscar material por nome ou SKU</span>
+          <span className="text-xs text-mf-text-muted">Buscar material por nome ou SKU</span>
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="ex: glasroc, MT-FCH-001"
             className="block w-full border rounded px-2 py-1" />
         </label>
         <div className="border rounded max-h-48 overflow-auto">
           {filtered.length === 0 && (
-            <p className="text-xs text-mf-text-secondary p-2">
+            <p className="text-xs text-mf-text-muted p-2">
               {existingMaterialIds.size > 0 && allMats.length > 0
                 ? 'Nenhum material disponível (já no combo ou sem match).'
                 : 'Carregando…'}
@@ -486,18 +486,18 @@ function AddMaterialModal({ comboId, existingMaterialIds, nextOrdem, onClose, on
                 onChange={() => setSelectedId(m.id)} />
               <span className="font-mono text-xs w-24">{m.sku}</span>
               <span className="flex-1">{m.nome}</span>
-              <span className="text-xs text-mf-text-secondary">{m.unidade}</span>
+              <span className="text-xs text-mf-text-muted">{m.unidade}</span>
             </label>
           ))}
         </div>
 
         <div className="border-t pt-3">
-          <p className="text-xs text-mf-text-secondary mb-2">Fórmula (quantidade)</p>
+          <p className="text-xs text-mf-text-muted mb-2">Fórmula (quantidade)</p>
           <MaterialFormulaEditor onChange={setFormula} />
         </div>
 
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Ordem</span>
+          <span className="text-xs text-mf-text-muted">Ordem</span>
           <input type="number" step="1" value={ordem}
             onChange={e => setOrdem(e.target.value)}
             onWheel={e => (e.target as HTMLInputElement).blur()}
@@ -507,7 +507,7 @@ function AddMaterialModal({ comboId, existingMaterialIds, nextOrdem, onClose, on
         {err && <p className="text-mf-danger text-sm">{err}</p>}
         <div className="flex gap-2 justify-end pt-2">
           <button type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm">Cancelar</button>
+            className="text-mf-text-muted px-3 py-2 rounded text-sm">Cancelar</button>
           <button type="submit" disabled={saving || !selectedId || !formula}
             className="bg-mf-success text-white font-bold px-3 py-2 rounded text-sm disabled:opacity-50">
             Adicionar
@@ -553,14 +553,14 @@ function EditMaterialModal({ comboId, item, onClose, onSaved }: {
   return (
     <Modal onClose={onClose} title={`Editar fórmula — ${item.material.nome}`} size="lg">
       <form onSubmit={save} className="space-y-3">
-        <p className="text-xs text-mf-text-secondary">
+        <p className="text-xs text-mf-text-muted">
           <span className="font-mono">{item.material.sku}</span>
           {' · '}{item.material.unidade}
           {' · '}{fmtBRL(item.material.preco_unitario)}
         </p>
         <MaterialFormulaEditor initial={item.formula_json} onChange={setFormula} />
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Ordem</span>
+          <span className="text-xs text-mf-text-muted">Ordem</span>
           <input type="number" step="1" value={ordem}
             onChange={e => setOrdem(e.target.value)}
             onWheel={e => (e.target as HTMLInputElement).blur()}
@@ -569,7 +569,7 @@ function EditMaterialModal({ comboId, item, onClose, onSaved }: {
         {err && <p className="text-mf-danger text-sm">{err}</p>}
         <div className="flex gap-2 justify-end pt-2">
           <button type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm">Cancelar</button>
+            className="text-mf-text-muted px-3 py-2 rounded text-sm">Cancelar</button>
           <button type="submit" disabled={saving || !formula}
             className="bg-mf-success text-white font-bold px-3 py-2 rounded text-sm disabled:opacity-50">
             Salvar
@@ -595,7 +595,7 @@ function Modal({ children, onClose, title, size = 'md' }: {
       >
         <div className="flex items-start justify-between gap-3 mb-3">
           <h2 className="text-lg font-extrabold">{title}</h2>
-          <button onClick={onClose} className="text-mf-text-secondary text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-mf-text-muted text-xl leading-none">×</button>
         </div>
         {children}
       </div>
