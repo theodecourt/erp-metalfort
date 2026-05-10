@@ -16,6 +16,12 @@
   .totals .row { display: flex; justify-content: space-between; padding: 1mm 0; }
   .totals .total { font-weight: 700; color: #0a0a0a; border-top: 2px solid #FACC15; padding-top: 2mm; }
   .footer { margin-top: 14mm; font-size: 8pt; color: #888; }
+  .escopo { margin-top: 6mm; padding: 3mm 4mm; border: 1px solid #d4a017; background: #fff8e1; border-radius: 2mm; font-size: 9pt; }
+  .escopo h3 { margin: 0 0 2mm; font-size: 10pt; color: #8a6d00; }
+  .escopo ul { margin: 0; padding-left: 4mm; }
+  .escopo li { margin: 1mm 0; }
+  .escopo .nao { color: #c43838; font-weight: 600; }
+  .escopo .sim { color: #2a7a2a; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -49,6 +55,34 @@
     <div class="row"><span>Gerenciamento ({{ orcamento.valor_gerenciamento_pct|dec }}%)</span><span>{{ (orcamento.valor_total - orcamento.valor_subtotal)|brl }}</span></div>
     <div class="row total"><span>Total</span><span>{{ orcamento.valor_total|brl }}</span></div>
   </div>
+
+  {% if config.incluir_fundacao is not none or config.incluir_projeto is not none %}
+  <div class="escopo">
+    <h3>Escopo do orçamento</h3>
+    <ul>
+      {% if config.incluir_fundacao is not none %}
+        {% if config.incluir_fundacao %}
+          <li><span class="sim">Fundação: INCLUSA</span> (concreto C20, volume estimado em 0,10m × área de planta).</li>
+        {% else %}
+          <li><span class="nao">Fundação: NÃO INCLUSA</span> — execução por conta do cliente. Este orçamento não cobre concreto, escavação nem mão de obra de fundação.</li>
+        {% endif %}
+      {% endif %}
+      {% if config.incluir_projeto is not none %}
+        {% if config.incluir_projeto %}
+          {% if config.valor_projeto_override is not none and config.valor_projeto_override == 0 %}
+          <li><span class="sim">Projeto complementar: INCLUSO</span> com valor R$ 0,00 — cliente possui projetos próprios; este orçamento não exige novos.</li>
+          {% elif config.valor_projeto_override is not none %}
+          <li><span class="sim">Projeto complementar: INCLUSO</span> com valor de {{ config.valor_projeto_override|brl }} (escopo customizado, ex.: reaproveitamento parcial).</li>
+          {% else %}
+          <li><span class="sim">Projeto complementar: INCLUSO</span> (estrutural + complementares: hidrossanitário, elétrico, ar-condicionado, gás).</li>
+          {% endif %}
+        {% else %}
+          <li><span class="nao">Projeto complementar: NÃO INCLUSO</span> — cliente fornece os projetos estrutural, hidrossanitário, elétrico e demais.</li>
+        {% endif %}
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
 
   <div class="footer">Documento gerado em {{ agora }}. Válido por 30 dias. metalfort.tech</div>
 </body>

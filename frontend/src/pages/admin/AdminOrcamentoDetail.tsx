@@ -312,10 +312,13 @@ function ComposicoesAplicadas({ config }: { config: any }) {
           </span>
           <span>
             {incluirFundacao === true && (
-              <span><span className="text-mf-success font-bold">Incluída</span> — concreto C20 com volume estimado em 0,10 m × área de planta.</span>
+              <span><span className="text-mf-success font-bold">INCLUSA</span> — concreto C20 com volume estimado em 0,10 m × área de planta.</span>
             )}
             {incluirFundacao === false && (
-              <span className="text-mf-text-muted">Não inclusa (cliente executa por conta).</span>
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSA</span>
+                <span className="text-mf-text-muted"> — execução por conta do cliente; orçamento não cobre concreto, escavação nem MO de fundação. <em>Aparece destacado no PDF do cliente.</em></span>
+              </span>
             )}
             {incluirFundacao !== true && incluirFundacao !== false && (
               <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
@@ -328,17 +331,20 @@ function ComposicoesAplicadas({ config }: { config: any }) {
           </span>
           <span>
             {incluirProjeto === true && valorOverride === null && (
-              <span><span className="text-mf-success font-bold">Incluído</span> — valor padrão R$ 142,00.</span>
+              <span><span className="text-mf-success font-bold">INCLUSO</span> — valor padrão R$ 142,00.</span>
             )}
             {incluirProjeto === true && typeof valorOverride === 'number' && (
               <span>
-                <span className="text-mf-success font-bold">Incluído</span> — valor override <strong>{fmtBRL(valorOverride)}</strong>{' '}
+                <span className="text-mf-success font-bold">INCLUSO</span> — valor override <strong>{fmtBRL(valorOverride)}</strong>{' '}
                 (registrado em "Extras comerciais").
                 {valorOverride === 0 && ' Cliente já tem projeto próprio.'}
               </span>
             )}
             {incluirProjeto === false && (
-              <span className="text-mf-text-muted">Não incluso.</span>
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSO</span>
+                <span className="text-mf-text-muted"> — cliente fornece projetos estrutural, hidrossanitário, elétrico etc. <em>Aparece destacado no PDF do cliente.</em></span>
+              </span>
             )}
             {incluirProjeto !== true && incluirProjeto !== false && (
               <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
