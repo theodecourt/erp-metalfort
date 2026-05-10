@@ -10,12 +10,12 @@ export default function FabricacaoAnalise({ analise }: Props) {
     <div>
       <header className="mb-4">
         <h2 className="text-lg font-bold">Análise de fabricação</h2>
-        <p className="text-sm text-mf-text-secondary">
+        <p className="text-sm text-mf-text-muted">
           {analise.orcamento_numero} · {analise.cliente_nome} · {analise.produto_nome}
         </p>
       </header>
       <table className="w-full text-sm tabular-nums">
-        <thead className="text-left text-mf-text-secondary">
+        <thead className="text-left text-mf-text-muted">
           <tr>
             <th className="py-2">SKU</th>
             <th>Material</th>
@@ -45,7 +45,7 @@ export default function FabricacaoAnalise({ analise }: Props) {
         </tbody>
         <tfoot className="border-t border-mf-border/40">
           <tr>
-            <td colSpan={4} className="py-2 text-right text-mf-text-secondary">
+            <td colSpan={4} className="py-2 text-right text-mf-text-muted">
               {analise.totais.itens_faltantes} de {analise.totais.itens_total} itens faltantes
             </td>
             <td></td>

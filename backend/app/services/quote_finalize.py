@@ -33,7 +33,7 @@ def _try_render_and_upload_pdf(
         logger.warning("WeasyPrint indisponivel (lib nativa ausente): %s. Orcamento sera salvo sem PDF.", e)
         return None, None
     try:
-        pdf_bytes = render_quote_pdf(orcamento, produto, itens, _resumo(config))
+        pdf_bytes = render_quote_pdf(orcamento, produto, itens, _resumo(config), config=config)
         pdf_url = storage.upload_quote_pdf(orcamento["numero"], pdf_bytes)
         return pdf_bytes, pdf_url
     except OSError as e:

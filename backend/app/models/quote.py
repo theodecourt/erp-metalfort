@@ -70,6 +70,19 @@ class Configuracao(BaseModel):
     # Linhas comerciais extras (transporte, instalação, taxas etc.) fora do catálogo.
     extras_comerciais: list[ExtraComercial] = Field(default_factory=list)
 
+    # Composições opcionais por orçamento (fundação, projeto complementar).
+    # None significa "ainda não respondido" — em rotas internas vira 400. Em rotas
+    # públicas, é forçado para False antes do cálculo. Ver Decisões 2 e 3 em
+    # docs/regras-de-negocio.md.
+    incluir_fundacao: bool | None = None
+    incluir_projeto: bool | None = None
+    valor_projeto_override: float | None = Field(default=None, ge=0)
+    # Taxa de gerenciamento: opcional como fundacao/projeto. Default rotineiro
+    # da Metalfort = 8%. Em rotas publicas, forçado a True com 8%. Em admin, prompt
+    # obrigatorio (None = nao respondido = 400).
+    incluir_gerenciamento: bool | None = None
+    gerenciamento_pct_override: float | None = Field(default=None, ge=0, le=100)
+
 
 class CalculateRequest(BaseModel):
     produto_id: str
@@ -96,6 +109,7 @@ class QuoteItem(BaseModel):
     categoria: str
     ordem: int
     combo_slug: str | None = None
+    composicao_codigo: str | None = None
 
 
 class QuoteExtraItem(BaseModel):

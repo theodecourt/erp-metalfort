@@ -69,16 +69,59 @@ export default function AdminOrcamentoNew() {
   const calculateInternal = (body: unknown) =>
     fetchApi<any>('/api/quote/calculate?tier=full', { method: 'POST', body: JSON.stringify(body) });
 
+  // Estado dos prompts obrigatórios (defaults null = não respondido)
+  const [incluirFundacao, setIncluirFundacao] = useState<boolean | null>(null);
+  const [incluirProjeto, setIncluirProjeto] = useState<boolean | null>(null);
+  const [valorProjetoOverride, setValorProjetoOverride] = useState<string>('');
+  const [incluirGerenciamento, setIncluirGerenciamento] = useState<boolean | null>(null);
+  const [gerenciamentoPctOverride, setGerenciamentoPctOverride] = useState<string>('');
+
+  // Defaults sugeridos
+  const VALOR_PROJETO_DEFAULT = 142;
+  const GERENCIAMENTO_PCT_DEFAULT = 8;
+
+  const promptCompletos =
+    incluirFundacao !== null && incluirProjeto !== null && incluirGerenciamento !== null;
+  const valorOverrideNumero =
+    valorProjetoOverride.trim() === '' ? null : Number(valorProjetoOverride.replace(',', '.'));
+  const valorOverrideValido =
+    valorOverrideNumero === null || (Number.isFinite(valorOverrideNumero) && valorOverrideNumero >= 0);
+  const gerenciamentoPctNumero =
+    gerenciamentoPctOverride.trim() === '' ? null : Number(gerenciamentoPctOverride.replace(',', '.'));
+  const gerenciamentoPctValido =
+    gerenciamentoPctNumero === null ||
+    (Number.isFinite(gerenciamentoPctNumero) && gerenciamentoPctNumero >= 0 && gerenciamentoPctNumero <= 100);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!produto || !config) return;
+    if (!promptCompletos) {
+      setError('Responda fundação, projeto e gerenciamento antes de salvar.');
+      return;
+    }
+    if (incluirProjeto && !valorOverrideValido) {
+      setError('Valor do projeto inválido (deve ser número >= 0 ou vazio para usar default).');
+      return;
+    }
+    if (incluirGerenciamento && !gerenciamentoPctValido) {
+      setError('% do gerenciamento inválido (deve ser número entre 0 e 100, ou vazio para usar 8%).');
+      return;
+    }
     setSubmitting(true); setError(null);
     try {
+      const configWithOverrides: Configuracao = {
+        ...config,
+        incluir_fundacao: incluirFundacao,
+        incluir_projeto: incluirProjeto,
+        valor_projeto_override: incluirProjeto ? valorOverrideNumero : null,
+        incluir_gerenciamento: incluirGerenciamento,
+        gerenciamento_pct_override: incluirGerenciamento ? gerenciamentoPctNumero : null,
+      };
       const created = await fetchApi<any>(`/api/quote?enviar_email=${enviarEmail}`, {
         method: 'POST',
         body: JSON.stringify({
           produto_id: produto.id,
-          configuracao: config,
+          configuracao: configWithOverrides,
           cliente_nome: lead.nome,
           cliente_email: lead.email,
           cliente_telefone: lead.telefone,
@@ -144,6 +187,121 @@ export default function AdminOrcamentoNew() {
 
         {produto && (
           <section className="p-6 border-t border-mf-border">
+            <h2 className="text-lg font-extrabold text-mf-yellow">Itens da obra (decisão obrigatória)</h2>
+            <p className="text-xs text-mf-text-secondary mt-1 mb-4">
+              Marque explicitamente fundação, projeto complementar e taxa de gerenciamento.
+              Sem default — força resposta consciente. Detalhes em
+              {' '}
+              <code className="text-xs">docs/regras-de-negocio.md</code>.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir fundação?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirFundacao === true}
+                      onChange={() => setIncluirFundacao(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirFundacao === false}
+                      onChange={() => setIncluirFundacao(false)}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir projeto complementar?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirProjeto === true}
+                      onChange={() => setIncluirProjeto(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirProjeto === false}
+                      onChange={() => {
+                        setIncluirProjeto(false);
+                        setValorProjetoOverride('');
+                      }}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+                {incluirProjeto && (
+                  <div className="mt-2">
+                    <label className="block">
+                      <span className="text-xs text-mf-text-secondary">
+                        Valor (R$). Vazio = default R$ {VALOR_PROJETO_DEFAULT.toFixed(2)}; 0 = cliente já tem.
+                      </span>
+                      <input
+                        value={valorProjetoOverride}
+                        onChange={e => setValorProjetoOverride(e.target.value)}
+                        placeholder={`${VALOR_PROJETO_DEFAULT}`}
+                        inputMode="decimal"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir gerenciamento?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirGerenciamento === true}
+                      onChange={() => setIncluirGerenciamento(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirGerenciamento === false}
+                      onChange={() => {
+                        setIncluirGerenciamento(false);
+                        setGerenciamentoPctOverride('');
+                      }}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+                {incluirGerenciamento && (
+                  <div className="mt-2">
+                    <label className="block">
+                      <span className="text-xs text-mf-text-secondary">
+                        % sobre subtotal. Vazio = default {GERENCIAMENTO_PCT_DEFAULT}%.
+                      </span>
+                      <input
+                        value={gerenciamentoPctOverride}
+                        onChange={e => setGerenciamentoPctOverride(e.target.value)}
+                        placeholder={`${GERENCIAMENTO_PCT_DEFAULT}`}
+                        inputMode="decimal"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {produto && (
+          <section className="p-6 border-t border-mf-border">
             <form onSubmit={handleSubmit} className="grid gap-3 max-w-xl">
               <h2 className="text-lg font-extrabold text-mf-yellow">Dados do cliente</h2>
               <input required placeholder="Nome" value={lead.nome}
@@ -171,9 +329,15 @@ export default function AdminOrcamentoNew() {
                   onChange={e => setEnviarEmail(e.target.checked)}/>
                 <span>Enviar PDF por email ao cliente (e notificar Metalfort)</span>
               </label>
-              <button type="submit" disabled={submitting || !config}
+              <button
+                type="submit"
+                disabled={submitting || !config || !promptCompletos || !valorOverrideValido || !gerenciamentoPctValido}
                 className="bg-mf-yellow text-mf-black font-extrabold py-3 rounded hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                {submitting ? 'Criando...' : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
+                {submitting
+                  ? 'Criando...'
+                  : !promptCompletos
+                  ? 'Responda fundação, projeto e gerenciamento antes'
+                  : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
               </button>
               {error && <div className="text-mf-danger text-sm">{error}</div>}
             </form>

@@ -70,7 +70,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
     const expr = (parsed as any).expr ?? initial ?? null;
     return (
       <div className="space-y-2">
-        <p className="text-xs text-mf-text-secondary">
+        <p className="text-xs text-mf-text-muted">
           Fórmula custom (não bate com nenhum dos 4 templates).
           Edição via JSON manual.
         </p>
@@ -89,7 +89,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-xs text-mf-text-secondary">Tipo de fórmula</span>
+        <span className="text-xs text-mf-text-muted">Tipo de fórmula</span>
         <select
           value={currentKind}
           onChange={e => changeKind(e.target.value as TemplateKind)}
@@ -103,7 +103,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
 
       {(currentKind === 'A' || currentKind === 'B' || currentKind === 'C') && (
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Variável</span>
+          <span className="text-xs text-mf-text-muted">Variável</span>
           <select
             value={(parsed as any).varName}
             onChange={e => setParsed(p => ({ ...(p as any), varName: e.target.value }))}
@@ -126,7 +126,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
 
       {currentKind === 'B' && (
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Fator</span>
+          <span className="text-xs text-mf-text-muted">Fator</span>
           <input
             type="number" step="any"
             value={(parsed as any).fator}
@@ -140,7 +140,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
       {currentKind === 'C' && (
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Cobertura por unidade</span>
+            <span className="text-xs text-mf-text-muted">Cobertura por unidade</span>
             <input
               type="number" step="any" min="0"
               value={(parsed as any).cobertura}
@@ -148,10 +148,10 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
               onWheel={e => (e.target as HTMLInputElement).blur()}
               className="block w-full border rounded px-2 py-1 text-sm"
             />
-            <span className="text-[10px] text-mf-text-secondary">ex: chapa cobre 2.88 m²</span>
+            <span className="text-[10px] text-mf-text-muted">ex: chapa cobre 2.88 m²</span>
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Waste (perda) — fração</span>
+            <span className="text-xs text-mf-text-muted">Waste (perda) — fração</span>
             <input
               type="number" step="0.01" min="0"
               value={(parsed as any).waste}
@@ -159,14 +159,14 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
               onWheel={e => (e.target as HTMLInputElement).blur()}
               className="block w-full border rounded px-2 py-1 text-sm"
             />
-            <span className="text-[10px] text-mf-text-secondary">0.07 = 7%</span>
+            <span className="text-[10px] text-mf-text-muted">0.07 = 7%</span>
           </label>
         </div>
       )}
 
       {currentKind === 'D' && (
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Constante</span>
+          <span className="text-xs text-mf-text-muted">Constante</span>
           <input
             type="number" step="any"
             value={(parsed as any).constante}
@@ -178,7 +178,7 @@ export default function MaterialFormulaEditor({ initial, onChange }: Props) {
       )}
 
       <details className="text-xs">
-        <summary className="text-mf-text-secondary cursor-pointer">JSON resultante</summary>
+        <summary className="text-mf-text-muted cursor-pointer">JSON resultante</summary>
         <pre className="bg-gray-50 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-all">
           {JSON.stringify(buildFormula(parsed))}
         </pre>

@@ -74,7 +74,7 @@ export default function MovimentoForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 max-w-2xl">
       <label className="block">
-        <span className="text-xs text-mf-text-secondary">Tipo</span>
+        <span className="text-xs text-mf-text-muted">Tipo</span>
         <select
           aria-label="Tipo"
           className="block w-full border rounded px-2 py-1"
@@ -89,7 +89,7 @@ export default function MovimentoForm({
       </label>
 
       <label className="block">
-        <span className="text-xs text-mf-text-secondary">Material</span>
+        <span className="text-xs text-mf-text-muted">Material</span>
         <select
           aria-label="Material"
           className="block w-full border rounded px-2 py-1"
@@ -104,7 +104,7 @@ export default function MovimentoForm({
       </label>
 
       <label className="block">
-        <span className="text-xs text-mf-text-secondary">
+        <span className="text-xs text-mf-text-muted">
           Quantidade {selectedMaterial ? <span className="ml-1">({selectedMaterial.unidade})</span> : null}
         </span>
         <input
@@ -120,7 +120,7 @@ export default function MovimentoForm({
       {tipo === 'compra' && (
         <>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Preço unitário (R$)</span>
+            <span className="text-xs text-mf-text-muted">Preço unitário (R$)</span>
             <input
               aria-label="Preço unitário"
               type="text"
@@ -138,7 +138,7 @@ export default function MovimentoForm({
             />
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Fornecedor</span>
+            <span className="text-xs text-mf-text-muted">Fornecedor</span>
             <select
               aria-label="Fornecedor"
               className="block w-full border rounded px-2 py-1"
@@ -150,7 +150,7 @@ export default function MovimentoForm({
             </select>
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Nota fiscal (opcional)</span>
+            <span className="text-xs text-mf-text-muted">Nota fiscal (opcional)</span>
             <input
               aria-label="Nota fiscal"
               type="text"
@@ -165,7 +165,7 @@ export default function MovimentoForm({
       {tipo === 'saida_obra' && (
         <>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Orçamento (opcional)</span>
+            <span className="text-xs text-mf-text-muted">Orçamento (opcional)</span>
             <select
               aria-label="Orçamento"
               className="block w-full border rounded px-2 py-1"
@@ -179,7 +179,7 @@ export default function MovimentoForm({
             </select>
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Destino</span>
+            <span className="text-xs text-mf-text-muted">Destino</span>
             <input
               aria-label="Destino"
               type="text"
@@ -193,7 +193,7 @@ export default function MovimentoForm({
 
       {(tipo === 'ajuste_positivo' || tipo === 'ajuste_negativo') && (
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Justificativa</span>
+          <span className="text-xs text-mf-text-muted">Justificativa</span>
           <textarea
             aria-label="Justificativa"
             className="block w-full border rounded px-2 py-1"
@@ -205,7 +205,7 @@ export default function MovimentoForm({
 
       {tipo !== 'ajuste_positivo' && tipo !== 'ajuste_negativo' && (
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Observação (opcional)</span>
+          <span className="text-xs text-mf-text-muted">Observação (opcional)</span>
           <textarea
             aria-label="Observação"
             className="block w-full border rounded px-2 py-1"

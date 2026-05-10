@@ -8,11 +8,11 @@ interface Props {
 
 export default function FornecedorList({ fornecedores, onEdit, onDeactivate }: Props) {
   if (!fornecedores.length) {
-    return <p className="text-mf-text-secondary text-sm">Nenhum fornecedor cadastrado.</p>;
+    return <p className="text-mf-text-muted text-sm">Nenhum fornecedor cadastrado.</p>;
   }
   return (
     <table className="w-full text-sm">
-      <thead className="text-left text-mf-text-secondary">
+      <thead className="text-left text-mf-text-muted">
         <tr>
           <th className="py-2">Nome</th>
           <th>CNPJ</th>

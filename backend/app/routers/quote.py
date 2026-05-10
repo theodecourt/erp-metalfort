@@ -9,6 +9,7 @@ from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, SubmitRequest
 from app.services.combo_service import build_combos_bom_from_selections
+from app.services.composicao_service import expand_composicoes_to_bom, expand_overrides_to_bom
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
@@ -23,6 +24,47 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
     return res.data or []
 
 
+def _validar_overrides_obrigatorios(config: dict) -> None:
+    """Em rotas internas, incluir_fundacao, incluir_projeto e incluir_gerenciamento
+    precisam ter resposta explicita (true/false). None = nao respondido = 400."""
+    if config.get("incluir_fundacao") is None:
+        raise HTTPException(400, "responda 'incluir_fundacao' (true ou false)")
+    if config.get("incluir_projeto") is None:
+        raise HTTPException(400, "responda 'incluir_projeto' (true ou false)")
+    if config.get("incluir_gerenciamento") is None:
+        raise HTTPException(400, "responda 'incluir_gerenciamento' (true ou false)")
+
+
+def _resolve_gerenciamento_pct(config: dict, default_pct: float = 8.0) -> float:
+    """Calcula taxa de gerenciamento efetiva do orcamento.
+    - incluir_gerenciamento=False -> 0
+    - True com gerenciamento_pct_override definido -> override
+    - True sem override -> default (8%)
+    """
+    if not config.get("incluir_gerenciamento"):
+        return 0.0
+    override = config.get("gerenciamento_pct_override")
+    return float(override) if override is not None else default_pct
+
+
+def _aplicar_overrides_em_extras(config: dict) -> dict:
+    """Quando incluir_projeto=true e valor_projeto_override esta definido,
+    adiciona uma linha em extras_comerciais com esse valor (e os materiais do
+    COMP00028 nao sao expandidos — ver expand_overrides_to_bom)."""
+    if not config.get("incluir_projeto"):
+        return config
+    valor = config.get("valor_projeto_override")
+    if valor is None:
+        return config
+    extras = list(config.get("extras_comerciais") or [])
+    extras.append({
+        "descricao": "Projetos complementares (override)",
+        "qtd": 1,
+        "preco_unitario": float(valor),
+    })
+    return {**config, "extras_comerciais": extras}
+
+
 @router.post("/calculate")
 def internal_calculate(
     req: CalculateRequest,
@@ -33,11 +75,15 @@ def internal_calculate(
         raise HTTPException(400, "tier inválido")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    _validar_overrides_obrigatorios(config)
+    config = _aplicar_overrides_em_extras(config)
     bom = repository.list_bom_regras(req.produto_id)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
+    bom_overrides = expand_overrides_to_bom(config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        append_personalizados(bom, config), config,
-        tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
+        append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
+        tier=tier, gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=combos_bom,
     )
 
 
@@ -57,11 +103,15 @@ def create_internal(
 
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    _validar_overrides_obrigatorios(config)
+    config = _aplicar_overrides_em_extras(config)
     bom = repository.list_bom_regras(req.produto_id)
+    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
+    bom_overrides = expand_overrides_to_bom(config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
-        append_personalizados(bom, config), config,
-        tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom,
+        append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
+        tier="full", gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=combos_bom,
     )
 
     year = datetime.utcnow().year

@@ -57,6 +57,8 @@ def calculate(
         }
         if regra.get("combo_slug"):
             item["combo_slug"] = regra["combo_slug"]
+        if regra.get("composicao_codigo"):
+            item["composicao_codigo"] = regra["composicao_codigo"]
         itens.append(item)
 
     # Extras comerciais: linhas livres (transporte, instalação, taxas...) adicionadas ao subtotal.

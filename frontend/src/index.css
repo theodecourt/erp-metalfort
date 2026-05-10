@@ -9,6 +9,9 @@
   --mf-yellow-hover: #EAB308;
   --mf-text-primary: #FFFFFF;
   --mf-text-secondary: #A3A3A3;
+  /* Cinza escuro pra texto secundario em fundos claros (cards bg-white).
+     Contraste 7.4:1 em branco — passa WCAG AA. */
+  --mf-text-muted: #525252;
   --mf-text-ink: #0A0A0A;
   --mf-bg-light: #F5F5F5;
   --mf-border: #2A2A2A;

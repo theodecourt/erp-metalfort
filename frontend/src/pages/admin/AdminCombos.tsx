@@ -123,13 +123,13 @@ export default function AdminCombos() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td className="p-4 text-mf-text-secondary" colSpan={7}>Carregando…</td></tr>
+              <tr><td className="p-4 text-mf-text-muted" colSpan={7}>Carregando…</td></tr>
             )}
             {!loading && filtered.length === 0 && (
-              <tr><td className="p-4 text-mf-text-secondary" colSpan={7}>Nenhum combo.</td></tr>
+              <tr><td className="p-4 text-mf-text-muted" colSpan={7}>Nenhum combo.</td></tr>
             )}
             {filtered.map(c => (
-              <tr key={c.id} className={`border-t ${c.ativo ? '' : 'bg-gray-50 text-mf-text-secondary'}`}>
+              <tr key={c.id} className={`border-t ${c.ativo ? '' : 'bg-gray-50 text-mf-text-muted'}`}>
                 <td className="p-3 whitespace-nowrap">{CATEGORIA_LABEL[c.categoria]}</td>
                 <td className="p-3 font-medium">{c.nome}</td>
                 <td className="p-3 font-mono text-xs">{c.slug}</td>
@@ -149,12 +149,12 @@ export default function AdminCombos() {
                     >Editar</button>
                     <Link
                       to={`/admin/combos/${c.id}`}
-                      className="text-mf-text-secondary hover:underline"
+                      className="text-mf-text-muted hover:underline"
                     >Materiais</Link>
                     <button
                       onClick={() => duplicate(c)}
                       disabled={duplicatingId === c.id}
-                      className="text-mf-text-secondary hover:underline disabled:opacity-50"
+                      className="text-mf-text-muted hover:underline disabled:opacity-50"
                     >{duplicatingId === c.id ? 'Duplicando…' : 'Duplicar'}</button>
                   </div>
                 </td>
@@ -238,13 +238,13 @@ function EditModal({ combo, onClose, onSaved }: {
       >
         <div>
           <h2 className="text-lg font-extrabold">Editar combo</h2>
-          <p className="text-xs text-mf-text-secondary mt-1">
+          <p className="text-xs text-mf-text-muted mt-1">
             Categoria: <span className="font-mono">{CATEGORIA_LABEL[combo.categoria]}</span> · Slug: <span className="font-mono">{combo.slug}</span>
           </p>
         </div>
 
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Nome *</span>
+          <span className="text-xs text-mf-text-muted">Nome *</span>
           <input
             value={nome} onChange={e => setNome(e.target.value)}
             className="block w-full border rounded px-2 py-1"
@@ -252,7 +252,7 @@ function EditModal({ combo, onClose, onSaved }: {
         </label>
 
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Descrição</span>
+          <span className="text-xs text-mf-text-muted">Descrição</span>
           <textarea
             value={descricao} onChange={e => setDescricao(e.target.value)}
             rows={3}
@@ -262,7 +262,7 @@ function EditModal({ combo, onClose, onSaved }: {
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Ordem</span>
+            <span className="text-xs text-mf-text-muted">Ordem</span>
             <input
               type="number" step="1"
               value={ordem} onChange={e => setOrdem(e.target.value)}
@@ -284,7 +284,7 @@ function EditModal({ combo, onClose, onSaved }: {
         <div className="flex gap-2 justify-end pt-2">
           <button
             type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm"
+            className="text-mf-text-muted px-3 py-2 rounded text-sm"
           >Cancelar</button>
           <button
             type="submit" disabled={saving}
@@ -351,14 +351,14 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
       >
         <div>
           <h2 className="text-lg font-extrabold">Novo combo</h2>
-          <p className="text-xs text-mf-text-secondary mt-1">
+          <p className="text-xs text-mf-text-muted mt-1">
             Sem materiais inicialmente. Você adiciona na próxima tela.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Slug *</span>
+            <span className="text-xs text-mf-text-muted">Slug *</span>
             <input
               value={slug} onChange={e => setSlug(e.target.value)}
               placeholder="fechamento-novo"
@@ -366,7 +366,7 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
             />
           </label>
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Categoria *</span>
+            <span className="text-xs text-mf-text-muted">Categoria *</span>
             <select
               value={categoria}
               onChange={e => setCategoria(e.target.value as ComboCategoria)}
@@ -380,7 +380,7 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
         </div>
 
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Nome *</span>
+          <span className="text-xs text-mf-text-muted">Nome *</span>
           <input
             value={nome} onChange={e => setNome(e.target.value)}
             className="block w-full border rounded px-2 py-1"
@@ -388,7 +388,7 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
         </label>
 
         <label className="block">
-          <span className="text-xs text-mf-text-secondary">Descrição</span>
+          <span className="text-xs text-mf-text-muted">Descrição</span>
           <textarea
             value={descricao} onChange={e => setDescricao(e.target.value)}
             rows={3}
@@ -398,7 +398,7 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs text-mf-text-secondary">Ordem</span>
+            <span className="text-xs text-mf-text-muted">Ordem</span>
             <input
               type="number" step="1"
               value={ordem} onChange={e => setOrdem(e.target.value)}
@@ -420,7 +420,7 @@ function CreateModal({ existingSlugs, onClose, onCreated }: {
         <div className="flex gap-2 justify-end pt-2">
           <button
             type="button" onClick={onClose}
-            className="text-mf-text-secondary px-3 py-2 rounded text-sm"
+            className="text-mf-text-muted px-3 py-2 rounded text-sm"
           >Cancelar</button>
           <button
             type="submit" disabled={saving}

@@ -99,7 +99,7 @@ export default function AdminOrcamentoDetail() {
   }, [orc]);
 
   if (err) return <div className="text-mf-danger">{err}</div>;
-  if (!orc) return <div className="text-mf-text-secondary">Carregando…</div>;
+  if (!orc) return <div className="text-mf-text-muted">Carregando…</div>;
 
   const config = orc.configuracao_json ?? {};
 
@@ -107,15 +107,15 @@ export default function AdminOrcamentoDetail() {
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <Link to="/admin/orcamentos" className="text-xs text-mf-text-secondary hover:underline">
+          <Link to="/admin/orcamentos" className="text-xs text-mf-text-muted hover:underline">
             ← Voltar para orçamentos
           </Link>
           <h1 className="text-2xl font-extrabold mt-1">{orc.numero}</h1>
-          <p className="text-sm text-mf-text-secondary mt-1">
+          <p className="text-sm text-mf-text-muted mt-1">
             {orc.cliente_nome} · {orc.cliente_email}
             {orc.cliente_telefone ? ` · ${orc.cliente_telefone}` : ''}
           </p>
-          <p className="text-xs text-mf-text-secondary mt-1">
+          <p className="text-xs text-mf-text-muted mt-1">
             Produto: <strong>{orc.produto?.nome ?? '—'}</strong>
             {' · '}Finalidade: <strong>{orc.finalidade}</strong>
             {' · '}Tipo: <strong>{orc.tipo}</strong>
@@ -123,13 +123,13 @@ export default function AdminOrcamentoDetail() {
           </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-mf-text-secondary">Total</div>
+          <div className="text-xs text-mf-text-muted">Total</div>
           <div className="text-3xl font-extrabold tabular-nums">{fmtBRL(orc.valor_total)}</div>
         </div>
       </header>
 
       <section className="bg-white rounded border p-4">
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary mb-3">
+        <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted mb-3">
           Configuração
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -145,7 +145,7 @@ export default function AdminOrcamentoDetail() {
 
         {config.combos && Object.keys(config.combos).length > 0 && (
           <div className="mt-4 pt-3 border-t">
-            <p className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Combos selecionados</p>
+            <p className="text-xs uppercase tracking-wider text-mf-text-muted mb-2">Combos selecionados</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               {Object.entries(config.combos).map(([cat, slug]) => (
                 <Info
@@ -161,7 +161,7 @@ export default function AdminOrcamentoDetail() {
 
         {Array.isArray(config.esquadrias_extras?.caixilhos) && config.esquadrias_extras.caixilhos.length > 0 && (
           <div className="mt-4 pt-3 border-t">
-            <p className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Caixilhos extras</p>
+            <p className="text-xs uppercase tracking-wider text-mf-text-muted mb-2">Caixilhos extras</p>
             <ul className="text-sm space-y-1">
               {config.esquadrias_extras.caixilhos.map((c: any, i: number) => (
                 <li key={i}>
@@ -174,7 +174,7 @@ export default function AdminOrcamentoDetail() {
 
         {(config.esquadrias_extras?.portas ?? 0) > 0 && (
           <div className="mt-4 pt-3 border-t text-sm">
-            <span className="text-xs uppercase tracking-wider text-mf-text-secondary">Portas extras: </span>
+            <span className="text-xs uppercase tracking-wider text-mf-text-muted">Portas extras: </span>
             <strong>{config.esquadrias_extras.portas}</strong>
             {Array.isArray(config.esquadrias_extras.tamanhos_portas) && config.esquadrias_extras.tamanhos_portas.length > 0 && (
               <span> ({config.esquadrias_extras.tamanhos_portas.join(', ')})</span>
@@ -183,12 +183,15 @@ export default function AdminOrcamentoDetail() {
         )}
       </section>
 
+      <ComposicoesAplicadas config={config} />
+
+
       <section className="bg-white rounded border overflow-hidden">
         <div className="px-4 py-3 border-b flex items-center justify-between">
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-secondary">
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted">
             Itens ({orc.itens.length})
           </h2>
-          <div className="text-xs text-mf-text-secondary">
+          <div className="text-xs text-mf-text-muted">
             Subtotal: <strong className="tabular-nums">{fmtBRL(orc.valor_subtotal)}</strong>
             {' · '}Gerenciamento: <strong className="tabular-nums">{fmtDec(orc.valor_gerenciamento_pct)}%</strong>
           </div>
@@ -211,13 +214,13 @@ export default function AdminOrcamentoDetail() {
             ))}
             <tr className="border-t bg-mf-black/5">
               <td className="p-3" colSpan={6}>
-                <div className="text-right text-mf-text-secondary">Subtotal</div>
+                <div className="text-right text-mf-text-muted">Subtotal</div>
               </td>
               <td className="p-3 text-right tabular-nums font-bold">{fmtBRL(orc.valor_subtotal)}</td>
             </tr>
             <tr className="border-t bg-mf-black/5">
               <td className="p-3" colSpan={6}>
-                <div className="text-right text-mf-text-secondary">
+                <div className="text-right text-mf-text-muted">
                   Gerenciamento ({fmtDec(orc.valor_gerenciamento_pct)}%)
                 </div>
               </td>
@@ -258,7 +261,7 @@ export default function AdminOrcamentoDetail() {
         )}
       </div>
 
-      <details className="text-xs text-mf-text-secondary">
+      <details className="text-xs text-mf-text-muted">
         <summary className="cursor-pointer">Configuração JSON completa</summary>
         <pre className="bg-white border p-3 mt-2 overflow-x-auto whitespace-pre-wrap break-all">
           {JSON.stringify(orc.configuracao_json, null, 2)}
@@ -271,9 +274,117 @@ export default function AdminOrcamentoDetail() {
 function Info({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wider text-mf-text-secondary">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-mf-text-muted">{label}</div>
       <div className={mono ? 'font-mono text-xs mt-1' : 'mt-1'}>{value}</div>
     </div>
+  );
+}
+
+function ComposicoesAplicadas({ config }: { config: any }) {
+  const incluirFundacao = config?.incluir_fundacao;
+  const incluirProjeto = config?.incluir_projeto;
+  const valorOverride = config?.valor_projeto_override;
+  const incluirGerenciamento = config?.incluir_gerenciamento;
+  const gerenciamentoOverride = config?.gerenciamento_pct_override;
+
+  // Orçamentos antigos (pré-composições) não tinham esses campos. Se todos
+  // são undefined, escondemos o bloco.
+  if (
+    incluirFundacao === undefined
+    && incluirProjeto === undefined
+    && incluirGerenciamento === undefined
+  ) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white rounded border p-4">
+      <h2 className="text-sm font-extrabold uppercase tracking-wider text-mf-text-muted mb-3">
+        Composições aplicadas
+      </h2>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-muted w-44 pt-0.5 shrink-0">
+            Estrutura LSF base
+          </span>
+          <span>
+            <strong>Sempre inclusa</strong> — paineis LSF (paredes, piso, cobertura),
+            treliças e insumos auxiliares. Calculada por área da obra.
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-muted w-44 pt-0.5 shrink-0">
+            Fundação
+          </span>
+          <span>
+            {incluirFundacao === true && (
+              <span><span className="text-mf-success font-bold">INCLUSA</span> — concreto C20 com volume estimado em 0,10 m × área de planta.</span>
+            )}
+            {incluirFundacao === false && (
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSA</span>
+                <span className="text-mf-text-muted"> — execução por conta do cliente; orçamento não cobre concreto, escavação nem MO de fundação. <em>Aparece destacado no PDF do cliente.</em></span>
+              </span>
+            )}
+            {incluirFundacao !== true && incluirFundacao !== false && (
+              <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-muted w-44 pt-0.5 shrink-0">
+            Projeto complementar
+          </span>
+          <span>
+            {incluirProjeto === true && valorOverride === null && (
+              <span><span className="text-mf-success font-bold">INCLUSO</span> — valor padrão R$ 142,00.</span>
+            )}
+            {incluirProjeto === true && typeof valorOverride === 'number' && (
+              <span>
+                <span className="text-mf-success font-bold">INCLUSO</span> — valor override <strong>{fmtBRL(valorOverride)}</strong>{' '}
+                (registrado em "Extras comerciais").
+                {valorOverride === 0 && ' Cliente já tem projeto próprio.'}
+              </span>
+            )}
+            {incluirProjeto === false && (
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSO</span>
+                <span className="text-mf-text-muted"> — cliente fornece projetos estrutural, hidrossanitário, elétrico etc. <em>Aparece destacado no PDF do cliente.</em></span>
+              </span>
+            )}
+            {incluirProjeto !== true && incluirProjeto !== false && (
+              <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-muted w-44 pt-0.5 shrink-0">
+            Taxa de gerenciamento
+          </span>
+          <span>
+            {incluirGerenciamento === true && gerenciamentoOverride === null && (
+              <span><span className="text-mf-success font-bold">INCLUSA</span> — 8% (default).</span>
+            )}
+            {incluirGerenciamento === true && typeof gerenciamentoOverride === 'number' && (
+              <span>
+                <span className="text-mf-success font-bold">INCLUSA</span> — <strong>{fmtDec(gerenciamentoOverride)}%</strong>{' '}
+                (override custom).
+                {gerenciamentoOverride === 0 && ' Equivalente a NÃO INCLUSA.'}
+              </span>
+            )}
+            {incluirGerenciamento === false && (
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSA</span>
+                <span className="text-mf-text-muted"> — total = subtotal de materiais. Linha de gerenciamento omitida do PDF do cliente.</span>
+              </span>
+            )}
+            {incluirGerenciamento !== true && incluirGerenciamento !== false && (
+              <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -281,9 +392,9 @@ function FragmentByCategoria({ grupo }: { grupo: { cat: string; label: string; i
   return (
     <>
       <tr className="bg-mf-bg-light border-t">
-        <td colSpan={7} className="p-2 px-3 text-xs font-bold uppercase tracking-wider text-mf-text-secondary">
+        <td colSpan={7} className="p-2 px-3 text-xs font-bold uppercase tracking-wider text-mf-text-muted">
           {grupo.label}
-          <span className="ml-2 text-mf-text-secondary font-normal normal-case">
+          <span className="ml-2 text-mf-text-muted font-normal normal-case">
             ({grupo.itens.length} item{grupo.itens.length === 1 ? '' : 's'} ·{' '}
             <span className="tabular-nums">{fmtBRL(grupo.subtotal)}</span>)
           </span>
@@ -294,7 +405,7 @@ function FragmentByCategoria({ grupo }: { grupo: { cat: string; label: string; i
           key={`${it.material_id}-${it.ordem}`}
           className={`border-t ${idx % 2 === 1 ? 'bg-gray-100' : ''}`}
         >
-          <td className="p-3 tabular-nums text-mf-text-secondary">{it.ordem}</td>
+          <td className="p-3 tabular-nums text-mf-text-muted">{it.ordem}</td>
           <td className="p-3 font-mono text-xs">{it.material?.sku ?? '—'}</td>
           <td className="p-3">{it.descricao}</td>
           <td className="p-3 text-right tabular-nums">{fmtQtd(it.quantidade, it.unidade)}</td>

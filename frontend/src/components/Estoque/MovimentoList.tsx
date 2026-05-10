@@ -24,11 +24,11 @@ interface Props {
 
 export default function MovimentoList({ movimentos, materialById }: Props) {
   if (!movimentos.length) {
-    return <p className="text-mf-text-secondary text-sm">Nenhum movimento encontrado.</p>;
+    return <p className="text-mf-text-muted text-sm">Nenhum movimento encontrado.</p>;
   }
   return (
     <table className="w-full text-sm tabular-nums">
-      <thead className="text-left text-mf-text-secondary">
+      <thead className="text-left text-mf-text-muted">
         <tr>
           <th className="py-2">Data</th>
           <th>Tipo</th>
@@ -46,7 +46,7 @@ export default function MovimentoList({ movimentos, materialById }: Props) {
             <td>{TIPO_LABEL[m.tipo] ?? m.tipo}</td>
             <td>{info?.nome ?? m.material_id}</td>
             <td className="text-right">{TIPO_SIGN[m.tipo]}{fmtQtd(m.quantidade, info?.unidade)}</td>
-            <td className="text-mf-text-secondary">
+            <td className="text-mf-text-muted">
               {m.tipo === 'compra' && m.nota_fiscal ? `NF ${m.nota_fiscal}` : ''}
               {m.tipo === 'saida_obra' ? m.destino ?? '' : ''}
               {m.tipo.startsWith('ajuste') ? m.observacao ?? '' : ''}

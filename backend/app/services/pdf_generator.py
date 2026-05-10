@@ -23,6 +23,7 @@ def render_quote_pdf(
     produto: dict[str, Any],
     itens: list[dict[str, Any]],
     resumo_config: str,
+    config: dict[str, Any] | None = None,
 ) -> bytes:
     template = _env.get_template("quote_pdf.html")
     html = template.render(
@@ -30,6 +31,7 @@ def render_quote_pdf(
         produto=produto,
         itens=itens,
         resumo_config=resumo_config,
+        config=config or {},
         agora=datetime.utcnow().strftime("%d/%m/%Y %H:%M UTC"),
     )
     return HTML(string=html).write_pdf()
