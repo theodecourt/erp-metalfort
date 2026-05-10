@@ -70,6 +70,14 @@ class Configuracao(BaseModel):
     # Linhas comerciais extras (transporte, instalação, taxas etc.) fora do catálogo.
     extras_comerciais: list[ExtraComercial] = Field(default_factory=list)
 
+    # Composições opcionais por orçamento (fundação, projeto complementar).
+    # None significa "ainda não respondido" — em rotas internas vira 400. Em rotas
+    # públicas, é forçado para False antes do cálculo. Ver Decisões 2 e 3 em
+    # docs/regras-de-negocio.md.
+    incluir_fundacao: bool | None = None
+    incluir_projeto: bool | None = None
+    valor_projeto_override: float | None = Field(default=None, ge=0)
+
 
 class CalculateRequest(BaseModel):
     produto_id: str

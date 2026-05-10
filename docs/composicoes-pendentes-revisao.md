@@ -79,6 +79,32 @@ Se for intencional: ERP precisa filtrar essa MO específica em COMP00008.
 
 ---
 
+## Bloco 4 — Volume e tipo de concreto da fundação (assumido sem confirmar)
+
+Quando admin marca `incluir_fundacao=true` no novo orçamento, o ERP hoje aplica:
+- **Concreto**: COMP00020 (Concreto C20)
+- **Volume**: `area_planta_m2 × 0,10 m` (ou seja, 10 cm de espessura)
+
+Decisão **assumida**, não confirmada com Samuel. Em obra Metalfort 3×6 (18 m²), isso
+dá 1,8 m³ de concreto C20 + agregados + água, total ≈ R$ 843.
+
+### Perguntas pra Samuel
+
+1. **Tipo de concreto padrão Metalfort**: é C20 (mais barato), ou na prática se
+   usa C25/C30? Faz diferença pra estrutura LSF leve?
+2. **Espessura típica**: 10 cm é razoável pra radier de modular Metalfort? Ou
+   varia por finalidade (residencial vs comercial)?
+3. **Argamassas**: o sistema modular LSF dispensa argamassas (construção seca);
+   COMP00023-27 (argamassa de assentamento, reboco, chapisco etc.) realmente
+   não entram em obra Metalfort, ou tem caso de uso?
+4. **Sapata vs radier**: em obras pequenas (3×6, 18 m²), o padrão é radier
+   inteiro ou sapata corrida só no perímetro? Os volumes diferem.
+
+Até confirmar, valor de fundação no ERP é uma estimativa rápida — não usar como
+referência financeira sem revisar.
+
+---
+
 ## Bloco 3 — Composições "alternativas" ficam órfãs no DB
 
 Comentário paralelo, não ação imediata: COMP00005-09 foram importadas mas não

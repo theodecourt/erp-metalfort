@@ -9,7 +9,7 @@ from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, SubmitRequest
 from app.services.combo_service import build_combos_bom_from_selections
-from app.services.composicao_service import expand_composicoes_to_bom
+from app.services.composicao_service import expand_composicoes_to_bom, expand_overrides_to_bom
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
@@ -24,6 +24,38 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
     return res.data or []
 
 
+def _validar_overrides_obrigatorios(config: dict) -> None:
+    """Em rotas internas (admin/vendedor), incluir_fundacao e incluir_projeto
+    precisam ter resposta explicita (true/false). None = nao respondido = 400.
+
+    Razao: forca o vendedor a marcar conscientemente o que entra (Decisoes 2 e 3
+    em docs/regras-de-negocio.md). Em rotas publicas, sao forcados a False antes
+    de chegar aqui.
+    """
+    if config.get("incluir_fundacao") is None:
+        raise HTTPException(400, "responda 'incluir_fundacao' (true ou false)")
+    if config.get("incluir_projeto") is None:
+        raise HTTPException(400, "responda 'incluir_projeto' (true ou false)")
+
+
+def _aplicar_overrides_em_extras(config: dict) -> dict:
+    """Quando incluir_projeto=true e valor_projeto_override esta definido,
+    adiciona uma linha em extras_comerciais com esse valor (e os materiais do
+    COMP00028 nao sao expandidos — ver expand_overrides_to_bom)."""
+    if not config.get("incluir_projeto"):
+        return config
+    valor = config.get("valor_projeto_override")
+    if valor is None:
+        return config
+    extras = list(config.get("extras_comerciais") or [])
+    extras.append({
+        "descricao": "Projetos complementares (override)",
+        "qtd": 1,
+        "preco_unitario": float(valor),
+    })
+    return {**config, "extras_comerciais": extras}
+
+
 @router.post("/calculate")
 def internal_calculate(
     req: CalculateRequest,
@@ -34,11 +66,14 @@ def internal_calculate(
         raise HTTPException(400, "tier inválido")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    _validar_overrides_obrigatorios(config)
+    config = _aplicar_overrides_em_extras(config)
     bom = repository.list_bom_regras(req.produto_id)
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
+    bom_overrides = expand_overrides_to_bom(config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
-        append_personalizados(bom + bom_composicoes, config), config,
+        append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
         tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 
@@ -59,11 +94,14 @@ def create_internal(
 
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    _validar_overrides_obrigatorios(config)
+    config = _aplicar_overrides_em_extras(config)
     bom = repository.list_bom_regras(req.produto_id)
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
+    bom_overrides = expand_overrides_to_bom(config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
-        append_personalizados(bom + bom_composicoes, config), config,
+        append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
         tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom,
     )
 

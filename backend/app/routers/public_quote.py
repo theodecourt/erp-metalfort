@@ -46,6 +46,11 @@ def public_calculate(request: Request, req: CalculateRequest):
         raise HTTPException(404, "Produto sem BOM cadastrada")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    # Cliente publico nunca decide sobre fundacao ou projeto — forcamos false
+    # mesmo que o input tenha mandado outra coisa (Decisao 4 das regras).
+    config["incluir_fundacao"] = False
+    config["incluir_projeto"] = False
+    config["valor_projeto_override"] = None
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
@@ -68,6 +73,10 @@ def public_submit(request: Request, req: SubmitRequest):
     bom = repository.list_bom_regras(req.produto_id)
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    # Forca off no fluxo publico (mesma logica do /calculate publico).
+    config["incluir_fundacao"] = False
+    config["incluir_projeto"] = False
+    config["valor_projeto_override"] = None
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(

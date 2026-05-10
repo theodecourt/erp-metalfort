@@ -44,6 +44,26 @@ def list_opcoes(produto_id: str) -> list[dict[str, Any]]:
     return res.data or []
 
 
+def get_composicao_with_materiais_by_codigo(codigo: str) -> dict[str, Any] | None:
+    """Carrega composicao por codigo + materiais (usado em overrides do orcamento)."""
+    sb = get_admin_client()
+    res = sb.table("composicao").select("*").eq("codigo", codigo).eq("ativo", True).limit(1).execute().data
+    if not res:
+        return None
+    comp = res[0]
+    mats = (
+        sb.table("composicao_material")
+        .select("*, material(*)")
+        .eq("composicao_id", comp["id"])
+        .order("ordem")
+        .execute()
+        .data
+        or []
+    )
+    comp["materiais"] = mats
+    return comp
+
+
 def list_produto_composicoes(produto_id: str) -> list[dict[str, Any]]:
     """Carrega vinculacoes produto_composicao com materiais expandidos.
     Cada item retornado tem: produto_id, composicao_id, formula_json,
