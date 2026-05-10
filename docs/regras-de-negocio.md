@@ -168,6 +168,44 @@ arriscado, merece ciclo dedicado — não bloqueia a operação atual.
 
 ---
 
+### Decisão 9 — Hipótese de modelagem de MO da planilha Samuel (validar com Samuel)
+
+Investigação durante a Etapa 8 mostrou que itens de mão-de-obra (família CF006)
+têm **nomes específicos** mas **uso cruzado** em composições. Aparente erro de
+catalogação, mas o cruzamento é **idêntico em v2 e v3** — não é erro de
+transcrição recente.
+
+**Hipótese**: o Samuel modela MO em **tiers de complexidade**, não em
+"operação específica". Os nomes dos itens CF006SF00x viraram rotuladores
+históricos, mas na prática representam categorias de preço:
+
+| Tier | Preço | Itens | Uso prático em composições |
+|---|---|---|---|
+| Básico | R$ 40/m² | CF006SF001, CF006SF002 | Painéis simples (UE 90, UE 300 plano) |
+| Médio | R$ 55/m² | CF006SF004 | (não usado em composições atuais) |
+| Complexo | R$ 60/m² | CF006SF003, CF006SF005, CF006SF006 | Painéis duplos, treliças, fechamento, cobertura |
+| Forro | R$ 75/m² | CF006SF007 | Forro de gesso |
+| Global | R$ 700/m² | CF006SF008 | Verba LSF por m² de planta (raro) |
+
+**Cruzamentos de nome ⚠️ versus uso** (exemplos):
+- CF006SF002 "INSTALAÇÃO PLACAS CIMENTÍCIAS" usado em COMP00002 (LSF UE 300 piso)
+- CF006SF003 "MONTAR PAINEL UE 300" usado em COMP00003 (2UE 90) e COMP00004 (TRELIÇAS)
+- CF006SF006 "CIMENTÍCIAS + BASECOAT" usado em COMP00007 (LÃ + GESSO)
+
+**Decisão temporária**: NÃO corrigir nomes nem mudar vínculos das composições
+**agora**. Risco de "consertar" o que está certo em essência. Antes de produção:
+sentar com Samuel, confirmar a hipótese de tiers, e:
+- Se confirmada: renomear itens CF006 para nomes neutros de tier (ex.: "MO LSF
+  básico R$40/m²", "MO LSF complexo R$60/m²"). Composições continuam funcionando
+  com mesmos vínculos.
+- Se rejeitada: ajustar valores ou cruzamentos conforme orientação do Samuel.
+
+Tabela detalhada composição × MO atual × tier sugerido está em
+[`docs/composicoes-pendentes-revisao.md`](composicoes-pendentes-revisao.md) —
+serve de pauta da conversa com o Samuel.
+
+---
+
 ## Convenções para futuras entradas neste documento
 
 - Sempre datar (`YYYY-MM-DD`) e numerar decisões dentro de uma seção.
