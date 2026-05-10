@@ -284,10 +284,16 @@ function ComposicoesAplicadas({ config }: { config: any }) {
   const incluirFundacao = config?.incluir_fundacao;
   const incluirProjeto = config?.incluir_projeto;
   const valorOverride = config?.valor_projeto_override;
+  const incluirGerenciamento = config?.incluir_gerenciamento;
+  const gerenciamentoOverride = config?.gerenciamento_pct_override;
 
-  // Orçamentos antigos (pré-composições) não tinham esses campos. Se ambos
+  // Orçamentos antigos (pré-composições) não tinham esses campos. Se todos
   // são undefined, escondemos o bloco.
-  if (incluirFundacao === undefined && incluirProjeto === undefined) {
+  if (
+    incluirFundacao === undefined
+    && incluirProjeto === undefined
+    && incluirGerenciamento === undefined
+  ) {
     return null;
   }
 
@@ -347,6 +353,32 @@ function ComposicoesAplicadas({ config }: { config: any }) {
               </span>
             )}
             {incluirProjeto !== true && incluirProjeto !== false && (
+              <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
+            )}
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-xs uppercase tracking-wider text-mf-text-muted w-44 pt-0.5 shrink-0">
+            Taxa de gerenciamento
+          </span>
+          <span>
+            {incluirGerenciamento === true && gerenciamentoOverride === null && (
+              <span><span className="text-mf-success font-bold">INCLUSA</span> — 8% (default).</span>
+            )}
+            {incluirGerenciamento === true && typeof gerenciamentoOverride === 'number' && (
+              <span>
+                <span className="text-mf-success font-bold">INCLUSA</span> — <strong>{fmtDec(gerenciamentoOverride)}%</strong>{' '}
+                (override custom).
+                {gerenciamentoOverride === 0 && ' Equivalente a NÃO INCLUSA.'}
+              </span>
+            )}
+            {incluirGerenciamento === false && (
+              <span>
+                <span className="text-mf-danger font-bold">NÃO INCLUSA</span>
+                <span className="text-mf-text-muted"> — total = subtotal de materiais. Linha de gerenciamento omitida do PDF do cliente.</span>
+              </span>
+            )}
+            {incluirGerenciamento !== true && incluirGerenciamento !== false && (
               <span className="text-mf-text-muted">— (orçamento antigo, antes do prompt)</span>
             )}
           </span>

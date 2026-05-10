@@ -52,7 +52,9 @@
 
   <div class="totals">
     <div class="row"><span>Subtotal</span><span>{{ orcamento.valor_subtotal|brl }}</span></div>
+    {% if orcamento.valor_gerenciamento_pct and orcamento.valor_gerenciamento_pct|float > 0 %}
     <div class="row"><span>Gerenciamento ({{ orcamento.valor_gerenciamento_pct|dec }}%)</span><span>{{ (orcamento.valor_total - orcamento.valor_subtotal)|brl }}</span></div>
+    {% endif %}
     <div class="row total"><span>Total</span><span>{{ orcamento.valor_total|brl }}</span></div>
   </div>
 

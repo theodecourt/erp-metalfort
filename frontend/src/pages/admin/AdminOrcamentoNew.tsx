@@ -73,25 +73,38 @@ export default function AdminOrcamentoNew() {
   const [incluirFundacao, setIncluirFundacao] = useState<boolean | null>(null);
   const [incluirProjeto, setIncluirProjeto] = useState<boolean | null>(null);
   const [valorProjetoOverride, setValorProjetoOverride] = useState<string>('');
+  const [incluirGerenciamento, setIncluirGerenciamento] = useState<boolean | null>(null);
+  const [gerenciamentoPctOverride, setGerenciamentoPctOverride] = useState<string>('');
 
-  // Default sugerido pra valor do projeto (R$ 142 da composição COMP00028)
+  // Defaults sugeridos
   const VALOR_PROJETO_DEFAULT = 142;
+  const GERENCIAMENTO_PCT_DEFAULT = 8;
 
-  const promptCompletos = incluirFundacao !== null && incluirProjeto !== null;
+  const promptCompletos =
+    incluirFundacao !== null && incluirProjeto !== null && incluirGerenciamento !== null;
   const valorOverrideNumero =
     valorProjetoOverride.trim() === '' ? null : Number(valorProjetoOverride.replace(',', '.'));
   const valorOverrideValido =
     valorOverrideNumero === null || (Number.isFinite(valorOverrideNumero) && valorOverrideNumero >= 0);
+  const gerenciamentoPctNumero =
+    gerenciamentoPctOverride.trim() === '' ? null : Number(gerenciamentoPctOverride.replace(',', '.'));
+  const gerenciamentoPctValido =
+    gerenciamentoPctNumero === null ||
+    (Number.isFinite(gerenciamentoPctNumero) && gerenciamentoPctNumero >= 0 && gerenciamentoPctNumero <= 100);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!produto || !config) return;
     if (!promptCompletos) {
-      setError('Responda "Incluir fundação?" e "Incluir projeto complementar?" antes de salvar.');
+      setError('Responda fundação, projeto e gerenciamento antes de salvar.');
       return;
     }
     if (incluirProjeto && !valorOverrideValido) {
       setError('Valor do projeto inválido (deve ser número >= 0 ou vazio para usar default).');
+      return;
+    }
+    if (incluirGerenciamento && !gerenciamentoPctValido) {
+      setError('% do gerenciamento inválido (deve ser número entre 0 e 100, ou vazio para usar 8%).');
       return;
     }
     setSubmitting(true); setError(null);
@@ -101,6 +114,8 @@ export default function AdminOrcamentoNew() {
         incluir_fundacao: incluirFundacao,
         incluir_projeto: incluirProjeto,
         valor_projeto_override: incluirProjeto ? valorOverrideNumero : null,
+        incluir_gerenciamento: incluirGerenciamento,
+        gerenciamento_pct_override: incluirGerenciamento ? gerenciamentoPctNumero : null,
       };
       const created = await fetchApi<any>(`/api/quote?enviar_email=${enviarEmail}`, {
         method: 'POST',
@@ -174,12 +189,12 @@ export default function AdminOrcamentoNew() {
           <section className="p-6 border-t border-mf-border">
             <h2 className="text-lg font-extrabold text-mf-yellow">Itens da obra (decisão obrigatória)</h2>
             <p className="text-xs text-mf-text-secondary mt-1 mb-4">
-              Marque explicitamente se fundação e projeto complementar entram nesta obra.
+              Marque explicitamente fundação, projeto complementar e taxa de gerenciamento.
               Sem default — força resposta consciente. Detalhes em
               {' '}
               <code className="text-xs">docs/regras-de-negocio.md</code>.
             </p>
-            <div className="grid gap-4 max-w-xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <div className="text-sm font-bold mb-2">Incluir fundação?</div>
                 <div className="flex gap-3">
@@ -225,16 +240,55 @@ export default function AdminOrcamentoNew() {
                   </label>
                 </div>
                 {incluirProjeto && (
-                  <div className="mt-2 max-w-xs">
+                  <div className="mt-2">
                     <label className="block">
                       <span className="text-xs text-mf-text-secondary">
-                        Valor (R$). Deixe vazio para usar default (R$ {VALOR_PROJETO_DEFAULT.toFixed(2)}) —
-                        digite 0 se cliente já tem projeto.
+                        Valor (R$). Vazio = default R$ {VALOR_PROJETO_DEFAULT.toFixed(2)}; 0 = cliente já tem.
                       </span>
                       <input
                         value={valorProjetoOverride}
                         onChange={e => setValorProjetoOverride(e.target.value)}
                         placeholder={`${VALOR_PROJETO_DEFAULT}`}
+                        inputMode="decimal"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-sm font-bold mb-2">Incluir gerenciamento?</div>
+                <div className="flex gap-3">
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirGerenciamento === true}
+                      onChange={() => setIncluirGerenciamento(true)}
+                    />
+                    <span>Sim</span>
+                  </label>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={incluirGerenciamento === false}
+                      onChange={() => {
+                        setIncluirGerenciamento(false);
+                        setGerenciamentoPctOverride('');
+                      }}
+                    />
+                    <span>Não</span>
+                  </label>
+                </div>
+                {incluirGerenciamento && (
+                  <div className="mt-2">
+                    <label className="block">
+                      <span className="text-xs text-mf-text-secondary">
+                        % sobre subtotal. Vazio = default {GERENCIAMENTO_PCT_DEFAULT}%.
+                      </span>
+                      <input
+                        value={gerenciamentoPctOverride}
+                        onChange={e => setGerenciamentoPctOverride(e.target.value)}
+                        placeholder={`${GERENCIAMENTO_PCT_DEFAULT}`}
                         inputMode="decimal"
                         className={`${fieldClass} mt-1`}
                       />
@@ -277,12 +331,12 @@ export default function AdminOrcamentoNew() {
               </label>
               <button
                 type="submit"
-                disabled={submitting || !config || !promptCompletos || !valorOverrideValido}
+                disabled={submitting || !config || !promptCompletos || !valorOverrideValido || !gerenciamentoPctValido}
                 className="bg-mf-yellow text-mf-black font-extrabold py-3 rounded hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 {submitting
                   ? 'Criando...'
                   : !promptCompletos
-                  ? 'Responda fundação e projeto antes'
+                  ? 'Responda fundação, projeto e gerenciamento antes'
                   : (enviarEmail ? 'Criar e enviar' : 'Criar rascunho (sem enviar)')}
               </button>
               {error && <div className="text-mf-danger text-sm">{error}</div>}

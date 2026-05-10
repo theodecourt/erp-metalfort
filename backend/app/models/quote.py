@@ -77,6 +77,11 @@ class Configuracao(BaseModel):
     incluir_fundacao: bool | None = None
     incluir_projeto: bool | None = None
     valor_projeto_override: float | None = Field(default=None, ge=0)
+    # Taxa de gerenciamento: opcional como fundacao/projeto. Default rotineiro
+    # da Metalfort = 8%. Em rotas publicas, forçado a True com 8%. Em admin, prompt
+    # obrigatorio (None = nao respondido = 400).
+    incluir_gerenciamento: bool | None = None
+    gerenciamento_pct_override: float | None = Field(default=None, ge=0, le=100)
 
 
 class CalculateRequest(BaseModel):

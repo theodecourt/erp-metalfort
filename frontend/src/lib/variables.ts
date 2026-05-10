@@ -98,6 +98,8 @@ export interface Configuracao {
   incluir_fundacao?: boolean | null;
   incluir_projeto?: boolean | null;
   valor_projeto_override?: number | null;
+  incluir_gerenciamento?: boolean | null;
+  gerenciamento_pct_override?: number | null;
 }
 
 const round6 = (n: number) => +n.toFixed(6);

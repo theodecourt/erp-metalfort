@@ -25,17 +25,26 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
 
 
 def _validar_overrides_obrigatorios(config: dict) -> None:
-    """Em rotas internas (admin/vendedor), incluir_fundacao e incluir_projeto
-    precisam ter resposta explicita (true/false). None = nao respondido = 400.
-
-    Razao: forca o vendedor a marcar conscientemente o que entra (Decisoes 2 e 3
-    em docs/regras-de-negocio.md). Em rotas publicas, sao forcados a False antes
-    de chegar aqui.
-    """
+    """Em rotas internas, incluir_fundacao, incluir_projeto e incluir_gerenciamento
+    precisam ter resposta explicita (true/false). None = nao respondido = 400."""
     if config.get("incluir_fundacao") is None:
         raise HTTPException(400, "responda 'incluir_fundacao' (true ou false)")
     if config.get("incluir_projeto") is None:
         raise HTTPException(400, "responda 'incluir_projeto' (true ou false)")
+    if config.get("incluir_gerenciamento") is None:
+        raise HTTPException(400, "responda 'incluir_gerenciamento' (true ou false)")
+
+
+def _resolve_gerenciamento_pct(config: dict, default_pct: float = 8.0) -> float:
+    """Calcula taxa de gerenciamento efetiva do orcamento.
+    - incluir_gerenciamento=False -> 0
+    - True com gerenciamento_pct_override definido -> override
+    - True sem override -> default (8%)
+    """
+    if not config.get("incluir_gerenciamento"):
+        return 0.0
+    override = config.get("gerenciamento_pct_override")
+    return float(override) if override is not None else default_pct
 
 
 def _aplicar_overrides_em_extras(config: dict) -> dict:
@@ -74,7 +83,7 @@ def internal_calculate(
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
         append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
-        tier=tier, gerenciamento_pct=8.0, combos_bom=combos_bom,
+        tier=tier, gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=combos_bom,
     )
 
 
@@ -102,7 +111,7 @@ def create_internal(
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
         append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
-        tier="full", gerenciamento_pct=8.0, combos_bom=combos_bom,
+        tier="full", gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=combos_bom,
     )
 
     year = datetime.utcnow().year

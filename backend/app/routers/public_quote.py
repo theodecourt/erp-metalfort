@@ -51,6 +51,9 @@ def public_calculate(request: Request, req: CalculateRequest):
     config["incluir_fundacao"] = False
     config["incluir_projeto"] = False
     config["valor_projeto_override"] = None
+    # Cliente publico sempre paga 8% de gerenciamento — admin nao pode alterar pelo fluxo publico
+    config["incluir_gerenciamento"] = True
+    config["gerenciamento_pct_override"] = None
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     return calculate(
@@ -77,6 +80,9 @@ def public_submit(request: Request, req: SubmitRequest):
     config["incluir_fundacao"] = False
     config["incluir_projeto"] = False
     config["valor_projeto_override"] = None
+    # Cliente publico sempre paga 8% de gerenciamento — admin nao pode alterar pelo fluxo publico
+    config["incluir_gerenciamento"] = True
+    config["gerenciamento_pct_override"] = None
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
     combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
     quote = calculate(
