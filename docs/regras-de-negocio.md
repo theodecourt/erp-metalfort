@@ -206,6 +206,49 @@ serve de pauta da conversa com o Samuel.
 
 ---
 
+## 2026-05-11 — Fluxo de merge para ciclos de refinamento
+
+### Decisão 10 — Merge local sem PR em ciclos de baixo risco
+
+Para ciclos de refinamento (cosméticos, renames, polimento de UI) que não
+mexem em fluxo do usuário nem em schema de risco, o fluxo de merge é
+simplificado:
+
+1. Trabalho continua em branch separado (`feature/<nome>`) — preserva rede
+   de proteção caso algo dê errado no meio do ciclo.
+2. Push regular do branch para o GitHub ao longo do trabalho como backup
+   remoto.
+3. Ao final, em vez de abrir PR no GitHub: **merge local** direto pra main
+   seguido de push:
+   ```
+   git checkout main
+   git merge feature/<nome>
+   git push origin main
+   git branch -d feature/<nome>
+   ```
+4. **Parada obrigatória antes do `git push origin main`**: agente mostra
+   resumo do ciclo (commits + arquivos + checkpoints validados) e aguarda
+   OK explícito do usuário antes de empurrar pra origin.
+
+**Razão**: PR via GitHub adiciona overhead (abrir página, copiar URL,
+clicar merge, esperar UI) que se justifica quando há revisão real ou CI
+externo. Em refinamentos validados localmente pelo próprio fluxo do
+agente + checkpoint humano, o PR vira ritual vazio. Merge local é mais
+rápido e mantém o histórico equivalente (commit de merge + push).
+
+**Quando NÃO usar este fluxo (continua via PR no GitHub)**:
+- Mudanças de schema com risco real (migrations destrutivas, alteração
+  de tipos de coluna em produção).
+- Mudanças de fluxo do usuário (admin ou cliente público) que precisam
+  revisão visual antes do merge.
+- Ciclos de funcionalidade nova de tamanho médio/grande onde a PR vira
+  documentação útil do escopo.
+
+**Sinalização explícita pelo usuário**: o usuário escolhe o modo no
+início de cada ciclo. Default (sem sinalização) = via PR.
+
+---
+
 ## Convenções para futuras entradas neste documento
 
 - Sempre datar (`YYYY-MM-DD`) e numerar decisões dentro de uma seção.
