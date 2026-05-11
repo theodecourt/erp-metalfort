@@ -118,6 +118,121 @@ ou se combos vão evoluir pra "consumir" composições. Trabalho de refatoraçã
 
 ---
 
+## Bloco 5 — Limitação: adicionar vs substituir material no orçamento
+
+ERP hoje permite ADICIONAR material extra ao orçamento (via picker "Material
+extra (catálogo)" no Step 10 do StepConfigurator), mas não SUBSTITUIR um
+material que já entra via composição automática.
+
+Exemplo: cliente que prefere perfil UE 75 em vez de UE 90 acaba pagando os
+dois (UE 90 da composição COMP00001 + UE 75 extra adicionado pelo admin).
+
+Não é bug, é limitação de feature. Caminhos futuros:
+
+1. **Override por orçamento**: campo em `configuracao_json` tipo
+   `compoosicoes_desativadas: ['COMP00001']` ou
+   `materiais_substituidos: [{ from: 'CF001SF010', to: 'CF001SF003' }]`.
+2. **Combos alternativos**: criar combos paralelos (`estrutura-LSF-UE-75`,
+   `estrutura-LSF-UE-90`, `estrutura-LSF-UE-300`) e admin escolhe o adequado
+   no configurador.
+
+Decidir abordagem em ciclo separado se a Metalfort tiver demanda real.
+
+---
+
+## Bloco 6 — 34 materiais ativos sem rota automática em orçamento (snapshot 2026-05-11)
+
+Materiais cadastrados como ativos mas que **não entram em nenhuma BOM/combo/
+composição** automaticamente. Continuam acessíveis via picker "Material extra
+(catálogo)" no novo orçamento — ficam como biblioteca técnica disponível pra
+admin escolher quando precisar.
+
+Total: 34. Os 2 SKUs de teste óbvios (`MT-tito`, `SKU TESTE 0001`) já foram
+apagados nesta data.
+
+### 6.1 Perfis LSF UE 75 — 12 SKUs (CF001SF001-008, CF001SF011-014)
+
+Alternativas ao perfil UE 90 (que é o padrão atual via COMP00001/03/04).
+Espessuras de chapa de 0,65 a 2,70 mm.
+
+Decisão: **manter como biblioteca técnica disponível** — não vincular
+automaticamente. Pertence à discussão γ (refatoração combos→composições) ou
+ao Bloco 5 (override por orçamento), conforme escolha futura.
+
+### 6.2 Parafusos especiais — 2 SKUs
+
+- `CF005SF002` PARAFUSO CHUMBADOR M8 X 100 MM HARDBOLT — R$ 3/un
+- `CF005SF003` PARAFUSO PONTA BROCA Nº5 (5,5 X 76mm) — R$ 0,55/un
+
+Possivelmente usados em obras com requisitos estruturais específicos.
+Validar com Samuel se entram em alguma composição padrão ou se o uso é
+caso-a-caso.
+
+### 6.3 Mão de obra órfã — 2 SKUs
+
+- `CF006SF004` MO PAINEL 2UE 90 — R$ 55/m² ✋ **já listado no Bloco 1**
+  (tiers MO — não usado em composições atuais).
+- `CF006SF008` MO LSF POR M² EM PLANTA — R$ 700/m² ✋ **já listado no Bloco 1**
+  (verba global, não casa com subsistema específico).
+
+### 6.4 Elementos estruturais — 3 SKUs (CF009SFxxx)
+
+- `CF009SF001` PERFIL GOUSSET 150x150x0,95mm
+- `CF009SF002` PERFIL CONECTOR DE ANCORAGEM
+- `CF009SF006` TIRANTE - ARAME 10 COM ELO 1m (cx 100pç)
+
+Itens usados em obras com requisitos estruturais específicos (gousset =
+chapa de reforço; conector = ancoragem na fundação; tirante = travamento).
+Validar com Samuel se entram em alguma composição padrão.
+
+### 6.5 Desempenho estrutural — 5 SKUs (CF010SFxxx)
+
+- `CF010SF001` BANDA ACÚSTICA 90x10000x4mm
+- `CF010SF004` MANTA AUTO ADESIVA ASFALTICA ALUMINIZADA
+- `CF010SF009` CANTONEIRA FLEXÍVEL LEVELLINE 30m
+- `CF010SF010` PERFIL PINGADEIRA PVC 2500mm
+- `CF010SF011` FITA HYDRO TAPE ÁREAS MOLHADAS
+
+Maioria são auxiliares de obra (fitas, mantas, pingadeiras) que entram em
+contextos específicos (umidade, acústica, beirais). Validar com Samuel.
+
+### 6.6 Vedações específicas — 2 SKUs (CF011SFxxx)
+
+- `CF011SF002` TELHA CERÂMICA TIPO PORTUGUESA — CUMEEIRA
+- `CF011SF003` CALHAS E RUFOS
+
+Itens de telhado. Cumeeira é específica (peça de remate) e calha/rufo só
+em obras com captação pluvial.
+
+### 6.7 Fechamento MT-FCH — 3 SKUs
+
+- `MT-FCH-006` Fita Tyvek Tape 50x50m
+- `MT-FCH-009` Cantoneira PVC 2,50m
+- `MT-FCH-010` Perfil início com pingadeira PVC 2500mm
+
+Itens auxiliares cadastrados manualmente, sem vínculo. Provavelmente
+deveriam estar em alguma composição de fechamento — investigar caso a caso.
+
+### 6.8 Equipamentos / addons MT-ADD — 2 SKUs
+
+- `MT-ADD-002` Iluminação comercial especial — por ponto (R$ 280/und)
+- `MT-ADD-003` Balcão fixo em steelframe + MDF — por metro linear (R$ 1200/m)
+
+Addons comerciais (loja/conveniência). Provavelmente intencionalmente
+órfãos — só entram quando o admin decide (varia por cliente).
+
+### 6.9 Outros serviços — 3 SKUs
+
+- `CF002SF001` PROJETO ESTRUTURAL ESCADA DE AÇO — R$ 1500/und
+  Caso de obra com escada metálica. Faz sentido ser opcional.
+- `CF004SF001` FRETE E MOVIMENTAÇÃO — R$ 10/km
+  Frete por km. Provavelmente entra como extra comercial caso a caso
+  (admin digita distância e valor).
+- `CF004SF002` MUNK — R$ 2500/diária
+  Locação de caminhão Munk. Idem (caso a caso).
+
+---
+
 ## Como atualizar este documento
 
 Quando uma pendência for resolvida (Samuel responde, decisão é tomada):
