@@ -151,7 +151,7 @@ export default function AdminOrcamentoNew() {
         </div>
         {produtoSlug && (
           <button type="button" onClick={handleDescartar}
-            className="text-sm text-mf-text-secondary hover:text-mf-danger underline underline-offset-2">
+            className="text-sm text-mf-text-muted hover:text-mf-danger underline underline-offset-2">
             Descartar rascunho
           </button>
         )}
