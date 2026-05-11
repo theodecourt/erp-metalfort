@@ -124,8 +124,12 @@ def main() -> None:
     sb = get_admin_client()
 
     # Carrega DB atual (apenas SKUs CF*)
+    # nome_origem_planilha != NULL = item ja foi renomeado por convencao interna
+    # (ex.: migration 011 trocou nomes de MO por tiers T1-T4). Nao sobrescrever.
     db_rows = (
-        sb.table("material").select("id, sku, nome, ativo, preco_unitario, unidade, categoria")
+        sb.table("material").select(
+            "id, sku, nome, nome_origem_planilha, ativo, preco_unitario, unidade, categoria"
+        )
         .like("sku", "CF%").execute().data or []
     )
     db_by_stripped = {strip_user_suffix(r["sku"]): r for r in db_rows}
@@ -222,35 +226,45 @@ def main() -> None:
 
     # 3. Renomear (e atualizar nome/preco se diferente)
     #    Preco vai pela RPC pra gerar entrada no historico com origem=import_script.
+    #    Se db["nome_origem_planilha"] != NULL, ja foi renomeado por convencao
+    #    interna (ex.: migration 011 com tiers T1-T4) — nao sobrescrever nome.
+    renames_preservados = 0
     for v3, db in rename:
         payload = {
             "sku": v3["sku"],
-            "nome": v3["nome"],
             "categoria": v3["categoria"],
             "unidade": v3["unidade"],
             "ativo": True,
         }
+        if db.get("nome_origem_planilha"):
+            renames_preservados += 1
+        else:
+            payload["nome"] = v3["nome"]
         sb.table("material").update(payload).eq("id", db["id"]).execute()
         repository.update_material_preco(
             db["id"], float(v3["preco_unitario"]),
             motivo="import planilha Samuel v3", origem="import_script",
         )
-    print(f"  ~ {len(rename)} renomeados/atualizados")
+    print(f"  ~ {len(rename)} renomeados/atualizados ({renames_preservados} com nome interno preservado)")
 
     # 4. Atualizar (mesmos SKUs)
+    updates_preservados = 0
     for v3, db in update_only:
         payload = {
-            "nome": v3["nome"],
             "categoria": v3["categoria"],
             "unidade": v3["unidade"],
             "ativo": True,
         }
+        if db.get("nome_origem_planilha"):
+            updates_preservados += 1
+        else:
+            payload["nome"] = v3["nome"]
         sb.table("material").update(payload).eq("id", db["id"]).execute()
         repository.update_material_preco(
             db["id"], float(v3["preco_unitario"]),
             motivo="import planilha Samuel v3", origem="import_script",
         )
-    print(f"  ~ {len(update_only)} atualizados (mesmo SKU)")
+    print(f"  ~ {len(update_only)} atualizados (mesmo SKU, {updates_preservados} com nome interno preservado)")
 
     # 5. Inserir novos
     for it in insert:
