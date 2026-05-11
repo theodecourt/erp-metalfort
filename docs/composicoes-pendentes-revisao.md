@@ -163,9 +163,19 @@ caso-a-caso.
 ### 6.3 Mão de obra órfã — 2 SKUs
 
 - `CF006SF004` MO PAINEL 2UE 90 — R$ 55/m² ✋ **já listado no Bloco 1**
-  (tiers MO — não usado em composições atuais).
-- `CF006SF008` MO LSF POR M² EM PLANTA — R$ 700/m² ✋ **já listado no Bloco 1**
-  (verba global, não casa com subsistema específico).
+  Renomeado para `MO LSF T2 — painel 2UE médio (R$55/m²)` na migration 011.
+  Continua sem composição vinculada — fica como biblioteca técnica até
+  Samuel definir uso.
+- `CF006SF008` MO LSF POR M² EM PLANTA — R$ 700/m² ⚠️ **PENDENTE INVESTIGAÇÃO**
+  Não foi renomeado na migration 011 porque R$700/m² **não é tier de MO no
+  mesmo sentido das outras** (que são valores por m² aplicados a subsistemas
+  específicos). Pode ser MO global de algum serviço específico (planta
+  inteira como obra) ou cadastro de outra natureza. Investigar com Samuel
+  antes de renomear:
+  - Esse valor é R$/m² de planta total ou um valor único de obra inteira?
+  - Quando entra em orçamento real?
+  - Faz sentido na nomenclatura T1/T2/T3/T4 (seria T5 global?) ou
+    pertence a outra família?
 
 ### 6.4 Elementos estruturais — 3 SKUs (CF009SFxxx)
 
