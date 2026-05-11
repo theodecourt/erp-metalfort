@@ -87,15 +87,30 @@ def main() -> None:
     assert_eq(e["responsavel_id"], user_id, "responsavel_id propagado")
     assert_eq(e["motivo"], "teste smoke api_material", "motivo propagado")
 
+    # --- 2b. Update via api_material SEM motivo (PATCH com motivo=None) ---
+    print("\n[2b] Update via api_material SEM motivo (admin nao digitou nada)")
+    preco_2b = round(preco_2 + 0.50, 2)
+    repository.update_material_preco(
+        mat["id"], preco_2b,
+        responsavel_id=user_id, motivo=None, origem="api_material",
+    )
+    hist = listar(mat["id"])
+    assert_eq(len(hist), n_inicial + 2, "+1 entrada sem motivo")
+    e = hist[0]
+    assert_eq(e["origem"], "api_material", "origem='api_material'")
+    assert_eq(e["motivo"], None, "motivo NULL aceito quando nao enviado")
+    assert_eq(e["responsavel_id"], user_id, "responsavel_id continua propagado")
+    preco_corrente = preco_2b
+
     # --- 3. Update via api_compra ---
     print("\n[3] Update via api_compra (POST /admin/compra)")
-    preco_3 = round(preco_2 + 2.22, 2)
+    preco_3 = round(preco_corrente + 2.22, 2)
     repository.update_material_preco(
         mat["id"], preco_3,
         responsavel_id=user_id, motivo="NF 99999", origem="api_compra",
     )
     hist = listar(mat["id"])
-    assert_eq(len(hist), n_inicial + 2, "+1 entrada (total 2 novas)")
+    assert_eq(len(hist), n_inicial + 3, "+1 entrada (total 3 novas)")
     e = hist[0]
     assert_eq(e["origem"], "api_compra", "origem='api_compra'")
     assert_eq(e["motivo"], "NF 99999", "motivo de NF correto")
@@ -108,7 +123,7 @@ def main() -> None:
         motivo="teste import smoke", origem="import_script",
     )
     hist = listar(mat["id"])
-    assert_eq(len(hist), n_inicial + 3, "+1 entrada (total 3 novas)")
+    assert_eq(len(hist), n_inicial + 4, "+1 entrada (total 4 novas)")
     e = hist[0]
     assert_eq(e["origem"], "import_script", "origem='import_script'")
     assert_eq(e["responsavel_id"], None, "responsavel_id NULL (script sem user)")
@@ -118,7 +133,7 @@ def main() -> None:
     preco_5 = round(preco_4 + 4.44, 2)
     sb.table("material").update({"preco_unitario": preco_5}).eq("id", mat["id"]).execute()
     hist = listar(mat["id"])
-    assert_eq(len(hist), n_inicial + 4, "+1 entrada (total 4 novas)")
+    assert_eq(len(hist), n_inicial + 5, "+1 entrada (total 5 novas)")
     e = hist[0]
     assert_eq(e["origem"], "manual_sql", "origem fallback='manual_sql'")
     assert_eq(e["responsavel_id"], None, "responsavel_id NULL (sem contexto)")
@@ -150,7 +165,7 @@ def main() -> None:
         responsavel_id=user_id, motivo="smoke test cleanup", origem="api_material",
     )
     hist = listar(mat["id"])
-    assert_eq(len(hist), n_inicial + 5, "+1 entrada cleanup (total 5 novas)")
+    assert_eq(len(hist), n_inicial + 6, "+1 entrada cleanup (total 6 novas)")
 
     # --- Resumo ---
     print("\n=== Resumo do historico (5 mais recentes) ===")
@@ -164,8 +179,8 @@ def main() -> None:
         )
 
     print("\n[OK] SMOKE TEST PASSOU")
-    print(f"  Material {mat['sku']} foi mexido 5 vezes e restaurado ao preco original.")
-    print(f"  Historico ganhou 5 entradas alem do snapshot inicial.")
+    print(f"  Material {mat['sku']} foi mexido 6 vezes e restaurado ao preco original.")
+    print(f"  Historico ganhou 6 entradas alem do snapshot inicial.")
 
 
 if __name__ == "__main__":
