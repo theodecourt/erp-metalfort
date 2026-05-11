@@ -10,49 +10,41 @@ Contexto da decisão de não-corrigir-agora: ver
 
 ---
 
-## Bloco 1 — Mão-de-obra com nomes que parecem "ofício específico" mas uso cruzado
+## Bloco 1 — Mão-de-obra com nomes que parecem "ofício específico" mas uso cruzado ✅ RESOLVIDO 2026-05-12
 
-### Tabela: composição × item de MO usado × nome × tier sugerido
+**Resolução**: Samuel confirmou em 2026-05-12 que `CF006SF002` foi escolhido por
+valor equivalente (R$ 40 = tier básico), independente do nome cadastrado. A
+hipótese de "tiers de complexidade" (Básico R$40 / Complexo R$60 / Forro R$75)
+está correta — o Samuel pensa em faixa de valor por m², não em operação literal
+do que está escrito no nome do item.
 
-| Composição | Item MO usado | Nome cadastrado do item | R$/m² | Coerente com nome? | Tier sugerido |
-|---|---|---|---|---|---|
-| COMP00001 LSF UE 90 simples | CF006SF001 | "MONTAR PAINEL SIMPLES UE 90" | 40 | ✅ sim | Básico |
-| COMP00002 LSF UE 300 piso | CF006SF002 | "INSTALAR PLACAS CIMENTÍCIAS" | 40 | ⚠️ **NÃO** — nome é placa cimentícia, uso é em painel UE 300 | Básico |
-| COMP00003 LSF 2UE 90 cobertura | CF006SF003 | "MONTAR PAINEL SIMPLES UE 300" | 60 | ⚠️ **NÃO** — nome é UE 300, uso é em 2UE 90 | Complexo |
-| COMP00004 TRELIÇAS E PILARES | CF006SF003 | "MONTAR PAINEL SIMPLES UE 300" | 60 | ⚠️ **NÃO** — nome é painel UE 300, uso é em treliças/pilares | Complexo |
-| COMP00005 TELHA + MANTA | CF006SF005 | "TELHAS + MANTA" | 60 | ✅ sim | Cobertura |
-| COMP00006 MEMBRANA + CIMENTÍCIA | CF006SF006 | "CIMENTÍCIAS + BASECOAT" | 60 | ✅ sim | Fechamento |
-| COMP00007 LÃ + GESSO ST | CF006SF006 | "CIMENTÍCIAS + BASECOAT" | 60 | ⚠️ **NÃO** — nome é cimentícia, uso é em parede com gesso | Fechamento |
-| COMP00008 PLACA CIMENTÍCIA 20MM | CF006SF006 | "CIMENTÍCIAS + BASECOAT" | 60 | ✅ sim | Fechamento |
-| COMP00009 FORRO GESSO | CF006SF007 | "FORRO GESSO + LÃ" | 75 | ✅ sim | Forro |
+### Sub-pendência aberta (dívida técnica, não bloqueia)
 
-**Padrão observado**: 4 dos 9 vínculos usam item CF006 com nome que não bate
-com a composição. Mas os **valores R$/m² formam apenas 4-5 níveis** (40, 55, 60,
-75, 700), o que sugere que o Samuel pensa em tier de complexidade, não em
-operação literal.
+**Renomear ou criar itens de MO com nomes que reflitam tiers explicitamente**,
+ex.: "MO LSF tier básico R$40/m²", "MO LSF tier complexo R$60/m²". Hoje os
+nomes (`MONTAR PAINEL SIMPLES UE 90`, `INSTALAR PLACAS CIMENTÍCIAS` etc.) são
+enganosos porque o uso é por valor, não por operação. Renomear deixa a
+intenção explícita pra quem ler o catálogo no futuro.
 
-### Itens MO órfãos (cadastrados mas sem composição)
+**Não fazer agora** — é cosmético e o ERP funciona corretamente como está. Fica
+como tech debt registrada aqui pra ser tratada num ciclo futuro de polimento
+de catálogo (junto com perguntas remanescentes sobre CF006SF004 R$55 e
+CF006SF008 R$700, que continuam sem uso e ainda merecem clarificação).
 
-| Item | Nome | R$/m² | Comentário |
-|---|---|---|---|
-| CF006SF004 | "MONTAR PAINEL 2UE 90 X 0,95" | 55 | Item nomeado pra 2UE 90 mas COMP00003 (que é 2UE 90) não usa este — usa CF006SF003. Pode ter sido renomeado e o Samuel esqueceu de mudar a vinculação? |
-| CF006SF008 | "MO LSF POR M2 EM PLANTA" | 700 | Verba global de MO de obra inteira; não casa com nenhum subsistema específico. |
+### Snapshot histórico (estado quando a pendência foi levantada)
 
-### Perguntas pra Samuel
+Tabela original com 4 dos 9 vínculos usando CF006 com nome incoerente:
 
-1. **Confirmação de tiers**: a hipótese de "Básico R$40 / Complexo R$60 / Forro R$75" reflete a realidade dos 5 cruzamentos esquisitos?
-2. **CF006SF004 (R$55)**: deveria estar sendo usado em alguma composição? Se sim, em qual? Ou é resíduo de uma versão antiga?
-3. **CF006SF008 (R$700)**: como entra esse valor num orçamento real? Por m² de planta inteira, em paralelo às MOs específicas?
-4. **Renomear pra clareza**: tudo bem renomear os itens CF006SFxxx pra nomes neutros de tier (ex.: "MO LSF tier básico R$40/m²")?
+| Composição | Item MO usado | Nome cadastrado | R$/m² | Coerente? |
+|---|---|---|---|---|
+| COMP00001 LSF UE 90 simples | CF006SF001 | "MONTAR PAINEL SIMPLES UE 90" | 40 | ✅ |
+| COMP00002 LSF UE 300 piso | CF006SF002 | "INSTALAR PLACAS CIMENTÍCIAS" | 40 | ⚠️ |
+| COMP00003 LSF 2UE 90 cobertura | CF006SF003 | "MONTAR PAINEL SIMPLES UE 300" | 60 | ⚠️ |
+| COMP00004 TRELIÇAS E PILARES | CF006SF003 | "MONTAR PAINEL SIMPLES UE 300" | 60 | ⚠️ |
+| COMP00005-09 | CF006SF005-007 | nomes batem | 60-75 | ✅ |
 
-### Decisão sobre próximos passos
-
-Depende da resposta do Samuel:
-- **Hipótese confirmada** → renomear CF006SFxxx pra nomes neutros (não mexe em
-  composições nem valores).
-- **Hipótese rejeitada** → ajustar valores ou cruzamentos conforme orientação
-  dele. Atenção pra impacto em orçamentos: cada R$/m² alterado se propaga em
-  centenas de m² de obra.
+Órfãos remanescentes (cadastrados mas sem composição): `CF006SF004` R$55 e
+`CF006SF008` R$700 — uso ainda indefinido, deixados como biblioteca.
 
 ---
 
@@ -242,4 +234,7 @@ Quando uma pendência for resolvida (Samuel responde, decisão é tomada):
 
 ## Resolvidas
 
-(vazio por enquanto)
+- **Bloco 1 — MO tiers** (resolvido 2026-05-12): Samuel confirmou que itens
+  CF006SFxxx são escolhidos por tier de valor (R$/m²), não pela operação
+  literal do nome. Ver detalhes inline no Bloco 1 acima. Sub-pendência de
+  renomear itens permanece aberta como dívida técnica cosmética.
