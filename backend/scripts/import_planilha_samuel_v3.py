@@ -22,6 +22,7 @@ from pathlib import Path
 
 import openpyxl
 
+from app.lib import repository
 from app.lib.supabase import get_admin_client
 
 DEFAULT_PLANILHA = Path(
@@ -220,16 +221,20 @@ def main() -> None:
             print(f"  - desativado (FK): {r['sku']}")
 
     # 3. Renomear (e atualizar nome/preco se diferente)
+    #    Preco vai pela RPC pra gerar entrada no historico com origem=import_script.
     for v3, db in rename:
         payload = {
             "sku": v3["sku"],
             "nome": v3["nome"],
             "categoria": v3["categoria"],
             "unidade": v3["unidade"],
-            "preco_unitario": v3["preco_unitario"],
             "ativo": True,
         }
         sb.table("material").update(payload).eq("id", db["id"]).execute()
+        repository.update_material_preco(
+            db["id"], float(v3["preco_unitario"]),
+            motivo="import planilha Samuel v3", origem="import_script",
+        )
     print(f"  ~ {len(rename)} renomeados/atualizados")
 
     # 4. Atualizar (mesmos SKUs)
@@ -238,10 +243,13 @@ def main() -> None:
             "nome": v3["nome"],
             "categoria": v3["categoria"],
             "unidade": v3["unidade"],
-            "preco_unitario": v3["preco_unitario"],
             "ativo": True,
         }
         sb.table("material").update(payload).eq("id", db["id"]).execute()
+        repository.update_material_preco(
+            db["id"], float(v3["preco_unitario"]),
+            motivo="import planilha Samuel v3", origem="import_script",
+        )
     print(f"  ~ {len(update_only)} atualizados (mesmo SKU)")
 
     # 5. Inserir novos
