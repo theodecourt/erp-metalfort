@@ -31,6 +31,10 @@ export default function AdminMateriais() {
   // Filtros de listagem
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState<'all' | typeof CATEGORIAS[number]>('all');
+  const [filterRota, setFilterRota] = useState<'todos' | 'so-automaticos'>('todos');
+
+  // IDs de materiais sem rota automatica (biblioteca tecnica)
+  const [semRota, setSemRota] = useState<Set<string>>(new Set());
 
   // Create form state
   const [showNew, setShowNew] = useState(false);
@@ -44,8 +48,12 @@ export default function AdminMateriais() {
   const [creating, setCreating] = useState(false);
 
   async function reload() {
-    const xs = await fetchApi<any[]>('/api/material');
+    const [xs, orfaos] = await Promise.all([
+      fetchApi<any[]>('/api/material'),
+      fetchApi<{ ids: string[]; total: number }>('/api/material/sem-rota'),
+    ]);
     setRows(xs.filter(m => m.ativo));
+    setSemRota(new Set(orfaos.ids));
   }
   useEffect(() => { reload(); }, []);
 
@@ -132,12 +140,12 @@ export default function AdminMateriais() {
     const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
     return rows.filter(m => {
       if (filterCat !== 'all' && m.categoria !== filterCat) return false;
+      if (filterRota === 'so-automaticos' && semRota.has(m.id)) return false;
       if (terms.length === 0) return true;
-      // Busca tambem em nome_origem_planilha — admin pode pesquisar pelo nome antigo
       const hay = `${m.sku} ${m.nome} ${m.nome_origem_planilha ?? ''} ${m.categoria}`.toLowerCase();
       return terms.every(t => hay.includes(t));
     });
-  }, [rows, search, filterCat]);
+  }, [rows, search, filterCat, filterRota, semRota]);
 
   return (
     <div>
@@ -158,8 +166,20 @@ export default function AdminMateriais() {
             <option value="all">Todas categorias</option>
             {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+          <select
+            value={filterRota}
+            onChange={e => setFilterRota(e.target.value as 'todos' | 'so-automaticos')}
+            className="border rounded px-2 py-1 text-sm"
+            title="Materiais sem rota automatica continuam acessiveis no novo orcamento via picker 'Material extra'"
+          >
+            <option value="todos">Todos (inclui biblioteca)</option>
+            <option value="so-automaticos">Só com rota automática</option>
+          </select>
           <span className="text-xs text-mf-text-muted tabular-nums">
             {filtered.length} de {rows.length}
+            {semRota.size > 0 && filterRota === 'todos' && (
+              <> · <span className="text-mf-text-muted">{semRota.size} biblioteca</span></>
+            )}
           </span>
           <button
             onClick={() => { if (showNew) resetNewForm(); setShowNew(s => !s); }}
@@ -284,7 +304,17 @@ export default function AdminMateriais() {
                 className={`border-t ${PLANILHA_SAMUEL_SKU.test(m.sku) ? 'bg-yellow-50' : ''}`}
                 title={PLANILHA_SAMUEL_SKU.test(m.sku) ? 'Importado da planilha Samuel ORÇAMENTO PADRÃO' : undefined}
               >
-                <td className="p-3 font-mono">{m.sku}</td>
+                <td className="p-3 font-mono">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span>{m.sku}</span>
+                    {semRota.has(m.id) && (
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-mf-text-muted border border-gray-200"
+                        title="Material sem rota automática em orçamento. Continua acessível via picker 'Material extra' no novo orçamento — biblioteca técnica sob demanda."
+                      >biblioteca</span>
+                    )}
+                  </div>
+                </td>
                 <td className="p-3">
                   <div>{m.nome}</div>
                   {m.nome_origem_planilha && (

@@ -38,6 +38,29 @@ def create(body: dict, user=Depends(require_role("admin"))):
     return sb.table("material").insert(payload).execute().data[0]
 
 
+@router.get("/sem-rota")
+def sem_rota_automatica(user=Depends(require_role("admin"))):
+    """Lista IDs de materiais ativos que NAO estao vinculados a nenhuma rota
+    automatica de orcamento (produto_bom_regra, pacote_combo_material,
+    composicao_material). Continuam acessiveis via picker "Material extra"
+    no novo orcamento — biblioteca tecnica disponivel sob demanda.
+
+    Endpoint declarado ANTES de /{material_id}/* pra evitar colisao no FastAPI.
+    """
+    sb = get_admin_client()
+    bom = sb.table("produto_bom_regra").select("material_id").execute().data or []
+    combo = sb.table("pacote_combo_material").select("material_id").execute().data or []
+    comp = sb.table("composicao_material").select("material_id").execute().data or []
+    vinculados: set[str] = (
+        {r["material_id"] for r in bom}
+        | {r["material_id"] for r in combo}
+        | {r["material_id"] for r in comp}
+    )
+    ativos = sb.table("material").select("id").eq("ativo", True).execute().data or []
+    orfaos = [m["id"] for m in ativos if m["id"] not in vinculados]
+    return {"ids": orfaos, "total": len(orfaos)}
+
+
 @router.patch("/{material_id}")
 def patch(material_id: str, body: dict, user=Depends(require_role("admin"))):
     payload = {k: v for k, v in body.items() if k in _ALLOWED_FIELDS}
