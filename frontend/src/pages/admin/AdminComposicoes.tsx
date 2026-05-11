@@ -24,6 +24,7 @@ interface MaterialEmComposicao {
     id: string;
     sku: string;
     nome: string;
+    nome_origem_planilha: string | null;
     preco_unitario: number;
     unidade: string;
     categoria: string;
@@ -209,7 +210,14 @@ function DetailDrawer({ composicao, onClose }: { composicao: Composicao; onClose
                     <tr key={`${m.composicao_id}-${m.material_id}`} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
                       <td className="py-2 text-mf-text-muted">{m.ordem}</td>
                       <td className="py-2 font-mono text-xs">{m.material.sku}</td>
-                      <td className="py-2">{m.material.nome}</td>
+                      <td className="py-2">
+                        <div>{m.material.nome}</div>
+                        {m.material.nome_origem_planilha && (
+                          <div className="text-xs text-mf-text-muted italic" title="Nome original da planilha do Samuel">
+                            orig: {m.material.nome_origem_planilha}
+                          </div>
+                        )}
+                      </td>
                       <td className="py-2 text-right tabular-nums">{fmtDec(m.quantidade, 3)}</td>
                       <td className="py-2">{m.material.unidade}</td>
                       <td className="py-2 text-right tabular-nums">{fmtBRL(m.material.preco_unitario)}</td>

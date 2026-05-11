@@ -133,7 +133,8 @@ export default function AdminMateriais() {
     return rows.filter(m => {
       if (filterCat !== 'all' && m.categoria !== filterCat) return false;
       if (terms.length === 0) return true;
-      const hay = `${m.sku} ${m.nome} ${m.categoria}`.toLowerCase();
+      // Busca tambem em nome_origem_planilha — admin pode pesquisar pelo nome antigo
+      const hay = `${m.sku} ${m.nome} ${m.nome_origem_planilha ?? ''} ${m.categoria}`.toLowerCase();
       return terms.every(t => hay.includes(t));
     });
   }, [rows, search, filterCat]);
@@ -284,7 +285,14 @@ export default function AdminMateriais() {
                 title={PLANILHA_SAMUEL_SKU.test(m.sku) ? 'Importado da planilha Samuel ORÇAMENTO PADRÃO' : undefined}
               >
                 <td className="p-3 font-mono">{m.sku}</td>
-                <td className="p-3">{m.nome}</td>
+                <td className="p-3">
+                  <div>{m.nome}</div>
+                  {m.nome_origem_planilha && (
+                    <div className="text-xs text-mf-text-muted mt-0.5 italic" title="Nome original da planilha do Samuel">
+                      orig: {m.nome_origem_planilha}
+                    </div>
+                  )}
+                </td>
                 <td className="p-3">{m.categoria}</td>
                 <td className="p-3">{m.unidade}</td>
                 <td className="p-3 tabular-nums">

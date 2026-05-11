@@ -32,7 +32,7 @@ def list_all(
     ids = [c["id"] for c in composicoes]
     materiais = (
         sb.table("composicao_material")
-        .select("composicao_id, quantidade, material(id, sku, nome, preco_unitario, unidade, categoria)")
+        .select("composicao_id, quantidade, material(id, sku, nome, nome_origem_planilha, preco_unitario, unidade, categoria)")
         .in_("composicao_id", ids)
         .execute()
         .data
@@ -64,7 +64,7 @@ def get_materiais(
         raise HTTPException(404, "composicao nao encontrada")
     materiais = (
         sb.table("composicao_material")
-        .select("*, material(id, sku, nome, preco_unitario, unidade, categoria, ativo)")
+        .select("*, material(id, sku, nome, nome_origem_planilha, preco_unitario, unidade, categoria, ativo)")
         .eq("composicao_id", composicao_id)
         .order("ordem")
         .execute()
