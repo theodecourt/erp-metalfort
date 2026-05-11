@@ -50,14 +50,23 @@ export default function AdminMateriais() {
   useEffect(() => { reload(); }, []);
 
   async function save(id: string) {
-    const novoPreco = parseFloat(draftPrice);
+    // draftPrice e draftMin sao strings livres aceitando virgula ou ponto.
+    const novoPreco = parseFloat(draftPrice.replace(',', '.'));
+    const novoMin = parseFloat((draftMin || '0').replace(',', '.'));
+    if (Number.isNaN(novoPreco) || novoPreco < 0) {
+      alert('Preço inválido. Use vírgula ou ponto como separador decimal (ex.: 47,30 ou 47.30).');
+      return;
+    }
+    if (Number.isNaN(novoMin) || novoMin < 0) {
+      alert('Mínimo inválido.');
+      return;
+    }
     const atual = rows.find(x => x.id === id);
     const precoMudou = atual && Math.abs(Number(atual.preco_unitario) - novoPreco) > 0.005;
     const body: Record<string, any> = {
       preco_unitario: novoPreco,
-      estoque_minimo: parseFloat(draftMin || '0'),
+      estoque_minimo: novoMin,
     };
-    // Motivo so e enviado quando preco mudou (caso contrario nao gera entrada no historico)
     if (precoMudou && draftMotivo.trim()) {
       body.motivo = draftMotivo.trim();
     }
@@ -281,10 +290,14 @@ export default function AdminMateriais() {
                 <td className="p-3 tabular-nums">
                   {editingId === m.id
                     ? <input
-                        type="number" step="0.01" min="0"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0,00"
                         value={draftPrice}
-                        onChange={e => setDraftPrice(e.target.value)}
-                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                        onChange={e => {
+                          const raw = e.target.value;
+                          if (raw === '' || /^[0-9]*[.,]?[0-9]{0,2}$/.test(raw)) setDraftPrice(raw);
+                        }}
                         className="border rounded p-1 w-24"
                       />
                     : fmtBRL(m.preco_unitario)}
@@ -292,10 +305,14 @@ export default function AdminMateriais() {
                 <td className="p-3 tabular-nums">
                   {editingId === m.id
                     ? <input
-                        type="number" step="0.001" min="0"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0"
                         value={draftMin}
-                        onChange={e => setDraftMin(e.target.value)}
-                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                        onChange={e => {
+                          const raw = e.target.value;
+                          if (raw === '' || /^[0-9]*[.,]?[0-9]{0,3}$/.test(raw)) setDraftMin(raw);
+                        }}
                         className="border rounded p-1 w-24"
                       />
                     : (Number(m.estoque_minimo) > 0 ? fmtQtd(m.estoque_minimo, m.unidade) : '—')}
