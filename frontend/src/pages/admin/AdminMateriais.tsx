@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuthedFetch } from '../../lib/auth';
 import { fmtBRL, fmtQtd, isIntegerUnit } from '../../lib/format';
+import MaterialHistoricoDrawer from '../../components/admin/MaterialHistoricoDrawer';
 
 const CATEGORIAS = ['estrutura','fechamento','instalacoes','acabamento','esquadria','equipamento','servico'] as const;
 const UNIDADES = ['kg','m','m2','m3','pc','cx','und','h','bd','rl','sc','ml','ct','l','km','dia'] as const;
@@ -24,6 +25,8 @@ export default function AdminMateriais() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPrice, setDraftPrice] = useState('');
   const [draftMin, setDraftMin] = useState('');
+  const [draftMotivo, setDraftMotivo] = useState('');
+  const [historicoFor, setHistoricoFor] = useState<any | null>(null);
 
   // Filtros de listagem
   const [search, setSearch] = useState('');
@@ -47,15 +50,33 @@ export default function AdminMateriais() {
   useEffect(() => { reload(); }, []);
 
   async function save(id: string) {
+    // draftPrice e draftMin sao strings livres aceitando virgula ou ponto.
+    const novoPreco = parseFloat(draftPrice.replace(',', '.'));
+    const novoMin = parseFloat((draftMin || '0').replace(',', '.'));
+    if (Number.isNaN(novoPreco) || novoPreco < 0) {
+      alert('Preço inválido. Use vírgula ou ponto como separador decimal (ex.: 47,30 ou 47.30).');
+      return;
+    }
+    if (Number.isNaN(novoMin) || novoMin < 0) {
+      alert('Mínimo inválido.');
+      return;
+    }
+    const atual = rows.find(x => x.id === id);
+    const precoMudou = atual && Math.abs(Number(atual.preco_unitario) - novoPreco) > 0.005;
+    const body: Record<string, any> = {
+      preco_unitario: novoPreco,
+      estoque_minimo: novoMin,
+    };
+    if (precoMudou && draftMotivo.trim()) {
+      body.motivo = draftMotivo.trim();
+    }
     const r = await fetchApi<any>(`/api/material/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        preco_unitario: parseFloat(draftPrice),
-        estoque_minimo: parseFloat(draftMin || '0'),
-      }),
+      body: JSON.stringify(body),
     });
     setRows(rows.map(x => x.id === id ? r : x));
     setEditingId(null);
+    setDraftMotivo('');
   }
 
   async function remove(m: any) {
@@ -230,6 +251,13 @@ export default function AdminMateriais() {
         </form>
       )}
 
+      {historicoFor && (
+        <MaterialHistoricoDrawer
+          material={historicoFor}
+          onClose={() => setHistoricoFor(null)}
+        />
+      )}
+
       <div className="mt-4 bg-white rounded border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-mf-black text-white text-left">
@@ -262,10 +290,14 @@ export default function AdminMateriais() {
                 <td className="p-3 tabular-nums">
                   {editingId === m.id
                     ? <input
-                        type="number" step="0.01" min="0"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0,00"
                         value={draftPrice}
-                        onChange={e => setDraftPrice(e.target.value)}
-                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                        onChange={e => {
+                          const raw = e.target.value;
+                          if (raw === '' || /^[0-9]*[.,]?[0-9]{0,2}$/.test(raw)) setDraftPrice(raw);
+                        }}
                         className="border rounded p-1 w-24"
                       />
                     : fmtBRL(m.preco_unitario)}
@@ -273,26 +305,47 @@ export default function AdminMateriais() {
                 <td className="p-3 tabular-nums">
                   {editingId === m.id
                     ? <input
-                        type="number" step="0.001" min="0"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0"
                         value={draftMin}
-                        onChange={e => setDraftMin(e.target.value)}
-                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                        onChange={e => {
+                          const raw = e.target.value;
+                          if (raw === '' || /^[0-9]*[.,]?[0-9]{0,3}$/.test(raw)) setDraftMin(raw);
+                        }}
                         className="border rounded p-1 w-24"
                       />
                     : (Number(m.estoque_minimo) > 0 ? fmtQtd(m.estoque_minimo, m.unidade) : '—')}
                 </td>
                 <td className="p-3">
                   {editingId === m.id
-                    ? <div className="flex gap-2">
-                        <button onClick={() => save(m.id)} className="bg-mf-success text-white px-2 py-1 rounded text-xs">Salvar</button>
-                        <button onClick={() => setEditingId(null)} className="text-mf-text-muted px-2 py-1 rounded text-xs">Cancelar</button>
-                        <button onClick={() => remove(m)} className="bg-mf-danger text-white px-2 py-1 rounded text-xs ml-auto">Apagar</button>
+                    ? <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={draftMotivo}
+                          onChange={e => setDraftMotivo(e.target.value)}
+                          placeholder="Motivo (opcional)"
+                          className="border rounded p-1 w-full text-xs"
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => save(m.id)} className="bg-mf-success text-white px-2 py-1 rounded text-xs">Salvar</button>
+                          <button onClick={() => { setEditingId(null); setDraftMotivo(''); }} className="text-mf-text-muted px-2 py-1 rounded text-xs">Cancelar</button>
+                          <button onClick={() => remove(m)} className="bg-mf-danger text-white px-2 py-1 rounded text-xs ml-auto">Apagar</button>
+                        </div>
                       </div>
-                    : <button onClick={() => {
-                        setEditingId(m.id);
-                        setDraftPrice(String(m.preco_unitario));
-                        setDraftMin(String(m.estoque_minimo ?? 0));
-                      }} className="text-mf-yellow font-bold">Editar</button>}
+                    : <div className="flex gap-2">
+                        <button onClick={() => {
+                          setEditingId(m.id);
+                          setDraftPrice(String(m.preco_unitario));
+                          setDraftMin(String(m.estoque_minimo ?? 0));
+                          setDraftMotivo('');
+                        }} className="text-mf-yellow font-bold">Editar</button>
+                        <button
+                          onClick={() => setHistoricoFor(m)}
+                          className="text-mf-text-muted hover:text-mf-text-primary text-xs"
+                          title="Ver histórico de preço"
+                        >Histórico</button>
+                      </div>}
                 </td>
               </tr>
             ))}

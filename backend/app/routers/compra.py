@@ -133,7 +133,14 @@ def receber_compra(req: CompraRequest, user=Depends(require_role("admin"))):
         # 2. Atualiza preco_unitario do catalogo conforme acao escolhida
         novo_preco = _decide_preco_catalogo(item)
         if novo_preco is not None:
-            repository.update_material_preco(material_id, novo_preco)
+            motivo_compra = f"NF {req.nota_fiscal}" if req.nota_fiscal else "compra"
+            repository.update_material_preco(
+                material_id,
+                novo_preco,
+                responsavel_id=user["id"],
+                motivo=motivo_compra,
+                origem="api_compra",
+            )
 
         # 3. Upsert alias material x fornecedor (sempre — guarda histórico de SKU/descrição)
         repository.upsert_material_fornecedor(

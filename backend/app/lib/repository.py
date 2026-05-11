@@ -292,9 +292,41 @@ def insert_estoque_movimento(payload: dict[str, Any]) -> dict[str, Any]:
     return res.data[0]
 
 
-def update_material_preco(material_id: str, preco: float) -> None:
+def update_material_preco(
+    material_id: str,
+    preco: float,
+    *,
+    responsavel_id: str | None = None,
+    motivo: str | None = None,
+    origem: str = "api_material",
+) -> None:
+    """Atualiza preco_unitario via RPC que seta contexto pro trigger de historico.
+
+    Origem deve ser uma das aceitas pela RPC: api_material, api_compra, import_script.
+    UPDATEs diretos via sb.table(...).update(...) NAO geram contexto e caem como
+    'manual_sql' no historico — use sempre esta funcao no codigo de aplicacao.
+    """
     sb = get_admin_client()
-    sb.table("material").update({"preco_unitario": preco}).eq("id", material_id).execute()
+    sb.rpc("set_preco_material_com_contexto", {
+        "p_material_id": material_id,
+        "p_preco": preco,
+        "p_responsavel_id": responsavel_id,
+        "p_motivo": motivo,
+        "p_origem": origem,
+    }).execute()
+
+
+def list_material_preco_historico(material_id: str) -> list[dict[str, Any]]:
+    """Lista o historico de precos de um material, mais recente primeiro."""
+    sb = get_admin_client()
+    res = (
+        sb.table("material_preco_historico")
+        .select("*")
+        .eq("material_id", material_id)
+        .order("vigente_de", desc=True)
+        .execute()
+    )
+    return res.data or []
 
 
 def upsert_material_fornecedor(
