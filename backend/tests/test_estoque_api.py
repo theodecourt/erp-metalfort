@@ -17,7 +17,7 @@ pytestmark = pytest.mark.skipif(
 
 def _admin_token() -> str:
     url = os.environ["SUPABASE_URL"].rstrip("/") + "/auth/v1/token?grant_type=password"
-    key = os.environ["SUPABASE_ANON_KEY"]
+    key = os.environ["SUPABASE_PUBLISHABLE_KEY"]
     r = httpx.post(
         url,
         headers={"apikey": key, "Content-Type": "application/json"},

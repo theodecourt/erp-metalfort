@@ -97,7 +97,7 @@ Os testes HTTP contra Supabase + uvicorn são gated por `RUN_INTEGRATION=1`:
 make dev   # em um terminal
 RUN_INTEGRATION=1 \
   SUPABASE_URL=http://127.0.0.1:54321 \
-  SUPABASE_ANON_KEY=$(grep SUPABASE_PUBLISHABLE_KEY backend/.env | cut -d= -f2 | tr -d ' ') \
+  SUPABASE_PUBLISHABLE_KEY=$(grep SUPABASE_PUBLISHABLE_KEY backend/.env | cut -d= -f2 | tr -d ' ') \
   (cd backend && uv run pytest tests/test_estoque_api.py -v)
 ```
 
