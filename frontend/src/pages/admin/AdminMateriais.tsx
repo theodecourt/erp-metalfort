@@ -10,6 +10,13 @@ const UNIDADES = ['kg','m','m2','m3','pc','cx','und','h','bd','rl','sc','ml','ct
 // para deixar visível que a origem é importação, não cadastro manual.
 const PLANILHA_SAMUEL_SKU = /^CF\d+SF\d+U\d+$/;
 
+// Família CF006* = itens de mão de obra. Critério usado pra separação
+// visual Materiais/MO. Demais itens de servico (projetos CF002, frete
+// CF004, MT-SVC-*) continuam na aba Materiais por enquanto.
+function isMO(m: { sku: string }) {
+  return m.sku.startsWith('CF006');
+}
+
 interface NewMaterial {
   sku: string;
   nome: string;
@@ -32,6 +39,8 @@ export default function AdminMateriais() {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState<'all' | typeof CATEGORIAS[number]>('all');
   const [filterRota, setFilterRota] = useState<'todos' | 'so-automaticos'>('todos');
+  // 'materiais' = nao-MO; 'mo' = familia CF006. Default 'materiais' (uso mais frequente).
+  const [filterTipo, setFilterTipo] = useState<'materiais' | 'mo'>('materiais');
 
   // IDs de materiais sem rota automatica (biblioteca tecnica)
   const [semRota, setSemRota] = useState<Set<string>>(new Set());
@@ -139,18 +148,50 @@ export default function AdminMateriais() {
   const filtered = useMemo(() => {
     const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
     return rows.filter(m => {
+      const mo = isMO(m);
+      if (filterTipo === 'mo' && !mo) return false;
+      if (filterTipo === 'materiais' && mo) return false;
       if (filterCat !== 'all' && m.categoria !== filterCat) return false;
       if (filterRota === 'so-automaticos' && semRota.has(m.id)) return false;
       if (terms.length === 0) return true;
       const hay = `${m.sku} ${m.nome} ${m.nome_origem_planilha ?? ''} ${m.categoria}`.toLowerCase();
       return terms.every(t => hay.includes(t));
     });
-  }, [rows, search, filterCat, filterRota, semRota]);
+  }, [rows, search, filterCat, filterRota, filterTipo, semRota]);
+
+  const countMO = useMemo(() => rows.filter(isMO).length, [rows]);
+  const countMateriais = rows.length - countMO;
 
   return (
     <div>
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-2xl font-extrabold">Materiais</h1>
+        <div className="flex items-center gap-4 flex-wrap">
+          <h1 className="text-2xl font-extrabold">Materiais</h1>
+          <div className="inline-flex rounded border border-mf-border overflow-hidden" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filterTipo === 'materiais'}
+              onClick={() => setFilterTipo('materiais')}
+              className={`px-3 py-1.5 text-sm font-medium ${
+                filterTipo === 'materiais'
+                  ? 'bg-mf-black text-white'
+                  : 'bg-white text-mf-text-muted hover:bg-gray-50'
+              }`}
+            >Materiais <span className="text-xs tabular-nums opacity-75">({countMateriais})</span></button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filterTipo === 'mo'}
+              onClick={() => setFilterTipo('mo')}
+              className={`px-3 py-1.5 text-sm font-medium border-l border-mf-border ${
+                filterTipo === 'mo'
+                  ? 'bg-mf-black text-white'
+                  : 'bg-white text-mf-text-muted hover:bg-gray-50'
+              }`}
+            >MO <span className="text-xs tabular-nums opacity-75">({countMO})</span></button>
+          </div>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           <input
             value={search}

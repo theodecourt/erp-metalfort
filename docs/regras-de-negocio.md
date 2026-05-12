@@ -249,6 +249,27 @@ início de cada ciclo. Default (sem sinalização) = via PR.
 
 ---
 
+## Pendências arquiteturais futuras
+
+### Separação conceitual materiais físicos vs serviços (ainda unificada)
+
+A separação conceitual mais clara entre 'materiais físicos' e 'serviços'
+(MO, frete, projeto) ainda usa a mesma tabela `material` no banco. Ciclo
+(g) adicionou filtro visual na aba Materiais (tabs **Materiais** / **MO**)
+para mitigar a confusão na UI, mas estrutura subjacente permanece
+unificada. Refatoração para tabelas separadas (ou coluna `tipo`) fica
+como opção quando outra dor concreta aparecer. Não bloqueia operação
+atual.
+
+Particularidades conhecidas do filtro visual:
+- Critério "MO" = SKU começa com `CF006`. Itens de serviço fora dessa
+  família (projetos `CF002SF*`, frete `CF004SF*`, e SKUs avulsos como
+  `MT-SVC-001` "Mão de obra LSF") ficam na aba **Materiais** mesmo
+  sendo serviços conceituais. Quando a separação subjacente for feita,
+  esse filtro pode usar o campo de tipo direto.
+
+---
+
 ## Convenções para futuras entradas neste documento
 
 - Sempre datar (`YYYY-MM-DD`) e numerar decisões dentro de uma seção.
