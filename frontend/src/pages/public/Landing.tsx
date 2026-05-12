@@ -16,8 +16,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-mf-black text-white">
       <header className="px-8 py-6 border-b border-mf-border flex justify-between items-center">
-        <div className="text-2xl font-extrabold">
-          <span className="text-mf-yellow">metalfort</span>
+        <div className="bg-white rounded px-3 py-2 inline-flex">
+          <img src="/logo-metalfort.png" alt="Metalfort" className="h-10 w-auto" />
         </div>
       </header>
       <main className="max-w-5xl mx-auto px-8 py-16">

@@ -21,10 +21,13 @@ export default function AdminLayout() {
       <header className="bg-mf-black text-white px-6 py-3 flex items-center justify-between">
         <button
           onClick={() => setShowManual(true)}
-          className="text-lg font-extrabold hover:opacity-80"
+          className="text-lg font-extrabold hover:opacity-80 flex items-center gap-3"
           title="Abrir manual rápido"
         >
-          <span className="text-mf-yellow">metalfort</span> · ERP
+          <span className="bg-white rounded px-2 py-1 inline-flex">
+            <img src="/logo-metalfort.png" alt="Metalfort" className="h-8 w-auto" />
+          </span>
+          <span>· ERP</span>
         </button>
         <nav className="flex items-center gap-2">
           <NavLink to="/admin" end className={linkClass}>Dashboard</NavLink>

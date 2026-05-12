@@ -21,7 +21,12 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-mf-black text-white flex items-center justify-center p-8">
       <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-3xl font-extrabold"><span className="text-mf-yellow">metalfort</span> · Admin</h1>
+        <h1 className="text-3xl font-extrabold flex items-center gap-3">
+          <span className="bg-white rounded px-3 py-2 inline-flex">
+            <img src="/logo-metalfort.png" alt="Metalfort" className="h-12 w-auto" />
+          </span>
+          <span>· Admin</span>
+        </h1>
         <input required type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
           className="w-full bg-mf-black-soft p-3 rounded border border-mf-border"/>
         <input required type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)}
