@@ -52,8 +52,11 @@ export default function ManualModal({ onClose }: Props) {
         className={`bg-mf-black text-white px-5 py-3 flex items-start justify-between select-none ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
         <div>
-          <h2 className="text-lg font-extrabold">
-            <span className="text-mf-yellow">metalfort</span> · ERP — Manual rápido
+          <h2 className="text-lg font-extrabold flex items-center gap-2">
+            <span className="bg-white rounded px-1.5 py-0.5 inline-flex">
+              <img src="/logo-metalfort.png" alt="Metalfort" className="h-6 w-auto" />
+            </span>
+            <span>· ERP — Manual rápido</span>
           </h2>
           <p className="text-xs text-mf-text-secondary mt-1">
             Arraste pelo cabeçalho para reposicionar.

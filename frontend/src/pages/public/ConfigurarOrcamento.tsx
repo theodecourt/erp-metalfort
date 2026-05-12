@@ -44,7 +44,9 @@ export default function ConfigurarOrcamento() {
   return (
     <div className="min-h-screen bg-mf-black text-white">
       <header className="px-8 py-6 border-b border-mf-border">
-        <Link to="/" className="text-mf-yellow font-bold">metalfort</Link>
+        <Link to="/" className="bg-white rounded px-3 py-2 inline-flex hover:opacity-90" aria-label="Voltar para a vitrine">
+          <img src="/logo-metalfort.png" alt="Metalfort" className="h-10 w-auto" />
+        </Link>
       </header>
       <main className="max-w-5xl mx-auto px-8 py-12">
         <h1 className="text-3xl font-extrabold">{produto.nome}</h1>
