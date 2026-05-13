@@ -25,8 +25,12 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
 
 
 def _validar_overrides_obrigatorios(config: dict) -> None:
-    """Em rotas internas, incluir_fundacao, incluir_projeto e incluir_gerenciamento
-    precisam ter resposta explicita (true/false). None = nao respondido = 400."""
+    """Validacao do SUBMIT interno (POST /api/quote): exige que as 3 flags tenham
+    resposta explicita (true/false). None = nao respondido = 400.
+
+    Nao aplicar no /calculate (preview): preview precisa rodar incremental enquanto
+    o usuario ainda nao decidiu, tratando None como 'nao somar' (composicao_service
+    e _resolve_gerenciamento_pct ja sao tolerantes a None)."""
     if config.get("incluir_fundacao") is None:
         raise HTTPException(400, "responda 'incluir_fundacao' (true ou false)")
     if config.get("incluir_projeto") is None:
@@ -75,7 +79,8 @@ def internal_calculate(
         raise HTTPException(400, "tier inválido")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
-    _validar_overrides_obrigatorios(config)
+    # Preview tolera flags None (trata como "nao somar"). Validacao obrigatoria
+    # acontece so no submit (POST /api/quote).
     config = _aplicar_overrides_em_extras(config)
     bom = repository.list_bom_regras(req.produto_id)
     bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
