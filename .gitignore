@@ -49,5 +49,10 @@ supabase/snippets/
 # PDFs generated in dev
 /tmp/sent/
 
+# Snapshots SQL locais e dumps manuais (nao commitar dados)
+backups/
+!backups/.gitkeep
+!backups/README.md
+
 # Claude Code (per-machine agent settings)
 .claude/
