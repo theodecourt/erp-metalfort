@@ -9,6 +9,7 @@ from slowapi.util import get_remote_address
 from app.lib import repository
 from app.lib.supabase import get_admin_client
 from app.models.quote import CalculateRequest, QuoteResponse, SubmitRequest
+from app.routers.quote import _run_parallel
 from app.services.combo_service import build_combos_bom_from_selections
 from app.services.composicao_service import expand_composicoes_to_bom
 from app.services.configuracao_normalizer import normalize_configuracao
@@ -41,9 +42,6 @@ def get_produto(slug: str):
 @router.post("/quote/calculate", response_model=QuoteResponse)
 @limiter.limit("10/minute")
 def public_calculate(request: Request, req: CalculateRequest):
-    bom = repository.list_bom_regras(req.produto_id)
-    if not bom:
-        raise HTTPException(404, "Produto sem BOM cadastrada")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
     # Cliente publico nunca decide sobre fundacao ou projeto — forcamos false
@@ -54,11 +52,22 @@ def public_calculate(request: Request, req: CalculateRequest):
     # Cliente publico sempre paga 8% de gerenciamento — admin nao pode alterar pelo fluxo publico
     config["incluir_gerenciamento"] = True
     config["gerenciamento_pct_override"] = None
-    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
-    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+
+    # 3 buscas independentes em paralelo (publico nao tem overrides nem
+    # itens_personalizados). 404 de "Produto sem BOM" e checado apos o batch —
+    # o cliente recebe o mesmo status code; so o caminho ate la mudou.
+    results = _run_parallel({
+        "bom_regras": lambda: repository.list_bom_regras(req.produto_id),
+        "composicoes": lambda: expand_composicoes_to_bom(req.produto_id, config),
+        "combos": lambda: build_combos_bom_from_selections(config.get("combos") or {}),
+    }, context="public_calculate")
+    if not results["bom_regras"]:
+        raise HTTPException(404, "Produto sem BOM cadastrada")
+
     return calculate(
-        append_personalizados(bom + bom_composicoes, config), config,
-        tier="core", gerenciamento_pct=8.0, combos_bom=combos_bom,
+        append_personalizados(results["bom_regras"] + results["composicoes"], config),
+        config,
+        tier="core", gerenciamento_pct=8.0, combos_bom=results["combos"],
     )
 
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from typing import Any, Callable
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -18,6 +20,25 @@ from app.services.quote_calculator import calculate
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/quote", tags=["quote"])
+
+
+def _run_parallel(tasks: dict[str, Callable[[], Any]], context: str) -> dict[str, Any]:
+    """Executa varias buscas independentes em threads e devolve os resultados.
+
+    Em caso de qualquer falha: loga o nome da task que quebrou (com traceback)
+    e re-levanta como HTTPException 500. O cliente recebe `falha ao calcular
+    preview (<task>): <msg>` para localizar o ponto sem precisar abrir o log.
+    """
+    results: dict[str, Any] = {}
+    with ThreadPoolExecutor(max_workers=len(tasks), thread_name_prefix=context) as pool:
+        futures = {name: pool.submit(fn) for name, fn in tasks.items()}
+        for name, fut in futures.items():
+            try:
+                results[name] = fut.result()
+            except Exception as e:
+                logger.exception("%s: task paralela '%s' falhou", context, name)
+                raise HTTPException(500, f"falha ao calcular preview ({name}): {e}") from e
+    return results
 
 
 @router.get("")
@@ -95,13 +116,29 @@ def internal_calculate(
     # Preview tolera flags None (trata como "nao somar"). Validacao obrigatoria
     # acontece so no submit (POST /api/quote).
     config = _aplicar_overrides_em_extras(config)
-    bom = repository.list_bom_regras(req.produto_id)
-    bom_composicoes = expand_composicoes_to_bom(req.produto_id, config)
-    bom_overrides = expand_overrides_to_bom(config)
-    combos_bom = build_combos_bom_from_selections(config.get("combos") or {})
+
+    # As 4 buscas de BOM + a busca de materiais dos personalizados sao
+    # independentes (so dependem do config ja normalizado). Rodam em threads
+    # pra cortar a serializacao de ida-e-volta com o Postgrest.
+    pers_ids = [it["material_id"] for it in (config.get("itens_personalizados") or [])]
+    results = _run_parallel({
+        "bom_regras": lambda: repository.list_bom_regras(req.produto_id),
+        "composicoes": lambda: expand_composicoes_to_bom(req.produto_id, config),
+        "overrides": lambda: expand_overrides_to_bom(config),
+        "combos": lambda: build_combos_bom_from_selections(config.get("combos") or {}),
+        "materiais_personalizados": (
+            (lambda: repository.get_materiais_by_ids(pers_ids)) if pers_ids else (lambda: {})
+        ),
+    }, context="internal_calculate")
+
+    enriched = append_personalizados(
+        results["bom_regras"] + results["composicoes"] + results["overrides"],
+        config,
+        materiais=results["materiais_personalizados"],
+    )
     return calculate(
-        append_personalizados(bom + bom_composicoes + bom_overrides, config), config,
-        tier=tier, gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=combos_bom,
+        enriched, config,
+        tier=tier, gerenciamento_pct=_resolve_gerenciamento_pct(config), combos_bom=results["combos"],
     )
 
 
