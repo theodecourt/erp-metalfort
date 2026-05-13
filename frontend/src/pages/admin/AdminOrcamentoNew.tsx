@@ -82,6 +82,10 @@ export default function AdminOrcamentoNew() {
 
   const promptCompletos =
     incluirFundacao !== null && incluirProjeto !== null && incluirGerenciamento !== null;
+  const pendingPromptsCount =
+    (incluirFundacao === null ? 1 : 0) +
+    (incluirProjeto === null ? 1 : 0) +
+    (incluirGerenciamento === null ? 1 : 0);
   const valorOverrideNumero =
     valorProjetoOverride.trim() === '' ? null : Number(valorProjetoOverride.replace(',', '.'));
   const valorOverrideValido =
@@ -91,6 +95,16 @@ export default function AdminOrcamentoNew() {
   const gerenciamentoPctValido =
     gerenciamentoPctNumero === null ||
     (Number.isFinite(gerenciamentoPctNumero) && gerenciamentoPctNumero >= 0 && gerenciamentoPctNumero <= 100);
+
+  // Espelha as flags no payload do preview. None => backend trata como "nao somar"
+  // (e o submit cobre a validacao obrigatoria).
+  const extraConfigForCalculate = {
+    incluir_fundacao: incluirFundacao,
+    incluir_projeto: incluirProjeto,
+    valor_projeto_override: incluirProjeto ? valorOverrideNumero : null,
+    incluir_gerenciamento: incluirGerenciamento,
+    gerenciamento_pct_override: incluirGerenciamento ? gerenciamentoPctNumero : null,
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -181,6 +195,8 @@ export default function AdminOrcamentoNew() {
               onConfigChange={setConfig}
               onQuoteChange={() => {}}
               calculate={calculateInternal}
+              extraConfigForCalculate={extraConfigForCalculate}
+              pendingPromptsCount={pendingPromptsCount}
             />
           </section>
         )}

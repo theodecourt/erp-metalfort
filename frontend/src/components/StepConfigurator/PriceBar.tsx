@@ -6,16 +6,29 @@ interface Props {
   gerenciamentoPct: number;
   itemCount: number;
   loading: boolean;
+  // Quando > 0: total exibido vira "parcial" e a linha de status indica quantas
+  // perguntas obrigatorias ainda faltam responder antes de poder salvar.
+  pendingPromptsCount?: number;
 }
 
-export default function PriceBar({ subtotal, total, gerenciamentoPct, itemCount, loading }: Props) {
+export default function PriceBar({
+  subtotal, total, gerenciamentoPct, itemCount, loading, pendingPromptsCount,
+}: Props) {
+  const pending = pendingPromptsCount ?? 0;
+  const parcial = pending > 0;
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 bg-mf-yellow text-mf-black px-6 py-2 shadow-[0_-4px_12px_rgba(0,0,0,0.3)]">
       <div className="max-w-[1520px] mx-auto flex items-center justify-center gap-8">
         <div className="leading-tight">
-          <div className="text-[10px] uppercase tracking-wider font-bold">Orçamento preliminar</div>
+          <div className="text-[10px] uppercase tracking-wider font-bold">
+            Orçamento {parcial ? 'parcial' : 'preliminar'}
+          </div>
           {loading ? (
             <div className="text-xs text-mf-black/70">Calculando...</div>
+          ) : parcial ? (
+            <div className="text-xs font-bold text-mf-black">
+              Responda {pending} pergunta{pending > 1 ? 's' : ''} obrigatória{pending > 1 ? 's' : ''} para confirmar
+            </div>
           ) : (
             <div className="text-xs text-mf-black/70">
               {itemCount} itens · Gerenciamento {gerenciamentoPct}%

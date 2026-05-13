@@ -28,6 +28,11 @@ interface Props {
   onConfigChange: (c: Configuracao) => void;
   onQuoteChange: (q: { subtotal: number; total: number; itemCount: number }) => void;
   calculate?: (body: unknown) => Promise<any>;
+  // Extras injetados no payload do preview (ex.: flags de fundacao/projeto/gerenciamento
+  // que vivem fora do config principal no AdminOrcamentoNew). Mudancas aqui refazem o calculo.
+  extraConfigForCalculate?: Partial<Configuracao>;
+  // Quando definido (> 0), PriceBar exibe mensagem de pendencia ao inves de "N itens".
+  pendingPromptsCount?: number;
 }
 
 const MODULO_SIZES = { '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const;
@@ -73,11 +78,13 @@ function applyTemplateSelecoes(
 
 export default function StepConfigurator({
   produto, initialConfig, initialCombos, initialTemplates, onConfigChange, onQuoteChange, calculate,
+  extraConfigForCalculate, pendingPromptsCount,
 }: Props) {
   const [combos, setCombos] = useState<PacoteCombo[]>(initialCombos ?? []);
   const [templates, setTemplates] = useState<TemplateOrcamento[]>(initialTemplates ?? []);
   const [config, setConfig] = useState<Configuracao>(() => initialConfig ?? defaultConfig(produto));
   const [loading, setLoading] = useState(false);
+  const [calcError, setCalcError] = useState<string | null>(null);
   const [quote, setQuote] = useState<{ subtotal: number; total: number; gerenciamento_pct: number; itens: any[] }>({
     subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [],
   });
@@ -108,18 +115,24 @@ export default function StepConfigurator({
     onConfigChange(config);
     let cancelled = false;
     setLoading(true);
+    setCalcError(null);
     const id = setTimeout(() => {
-      (calculate ?? defaultCalculate)({ produto_id: produto.id, configuracao: config })
+      const payloadConfig = { ...config, ...(extraConfigForCalculate ?? {}) };
+      (calculate ?? defaultCalculate)({ produto_id: produto.id, configuracao: payloadConfig })
         .then((r: any) => {
           if (cancelled) return;
           setQuote({ subtotal: r.subtotal, total: r.total, gerenciamento_pct: r.gerenciamento_pct, itens: r.itens });
           onQuoteChange({ subtotal: r.subtotal, total: r.total, itemCount: r.itens.length });
         })
-        .catch(() => {})
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          const msg = err instanceof Error ? err.message : 'erro ao calcular orçamento preliminar';
+          setCalcError(msg);
+        })
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 300);
     return () => { cancelled = true; clearTimeout(id); };
-  }, [JSON.stringify(config), produto.id]);
+  }, [JSON.stringify(config), produto.id, JSON.stringify(extraConfigForCalculate ?? {})]);
 
   const vars = useMemo(() => derive(config), [JSON.stringify(config)]);
 
@@ -212,12 +225,23 @@ export default function StepConfigurator({
             <ExtrasStep config={config} onChange={setConfig} />
           </StepSection>
       </main>
+      {calcError && (
+        <div
+          role="alert"
+          className="fixed bottom-14 inset-x-0 z-40 mx-auto max-w-[1520px] px-6"
+        >
+          <div className="bg-mf-danger/15 border border-mf-danger/60 text-mf-danger text-xs rounded px-3 py-1 text-center">
+            Falha ao calcular preview: {calcError}
+          </div>
+        </div>
+      )}
       <PriceBar
         subtotal={quote.subtotal}
         total={quote.total}
         gerenciamentoPct={quote.gerenciamento_pct}
         itemCount={quote.itens.length}
         loading={loading}
+        pendingPromptsCount={pendingPromptsCount}
       />
     </div>
   );
