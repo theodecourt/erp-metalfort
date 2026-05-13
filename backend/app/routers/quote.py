@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,6 +14,8 @@ from app.services.composicao_service import expand_composicoes_to_bom, expand_ov
 from app.services.configuracao_normalizer import normalize_configuracao
 from app.services.personalizados import append_personalizados
 from app.services.quote_calculator import calculate
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/quote", tags=["quote"])
 
@@ -79,6 +82,16 @@ def internal_calculate(
         raise HTTPException(400, "tier inválido")
     templates = repository.get_templates_by_slug()
     config = normalize_configuracao(req.configuracao.model_dump(), templates=templates)
+    logger.info(
+        "calculate preview tier=%s produto=%s combos=%s flags=fund:%s/proj:%s/ger:%s "
+        "itens_personalizados=%d extras_comerciais=%d",
+        tier, req.produto_id,
+        list((config.get("combos") or {}).keys()),
+        config.get("incluir_fundacao"), config.get("incluir_projeto"),
+        config.get("incluir_gerenciamento"),
+        len(config.get("itens_personalizados") or []),
+        len(config.get("extras_comerciais") or []),
+    )
     # Preview tolera flags None (trata como "nao somar"). Validacao obrigatoria
     # acontece so no submit (POST /api/quote).
     config = _aplicar_overrides_em_extras(config)
