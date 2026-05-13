@@ -33,11 +33,6 @@ export default function PriceBar({
               <span aria-hidden>⚠</span>
               <span className="truncate max-w-[60ch]">Falha ao calcular: {calcError}</span>
             </div>
-          ) : loading ? (
-            <div className="text-xs text-mf-black/70 flex items-center gap-1.5">
-              <Spinner size={10} />
-              <span>Calculando...</span>
-            </div>
           ) : parcial ? (
             <div className="text-xs font-bold text-mf-black">
               Responda {pending} pergunta{pending > 1 ? 's' : ''} obrigatória{pending > 1 ? 's' : ''} para confirmar
@@ -48,9 +43,20 @@ export default function PriceBar({
             </div>
           )}
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-extrabold leading-none">{fmtBRL(total)}</span>
-          <span className="text-sm text-mf-black/70">(Subtotal {fmtBRL(subtotal)})</span>
+        <div className="flex flex-col items-end leading-tight">
+          <span
+            className={`text-2xl font-extrabold transition-opacity duration-150 ${loading ? 'opacity-40' : 'opacity-100'}`}
+          >
+            {fmtBRL(total)}
+          </span>
+          {loading ? (
+            <span className="mt-0.5 text-sm font-extrabold uppercase tracking-wider text-mf-black inline-flex items-center gap-1.5">
+              <Spinner size={12} />
+              <span>Recalculando…</span>
+            </span>
+          ) : (
+            <span className="text-sm text-mf-black/70">Subtotal {fmtBRL(subtotal)}</span>
+          )}
         </div>
       </div>
     </div>
