@@ -30,9 +30,16 @@ export default function NumberField({
   const effectiveStep = step ?? 1;
   const [text, setText] = useState(toDisplay(value, decimal));
   const [flash, setFlash] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => { setText(toDisplay(value, decimal)); }, [value, decimal]);
+  // Nao re-formatar o texto enquanto o usuario digita: o `useEffect` so reescreve
+  // quando o input nao tem foco. Senao o pt-BR `toDisplay` troca "." digitado
+  // por "," no meio da digitacao e o cursor pula. Commit canonico fica no onBlur.
+  useEffect(() => {
+    if (focused) return;
+    setText(toDisplay(value, decimal));
+  }, [value, decimal, focused]);
 
   useEffect(() => () => {
     if (flashTimer.current) clearTimeout(flashTimer.current);
@@ -90,7 +97,9 @@ export default function NumberField({
             if (e.key === 'ArrowUp') { e.preventDefault(); bump(1); }
             else if (e.key === 'ArrowDown') { e.preventDefault(); bump(-1); }
           }}
+          onFocus={() => setFocused(true)}
           onBlur={() => {
+            setFocused(false);
             const n = parse(text);
             if (Number.isNaN(n)) { setText(toDisplay(value, decimal)); return; }
             const lo = min ?? -Infinity;
