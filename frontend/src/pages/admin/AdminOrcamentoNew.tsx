@@ -203,15 +203,41 @@ export default function AdminOrcamentoNew() {
 
         {produto && (
           <section className="p-6 border-t border-mf-border">
-            <h2 className="text-lg font-extrabold text-mf-yellow">Itens da obra (decisão obrigatória)</h2>
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <h2 className="text-lg font-extrabold text-mf-yellow">
+                Itens da obra (decisão obrigatória)
+              </h2>
+              {pendingPromptsCount > 0 ? (
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-mf-yellow bg-mf-yellow/10 border border-mf-yellow/60 rounded px-2 py-0.5">
+                  {pendingPromptsCount} pendente{pendingPromptsCount > 1 ? 's' : ''}
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase tracking-wider font-extrabold text-emerald-400 bg-emerald-400/10 border border-emerald-400/60 rounded px-2 py-0.5">
+                  Tudo respondido
+                </span>
+              )}
+            </div>
             <p className="text-xs text-mf-text-secondary mt-1 mb-4">
               Marque explicitamente fundação, projeto complementar e taxa de gerenciamento.
               Sem default — força resposta consciente. Detalhes em
               {' '}
               <code className="text-xs">docs/regras-de-negocio.md</code>.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                aria-invalid={incluirFundacao === null}
+                className={
+                  'rounded-lg p-3 border-2 transition-colors ' +
+                  (incluirFundacao === null
+                    ? 'border-mf-yellow/70 bg-mf-yellow/5'
+                    : 'border-mf-border/40 bg-transparent')
+                }
+              >
+                {incluirFundacao === null && (
+                  <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold text-mf-yellow mb-1">
+                    <span aria-hidden>⚠</span><span>Pendente</span>
+                  </div>
+                )}
                 <div className="text-sm font-bold mb-2">Incluir fundação?</div>
                 <div className="flex gap-3">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
@@ -232,7 +258,20 @@ export default function AdminOrcamentoNew() {
                   </label>
                 </div>
               </div>
-              <div>
+              <div
+                aria-invalid={incluirProjeto === null}
+                className={
+                  'rounded-lg p-3 border-2 transition-colors ' +
+                  (incluirProjeto === null
+                    ? 'border-mf-yellow/70 bg-mf-yellow/5'
+                    : 'border-mf-border/40 bg-transparent')
+                }
+              >
+                {incluirProjeto === null && (
+                  <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold text-mf-yellow mb-1">
+                    <span aria-hidden>⚠</span><span>Pendente</span>
+                  </div>
+                )}
                 <div className="text-sm font-bold mb-2">Incluir projeto complementar?</div>
                 <div className="flex gap-3">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
@@ -272,7 +311,20 @@ export default function AdminOrcamentoNew() {
                   </div>
                 )}
               </div>
-              <div>
+              <div
+                aria-invalid={incluirGerenciamento === null}
+                className={
+                  'rounded-lg p-3 border-2 transition-colors ' +
+                  (incluirGerenciamento === null
+                    ? 'border-mf-yellow/70 bg-mf-yellow/5'
+                    : 'border-mf-border/40 bg-transparent')
+                }
+              >
+                {incluirGerenciamento === null && (
+                  <div className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold text-mf-yellow mb-1">
+                    <span aria-hidden>⚠</span><span>Pendente</span>
+                  </div>
+                )}
                 <div className="text-sm font-bold mb-2">Incluir gerenciamento?</div>
                 <div className="flex gap-3">
                   <label className="inline-flex items-center gap-2 cursor-pointer">
