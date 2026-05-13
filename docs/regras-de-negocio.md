@@ -270,6 +270,31 @@ Particularidades conhecidas do filtro visual:
 
 ---
 
+## Notas técnicas de desenvolvimento
+
+### Uvicorn `--reload` pode falhar silenciosamente (2026-05-13)
+
+Observado durante o ciclo de UX do orçamento: após dois `Edit`
+consecutivos no mesmo arquivo (`backend/app/routers/quote.py`), o
+uvicorn imprimiu `WatchFiles detected changes ... Reloading...` no
+output, mas o módulo importado **não trocou** — o endpoint continuou
+servindo a versão anterior do código. O bug consolidou as duas
+mudanças de forma incorreta e o processo nunca terminou de carregar
+a nova versão.
+
+**Sintoma a observar:** comportamento de endpoint não bate com o
+código em disco; resposta de erro/200 parece "presa" no estado
+antes da mudança.
+
+**Primeira medida de debug ao suspeitar disso:** matar e reiniciar
+o uvicorn manualmente (não confiar só no `WatchFiles`). Conferir
+em seguida que a próxima requisição imprime a linha de log
+informativa do endpoint (ver `quote.py` `logger.info` em
+`internal_calculate` — adicionado justamente para esse diagnóstico
+ficar barato no futuro).
+
+---
+
 ## Convenções para futuras entradas neste documento
 
 - Sempre datar (`YYYY-MM-DD`) e numerar decisões dentro de uma seção.
