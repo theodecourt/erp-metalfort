@@ -1,4 +1,5 @@
 import NumberField from '../../NumberField/NumberField';
+import Spinner from '../../Spinner/Spinner';
 import type { Configuracao } from '../../../lib/variables';
 
 const MODULO_SIZES = { '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const;
@@ -20,10 +21,15 @@ interface Props {
   config: Configuracao;
   onChange: (c: Configuracao) => void;
   peSuggested: number;
+  activeChangeId?: string | null;
+  markChange?: (id: string) => void;
 }
 
-export default function EstruturaStep({ config, onChange, peSuggested }: Props) {
+const sizeChangeId = (t: '3x3' | '3x6' | '3x9') => `size:${t}`;
+
+export default function EstruturaStep({ config, onChange, peSuggested, activeChangeId, markChange }: Props) {
   function changeTamanho(t: '3x3' | '3x6' | '3x9') {
+    markChange?.(sizeChangeId(t));
     onChange({
       ...config,
       tamanho_modulo: t,
@@ -52,18 +58,22 @@ export default function EstruturaStep({ config, onChange, peSuggested }: Props) 
       <div className="flex-none">
         <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Tamanho do módulo</div>
         <div className="flex flex-col gap-2">
-          {(['3x3', '3x6', '3x9'] as const).map(t => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => changeTamanho(t)}
-              className={`w-20 py-3 rounded ${
-                config.tamanho_modulo === t ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+          {(['3x3', '3x6', '3x9'] as const).map(t => {
+            const pending = activeChangeId === sizeChangeId(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => changeTamanho(t)}
+                className={`w-20 py-3 rounded inline-flex items-center justify-center gap-1.5 ${
+                  config.tamanho_modulo === t ? 'bg-mf-yellow text-mf-black font-bold' : 'bg-mf-black-soft text-white'
+                }`}
+              >
+                <span>{t}</span>
+                {pending && <Spinner size={10} />}
+              </button>
+            );
+          })}
         </div>
       </div>
 

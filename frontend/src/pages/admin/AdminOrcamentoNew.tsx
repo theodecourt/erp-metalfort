@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthedFetch } from '../../lib/auth';
 import { apiFetch } from '../../lib/api';
 import StepConfigurator from '../../components/StepConfigurator/StepConfigurator';
+import Spinner from '../../components/Spinner/Spinner';
 import type { Configuracao } from '../../lib/variables';
 
 type Finalidade = 'casa' | 'farmacia' | 'loja' | 'conveniencia' | 'escritorio' | 'quiosque' | 'outro';
@@ -75,6 +76,12 @@ export default function AdminOrcamentoNew() {
   const [valorProjetoOverride, setValorProjetoOverride] = useState<string>('');
   const [incluirGerenciamento, setIncluirGerenciamento] = useState<boolean | null>(null);
   const [gerenciamentoPctOverride, setGerenciamentoPctOverride] = useState<string>('');
+
+  // Loading e activeChangeId coordenam o spinner entre StepConfigurator (combos,
+  // tamanhos) e os 3 cards de flag obrigatoria. Single source of truth aqui.
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [activeChangeId, setActiveChangeId] = useState<string | null>(null);
+  const flagPending = (id: string) => activeChangeId === id;
 
   // Defaults sugeridos
   const VALOR_PROJETO_DEFAULT = 142;
@@ -197,6 +204,10 @@ export default function AdminOrcamentoNew() {
               calculate={calculateInternal}
               extraConfigForCalculate={extraConfigForCalculate}
               pendingPromptsCount={pendingPromptsCount}
+              loading={calcLoading}
+              activeChangeId={activeChangeId}
+              onLoadingChange={setCalcLoading}
+              onActiveChange={setActiveChangeId}
             />
           </section>
         )}
@@ -244,17 +255,19 @@ export default function AdminOrcamentoNew() {
                     <input
                       type="radio"
                       checked={incluirFundacao === true}
-                      onChange={() => setIncluirFundacao(true)}
+                      onChange={() => { setActiveChangeId('flag:fundacao:true'); setIncluirFundacao(true); }}
                     />
                     <span>Sim</span>
+                    {flagPending('flag:fundacao:true') && <Spinner size={10} />}
                   </label>
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={incluirFundacao === false}
-                      onChange={() => setIncluirFundacao(false)}
+                      onChange={() => { setActiveChangeId('flag:fundacao:false'); setIncluirFundacao(false); }}
                     />
                     <span>Não</span>
+                    {flagPending('flag:fundacao:false') && <Spinner size={10} />}
                   </label>
                 </div>
               </div>
@@ -278,20 +291,23 @@ export default function AdminOrcamentoNew() {
                     <input
                       type="radio"
                       checked={incluirProjeto === true}
-                      onChange={() => setIncluirProjeto(true)}
+                      onChange={() => { setActiveChangeId('flag:projeto:true'); setIncluirProjeto(true); }}
                     />
                     <span>Sim</span>
+                    {flagPending('flag:projeto:true') && <Spinner size={10} />}
                   </label>
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={incluirProjeto === false}
                       onChange={() => {
+                        setActiveChangeId('flag:projeto:false');
                         setIncluirProjeto(false);
                         setValorProjetoOverride('');
                       }}
                     />
                     <span>Não</span>
+                    {flagPending('flag:projeto:false') && <Spinner size={10} />}
                   </label>
                 </div>
                 {incluirProjeto && (
@@ -331,20 +347,23 @@ export default function AdminOrcamentoNew() {
                     <input
                       type="radio"
                       checked={incluirGerenciamento === true}
-                      onChange={() => setIncluirGerenciamento(true)}
+                      onChange={() => { setActiveChangeId('flag:gerenciamento:true'); setIncluirGerenciamento(true); }}
                     />
                     <span>Sim</span>
+                    {flagPending('flag:gerenciamento:true') && <Spinner size={10} />}
                   </label>
                   <label className="inline-flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       checked={incluirGerenciamento === false}
                       onChange={() => {
+                        setActiveChangeId('flag:gerenciamento:false');
                         setIncluirGerenciamento(false);
                         setGerenciamentoPctOverride('');
                       }}
                     />
                     <span>Não</span>
+                    {flagPending('flag:gerenciamento:false') && <Spinner size={10} />}
                   </label>
                 </div>
                 {incluirGerenciamento && (

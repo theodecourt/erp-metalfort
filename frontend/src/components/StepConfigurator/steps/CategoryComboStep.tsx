@@ -13,11 +13,16 @@ interface Props {
   vars: Record<string, any>;               // saida de derive(config)
   selectedSlug: string | undefined;
   onSelect: (slug: string) => void;
+  // ID da escolha que disparou o calculo em andamento. Card cujo id bate
+  // mostra spinner; nil = nenhum pendente.
+  activeChangeId?: string | null;
 }
 
 const displayUnidade = (u: string) => (u === 'm2' ? 'm²' : u);
 
-export default function CategoryComboStep({ categoria, unitLabel, unitVar, combos, vars, selectedSlug, onSelect }: Props) {
+const cardChangeId = (categoria: string, slug: string) => `combo:${categoria}:${slug}`;
+
+export default function CategoryComboStep({ categoria, unitLabel, unitVar, combos, vars, selectedSlug, onSelect, activeChangeId }: Props) {
   const categoryCombos = useMemo(
     () => combos.filter(c => c.categoria === categoria).sort((a, b) => a.ordem - b.ordem),
     [combos, categoria],
@@ -57,6 +62,7 @@ export default function CategoryComboStep({ categoria, unitLabel, unitVar, combo
           };
         });
 
+        const pending = activeChangeId === cardChangeId(categoria, combo.slug);
         return (
           <div key={combo.id} className="md:flex-1 md:basis-0 md:min-w-[200px]">
             <ComboCard
@@ -68,6 +74,7 @@ export default function CategoryComboStep({ categoria, unitLabel, unitVar, combo
               items={items}
               onSelect={() => onSelect(combo.slug)}
               ariaLabel={`Escolher pacote ${categoria} #${combo.ordem}`}
+              pending={pending}
             />
           </div>
         );

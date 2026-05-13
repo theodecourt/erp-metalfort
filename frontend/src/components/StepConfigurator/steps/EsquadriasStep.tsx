@@ -8,9 +8,11 @@ interface Props {
   onChange: (c: Configuracao) => void;
   combos: PacoteCombo[];
   vars: Record<string, any>;
+  activeChangeId?: string | null;
+  markChange?: (id: string) => void;
 }
 
-export default function EsquadriasStep({ config, onChange, combos, vars }: Props) {
+export default function EsquadriasStep({ config, onChange, combos, vars, activeChangeId, markChange }: Props) {
   const esq = config.esquadrias_extras ?? { portas: 0 };
   const portas = esq.portas ?? 0;
   const caixilhos: Caixilho[] = esq.caixilhos ?? [];
@@ -143,10 +145,14 @@ export default function EsquadriasStep({ config, onChange, combos, vars }: Props
           combos={combos}
           vars={vars}
           selectedSlug={config.combos?.vidro}
-          onSelect={slug => onChange({
-            ...config,
-            combos: { ...(config.combos ?? {}), vidro: slug },
-          })}
+          activeChangeId={activeChangeId}
+          onSelect={slug => {
+            markChange?.(`combo:vidro:${slug}`);
+            onChange({
+              ...config,
+              combos: { ...(config.combos ?? {}), vidro: slug },
+            });
+          }}
         />
       </div>
     </div>

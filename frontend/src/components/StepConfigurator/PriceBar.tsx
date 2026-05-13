@@ -1,3 +1,4 @@
+import Spinner from '../Spinner/Spinner';
 import { fmtBRL } from '../../lib/format';
 
 interface Props {
@@ -33,7 +34,10 @@ export default function PriceBar({
               <span className="truncate max-w-[60ch]">Falha ao calcular: {calcError}</span>
             </div>
           ) : loading ? (
-            <div className="text-xs text-mf-black/70">Calculando...</div>
+            <div className="text-xs text-mf-black/70 flex items-center gap-1.5">
+              <Spinner size={10} />
+              <span>Calculando...</span>
+            </div>
           ) : parcial ? (
             <div className="text-xs font-bold text-mf-black">
               Responda {pending} pergunta{pending > 1 ? 's' : ''} obrigatória{pending > 1 ? 's' : ''} para confirmar

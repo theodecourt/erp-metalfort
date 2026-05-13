@@ -1,3 +1,4 @@
+import Spinner from '../Spinner/Spinner';
 import type { PacoteCombo } from '../../lib/combos';
 import { fmtBRL } from '../../lib/format';
 
@@ -15,9 +16,10 @@ interface Props {
   items?: ComboCardItem[]; // alinhados posicionalmente com os outros cards da categoria
   onSelect: () => void;
   ariaLabel?: string; // override do accessible name (evita colisao com outros botoes)
+  pending?: boolean;  // mostra spinner no header quando este card e a escolha pendente de calculo
 }
 
-export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta, items, onSelect, ariaLabel }: Props) {
+export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta, items, onSelect, ariaLabel, pending }: Props) {
   const mark = selected ? '●' : '○';
   const baseBorder = selected ? 'border-mf-yellow' : 'border-mf-border';
   const hoverBg = selected ? '' : 'hover:bg-neutral-700';
@@ -33,6 +35,7 @@ export default function ComboCard({ combo, selected, unitPrice, unitLabel, delta
       <div className="flex items-center gap-2 text-mf-yellow text-sm font-bold">
         <span aria-hidden>{mark}</span>
         <span>{combo.nome}</span>
+        {pending && <Spinner size={10} className="ml-auto" />}
       </div>
       <div className="mt-2 text-sm text-neutral-300 group-hover:text-white min-h-[2.75rem] leading-snug transition-colors">
         {combo.descricao ?? ''}

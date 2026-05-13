@@ -33,6 +33,12 @@ interface Props {
   extraConfigForCalculate?: Partial<Configuracao>;
   // Quando definido (> 0), PriceBar exibe mensagem de pendencia ao inves de "N itens".
   pendingPromptsCount?: number;
+  // Loading e activeChangeId vivem no AdminOrcamentoNew (precisa coordenar com as
+  // 3 flags fora do StepConfigurator). StepConfigurator emite mudancas via callbacks.
+  loading?: boolean;
+  activeChangeId?: string | null;
+  onLoadingChange?: (loading: boolean) => void;
+  onActiveChange?: (id: string | null) => void;
 }
 
 const MODULO_SIZES = { '3x3': [3, 3], '3x6': [3, 6], '3x9': [3, 9] } as const;
@@ -79,15 +85,23 @@ function applyTemplateSelecoes(
 export default function StepConfigurator({
   produto, initialConfig, initialCombos, initialTemplates, onConfigChange, onQuoteChange, calculate,
   extraConfigForCalculate, pendingPromptsCount,
+  loading: loadingProp, activeChangeId, onLoadingChange, onActiveChange,
 }: Props) {
   const [combos, setCombos] = useState<PacoteCombo[]>(initialCombos ?? []);
   const [templates, setTemplates] = useState<TemplateOrcamento[]>(initialTemplates ?? []);
   const [config, setConfig] = useState<Configuracao>(() => initialConfig ?? defaultConfig(produto));
-  const [loading, setLoading] = useState(false);
+  const [loadingFallback, setLoadingFallback] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
   const [quote, setQuote] = useState<{ subtotal: number; total: number; gerenciamento_pct: number; itens: any[] }>({
     subtotal: 0, total: 0, gerenciamento_pct: 8, itens: [],
   });
+
+  // Quando o pai (AdminOrcamentoNew) coordena loading/activeChangeId, usamos os
+  // valores do pai. Sem pai (uso standalone — testes, configurador publico), o
+  // fallback local mantem o comportamento antigo.
+  const loading = loadingProp ?? loadingFallback;
+  const setLoading = (v: boolean) => { setLoadingFallback(v); onLoadingChange?.(v); };
+  const setActiveChange = (id: string | null) => { onActiveChange?.(id); };
 
   useEffect(() => {
     if (initialCombos && initialTemplates) return;
@@ -129,7 +143,12 @@ export default function StepConfigurator({
           const msg = err instanceof Error ? err.message : 'erro ao calcular orçamento preliminar';
           setCalcError(msg);
         })
-        .finally(() => { if (!cancelled) setLoading(false); });
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+            setActiveChange(null);
+          }
+        });
     }, 300);
     return () => { cancelled = true; clearTimeout(id); };
   }, [JSON.stringify(config), produto.id, JSON.stringify(extraConfigForCalculate ?? {})]);
@@ -137,6 +156,7 @@ export default function StepConfigurator({
   const vars = useMemo(() => derive(config), [JSON.stringify(config)]);
 
   function setComboForCategoria(cat: keyof NonNullable<Configuracao['combos']>, slug: string) {
+    setActiveChange(`combo:${cat}:${slug}`);
     setConfig(prev => ({
       ...prev,
       combos: { ...(prev.combos ?? {}), [cat]: slug },
@@ -149,13 +169,16 @@ export default function StepConfigurator({
     <div>
       <main className="min-w-0">
           <StepSection id="estrutura" number={1} title="Estrutura & geometria" phaseEnd>
-            <EstruturaStep config={config} onChange={setConfig} peSuggested={peSuggested} />
+            <EstruturaStep
+              config={config} onChange={setConfig} peSuggested={peSuggested}
+              activeChangeId={activeChangeId} markChange={setActiveChange}
+            />
           </StepSection>
 
           <StepSection id="fechamento_ext" number={2} title="Fechamento de parede externa">
             <CategoryComboStep
               categoria="fechamento_ext" unitLabel="m² parede" unitVar="area_fechamento_ext_m2"
-              combos={combos} vars={vars}
+              combos={combos} vars={vars} activeChangeId={activeChangeId}
               selectedSlug={config.combos?.fechamento_ext}
               onSelect={slug => setComboForCategoria('fechamento_ext', slug)}
             />
@@ -164,7 +187,7 @@ export default function StepConfigurator({
           <StepSection id="cobertura" number={3} title="Cobertura">
             <CategoryComboStep
               categoria="cobertura" unitLabel="m² cobertura" unitVar="area_cobertura_m2"
-              combos={combos} vars={vars}
+              combos={combos} vars={vars} activeChangeId={activeChangeId}
               selectedSlug={config.combos?.cobertura}
               onSelect={slug => setComboForCategoria('cobertura', slug)}
             />
@@ -173,7 +196,7 @@ export default function StepConfigurator({
           <StepSection id="forro" number={4} title="Forro interno">
             <CategoryComboStep
               categoria="forro" unitLabel="m² piso" unitVar="area_planta_m2"
-              combos={combos} vars={vars}
+              combos={combos} vars={vars} activeChangeId={activeChangeId}
               selectedSlug={config.combos?.forro}
               onSelect={slug => setComboForCategoria('forro', slug)}
             />
@@ -182,7 +205,7 @@ export default function StepConfigurator({
           <StepSection id="divisoria" number={5} title="Divisórias internas" phaseEnd>
             <CategoryComboStep
               categoria="divisoria" unitLabel="m² parede" unitVar="area_parede_interna_nao_wc_m2"
-              combos={combos} vars={vars}
+              combos={combos} vars={vars} activeChangeId={activeChangeId}
               selectedSlug={config.combos?.divisoria}
               onSelect={slug => setComboForCategoria('divisoria', slug)}
             />
@@ -193,7 +216,7 @@ export default function StepConfigurator({
               <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Piso</div>
               <CategoryComboStep
                 categoria="piso" unitLabel="m² piso" unitVar="area_planta_m2"
-                combos={combos} vars={vars}
+                combos={combos} vars={vars} activeChangeId={activeChangeId}
                 selectedSlug={config.combos?.piso}
                 onSelect={slug => setComboForCategoria('piso', slug)}
               />
@@ -202,7 +225,7 @@ export default function StepConfigurator({
               <div className="text-xs uppercase tracking-wider text-mf-text-secondary mb-2">Subpiso</div>
               <CategoryComboStep
                 categoria="subpiso" unitLabel="m² piso" unitVar="area_planta_m2"
-                combos={combos} vars={vars}
+                combos={combos} vars={vars} activeChangeId={activeChangeId}
                 selectedSlug={config.combos?.subpiso}
                 onSelect={slug => setComboForCategoria('subpiso', slug)}
               />
@@ -210,7 +233,10 @@ export default function StepConfigurator({
           </StepSection>
 
           <StepSection id="esquadrias" number={7} title="Esquadrias (portas e caixilhos)">
-            <EsquadriasStep config={config} onChange={setConfig} combos={combos} vars={vars} />
+            <EsquadriasStep
+              config={config} onChange={setConfig} combos={combos} vars={vars}
+              activeChangeId={activeChangeId} markChange={setActiveChange}
+            />
           </StepSection>
 
           <StepSection id="wc" number={8} title="WC interno" phaseEnd>
