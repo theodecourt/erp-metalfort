@@ -225,16 +225,6 @@ export default function StepConfigurator({
             <ExtrasStep config={config} onChange={setConfig} />
           </StepSection>
       </main>
-      {calcError && (
-        <div
-          role="alert"
-          className="fixed bottom-14 inset-x-0 z-40 mx-auto max-w-[1520px] px-6"
-        >
-          <div className="bg-mf-danger/15 border border-mf-danger/60 text-mf-danger text-xs rounded px-3 py-1 text-center">
-            Falha ao calcular preview: {calcError}
-          </div>
-        </div>
-      )}
       <PriceBar
         subtotal={quote.subtotal}
         total={quote.total}
@@ -242,6 +232,7 @@ export default function StepConfigurator({
         itemCount={quote.itens.length}
         loading={loading}
         pendingPromptsCount={pendingPromptsCount}
+        calcError={calcError}
       />
     </div>
   );
