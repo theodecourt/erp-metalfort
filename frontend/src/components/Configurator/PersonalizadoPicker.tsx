@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import { fmtBRL } from '../../lib/format';
 import type { ItemPersonalizado } from '../../lib/variables';
@@ -22,10 +22,33 @@ export default function PersonalizadoPicker({
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [selected, setSelected] = useState<string>('');
   const [qty, setQty] = useState<number>(1);
+  const [open, setOpen] = useState(false);
+  // Default: categoria 'estrutura' ja vem expandida (uso mais frequente).
+  const [openCats, setOpenCats] = useState<Set<string>>(() => new Set(['estrutura']));
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     apiFetch<Material[]>('/api/public/materiais').then(setMateriais).catch(() => {});
   }, []);
+
+  // Fecha o dropdown ao clicar fora
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   const materialById = useMemo(
     () => Object.fromEntries(materiais.map(m => [m.id, m])),
@@ -38,8 +61,24 @@ export default function PersonalizadoPicker({
       if (!map.has(m.categoria)) map.set(m.categoria, []);
       map.get(m.categoria)!.push(m);
     }
-    return Array.from(map.entries());
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [materiais]);
+
+  function toggleCat(cat: string) {
+    setOpenCats(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }
+
+  function pickMaterial(id: string) {
+    setSelected(id);
+    setOpen(false);
+  }
+
+  const selectedMaterial = selected ? materialById[selected] : null;
 
   function addItem() {
     if (!selected || qty <= 0) return;
@@ -64,22 +103,71 @@ export default function PersonalizadoPicker({
   return (
     <div className="border border-mf-border rounded p-3 bg-mf-black-soft/40">
       <div className="flex flex-wrap gap-2 items-end">
-        <label className="text-xs text-mf-text-secondary flex-1 min-w-[220px]">
+        <div className="text-xs text-mf-text-secondary flex-1 min-w-[220px]">
           SKU
-          <select value={selected} onChange={e => setSelected(e.target.value)}
-            className="mt-1 block w-full bg-mf-black-soft text-white p-2 rounded border border-mf-border">
-            <option value="">— escolha um material —</option>
-            {grouped.map(([cat, items]) => (
-              <optgroup key={cat} label={cat}>
-                {items.map(m => (
-                  <option key={m.id} value={m.id}>
-                    [{m.sku}] {m.nome} — {fmtBRL(m.preco_unitario)}/{m.unidade}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+          <div className="relative mt-1" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setOpen(o => !o)}
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              className="block w-full text-left bg-mf-black-soft text-white p-2 rounded border border-mf-border hover:border-mf-yellow/50 flex items-center justify-between gap-2"
+            >
+              <span className={selectedMaterial ? 'text-white' : 'text-mf-text-secondary'}>
+                {selectedMaterial
+                  ? `[${selectedMaterial.sku}] ${selectedMaterial.nome} — ${fmtBRL(selectedMaterial.preco_unitario)}/${selectedMaterial.unidade}`
+                  : '— escolha um material —'}
+              </span>
+              <span className="text-mf-text-secondary text-xs">{open ? '▲' : '▼'}</span>
+            </button>
+            {open && (
+              <div
+                role="listbox"
+                className="absolute z-10 mt-1 w-full max-h-80 overflow-y-auto bg-mf-black border border-mf-border rounded shadow-xl"
+              >
+                {grouped.length === 0 && (
+                  <div className="px-3 py-2 text-mf-text-secondary text-xs">Carregando materiais…</div>
+                )}
+                {grouped.map(([cat, items]) => {
+                  const expanded = openCats.has(cat);
+                  return (
+                    <div key={cat} className="border-b border-mf-border last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => toggleCat(cat)}
+                        aria-expanded={expanded}
+                        className="w-full flex items-center justify-between px-3 py-2 text-left text-white hover:bg-mf-black-soft"
+                      >
+                        <span className="font-bold text-sm">{cat}</span>
+                        <span className="text-xs text-mf-text-secondary tabular-nums">
+                          {items.length} {expanded ? '▲' : '▼'}
+                        </span>
+                      </button>
+                      {expanded && (
+                        <ul className="bg-mf-black-soft/40">
+                          {items.map(m => (
+                            <li key={m.id}>
+                              <button
+                                type="button"
+                                role="option"
+                                aria-selected={selected === m.id}
+                                onClick={() => pickMaterial(m.id)}
+                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-mf-yellow/20 ${selected === m.id ? 'bg-mf-yellow/30 text-white' : 'text-white/90'}`}
+                              >
+                                <span className="font-mono text-mf-text-secondary">[{m.sku}]</span>{' '}
+                                {m.nome} <span className="text-mf-text-secondary">— {fmtBRL(m.preco_unitario)}/{m.unidade}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
         <label className="text-xs text-mf-text-secondary">
           Qtd
           <NumberField min={0.01} step={0.01} value={qty} onChange={setQty}
