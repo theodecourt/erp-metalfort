@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.lib.auth import require_role
@@ -7,6 +9,16 @@ from app.lib.supabase import get_admin_client
 from app.models.estoque import FornecedorCreate, FornecedorUpdate
 
 router = APIRouter(prefix="/api/fornecedor", tags=["fornecedor"])
+
+_POSTGREST_SAFE = re.compile(r"^[\w\s\-]+$")
+
+
+def _sanitize_search(q: str) -> str:
+    """Strip characters that could break out of a PostgREST filter value."""
+    q = q.strip()
+    if not _POSTGREST_SAFE.match(q):
+        q = re.sub(r"[^\w\s\-]", "", q)
+    return q
 
 
 @router.get("")
@@ -20,7 +32,8 @@ def list_all(
     if ativo is not None:
         query = query.eq("ativo", ativo)
     if q:
-        query = query.ilike("nome", f"%{q}%")
+        safe_q = _sanitize_search(q)
+        query = query.ilike("nome", f"%{safe_q}%")
     return query.execute().data or []
 
 

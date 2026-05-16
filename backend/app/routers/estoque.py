@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.lib.auth import require_role
@@ -11,6 +13,16 @@ from app.services.estoque import (
 )
 
 router = APIRouter(prefix="/api/estoque", tags=["estoque"])
+
+_POSTGREST_SAFE = re.compile(r"^[\w\s\-]+$")
+
+
+def _sanitize_search(q: str) -> str:
+    """Strip characters that could break out of a PostgREST filter value."""
+    q = q.strip()
+    if not _POSTGREST_SAFE.match(q):
+        q = re.sub(r"[^\w\s\-]", "", q)
+    return q
 
 
 # ---------- Saldo ----------
@@ -24,7 +36,8 @@ def saldo(
     sb = get_admin_client()
     mats_q = sb.table("material").select("*").eq("ativo", True)
     if q:
-        mats_q = mats_q.or_(f"sku.ilike.%{q}%,nome.ilike.%{q}%")
+        safe_q = _sanitize_search(q)
+        mats_q = mats_q.or_(f"sku.ilike.%{safe_q}%,nome.ilike.%{safe_q}%")
     materiais = mats_q.order("categoria").order("nome").execute().data or []
     saldos_v = sb.table("estoque_saldo_v").select("*").execute().data or []
     rows = montar_saldos(materiais, saldos_v)
