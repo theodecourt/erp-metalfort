@@ -22,21 +22,31 @@ def _jwks() -> PyJWKClient:
     return _jwks_client
 
 
+# Algoritmos aceitos. Limitamos explicitamente para evitar bugs de algorithm
+# confusion: o header `alg` e controlado pelo emissor do token, entao nunca
+# passamos esse valor cru para `algorithms=[...]` do PyJWT.
+_ASYMMETRIC_ALGS = ("ES256", "RS256")
+_SYMMETRIC_ALGS = ("HS256",)
+
+
 def _decode(token: str) -> dict:
     try:
-        alg = jwt.get_unverified_header(token).get("alg", "HS256")
-        if alg == "HS256":
-            # Legacy Supabase: symmetric secret
+        alg = jwt.get_unverified_header(token).get("alg")
+        if alg in _SYMMETRIC_ALGS:
+            # Supabase legacy: assinatura simetrica com o JWT secret.
             return jwt.decode(
                 token, settings.supabase_jwt_secret,
-                algorithms=["HS256"], audience="authenticated",
+                algorithms=list(_SYMMETRIC_ALGS), audience="authenticated",
             )
-        # Modern Supabase (ES256/RS256): fetch public key from JWKS
-        key = _jwks().get_signing_key_from_jwt(token).key
-        return jwt.decode(
-            token, key,
-            algorithms=[alg], audience="authenticated",
-        )
+        if alg in _ASYMMETRIC_ALGS:
+            # Supabase moderno: chave publica via JWKS.
+            key = _jwks().get_signing_key_from_jwt(token).key
+            return jwt.decode(
+                token, key,
+                algorithms=list(_ASYMMETRIC_ALGS), audience="authenticated",
+            )
+        # alg desconhecido (ou "none") nunca chega ate aqui sem cair em 401.
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
     except jwt.PyJWTError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {e}")
 
