@@ -37,8 +37,10 @@ def _decode(token: str) -> dict:
             token, key,
             algorithms=[alg], audience="authenticated",
         )
-    except jwt.PyJWTError as e:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {e}")
+    except jwt.PyJWTError:
+        # Detalhe do erro (expirado vs malformado vs audience errada) fica
+        # so no log do servidor — cliente recebe sempre 401 generico.
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
 
 
 def current_user(authorization: str = Header(default="")) -> dict:
