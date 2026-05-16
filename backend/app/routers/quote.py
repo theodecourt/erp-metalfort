@@ -43,9 +43,18 @@ def _run_parallel(tasks: dict[str, Callable[[], Any]], context: str) -> dict[str
 
 @router.get("")
 def list_all(user=Depends(require_role("admin", "vendedor"))):
+    """Lista orcamentos.
+
+    Admin ve todos. Vendedor ve apenas os que ele criou (criado_por = uid)
+    mais leads anonimos do site publico (criado_por = null) que ainda nao
+    foram atribuidos.
+    """
     sb = get_admin_client()
-    res = sb.table("orcamento").select("*").order("created_at", desc=True).execute()
-    return res.data or []
+    q = sb.table("orcamento").select("*").order("created_at", desc=True)
+    if user["role"] == "vendedor":
+        # uuid e validado pelo Supabase auth — sem risco de injecao no filtro.
+        q = q.or_(f"criado_por.eq.{user['id']},criado_por.is.null")
+    return q.execute().data or []
 
 
 def _validar_overrides_obrigatorios(config: dict) -> None:
@@ -211,6 +220,12 @@ def get_orcamento(
     if not orc:
         raise HTTPException(404, "orçamento não encontrado")
     orcamento = orc[0]
+    # Vendedor so ve orcamentos que criou ou leads anonimos. Admin ve tudo.
+    if user["role"] == "vendedor":
+        criado_por = orcamento.get("criado_por")
+        if criado_por is not None and criado_por != user["id"]:
+            # 404 (nao 403) pra nao confirmar existencia do id.
+            raise HTTPException(404, "orçamento não encontrado")
     itens = (
         sb.table("orcamento_item")
         .select("*, material(sku, nome, unidade)")
@@ -239,5 +254,12 @@ def patch_orcamento(
     if not patch:
         raise HTTPException(400, "nothing to update")
     sb = get_admin_client()
+    existing = sb.table("orcamento").select("criado_por").eq("id", orcamento_id).limit(1).execute().data
+    if not existing:
+        raise HTTPException(404, "orçamento não encontrado")
+    if user["role"] == "vendedor":
+        criado_por = existing[0].get("criado_por")
+        if criado_por is not None and criado_por != user["id"]:
+            raise HTTPException(404, "orçamento não encontrado")
     sb.table("orcamento").update(patch).eq("id", orcamento_id).execute()
     return sb.table("orcamento").select("*").eq("id", orcamento_id).limit(1).execute().data[0]
