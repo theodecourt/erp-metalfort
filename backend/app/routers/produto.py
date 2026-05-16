@@ -1,9 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.lib.auth import require_role
 from app.lib.supabase import get_admin_client
 
 router = APIRouter(prefix="/api/produto", tags=["produto"])
+
+_ALLOWED_FIELDS = {
+    "slug", "nome", "tipo_base", "finalidade", "pe_direito_sugerido_m",
+    "descricao", "imagem_url", "ativo",
+    "comp_paredes_ext_m", "comp_paredes_int_m", "face_conexao_m",
+}
 
 
 @router.get("")
@@ -14,14 +20,20 @@ def list_all(user=Depends(require_role("admin", "vendedor"))):
 
 @router.post("")
 def create(body: dict, user=Depends(require_role("admin"))):
+    payload = {k: v for k, v in body.items() if k in _ALLOWED_FIELDS}
+    if "slug" not in payload or "nome" not in payload:
+        raise HTTPException(400, "slug e nome são obrigatórios")
     sb = get_admin_client()
-    return sb.table("produto").insert(body).execute().data[0]
+    return sb.table("produto").insert(payload).execute().data[0]
 
 
 @router.patch("/{produto_id}")
 def patch(produto_id: str, body: dict, user=Depends(require_role("admin"))):
+    payload = {k: v for k, v in body.items() if k in _ALLOWED_FIELDS}
+    if not payload:
+        raise HTTPException(400, "nothing to update")
     sb = get_admin_client()
-    sb.table("produto").update(body).eq("id", produto_id).execute()
+    sb.table("produto").update(payload).eq("id", produto_id).execute()
     return sb.table("produto").select("*").eq("id", produto_id).limit(1).execute().data[0]
 
 
