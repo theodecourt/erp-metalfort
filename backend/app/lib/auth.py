@@ -13,6 +13,8 @@ Role = Literal["admin", "vendedor"]
 
 _jwks_client: PyJWKClient | None = None
 
+_ASYMMETRIC_ALGORITHMS = {"RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "EdDSA"}
+
 
 def _jwks() -> PyJWKClient:
     global _jwks_client
@@ -26,19 +28,19 @@ def _decode(token: str) -> dict:
     try:
         alg = jwt.get_unverified_header(token).get("alg", "HS256")
         if alg == "HS256":
-            # Legacy Supabase: symmetric secret
             return jwt.decode(
                 token, settings.supabase_jwt_secret,
                 algorithms=["HS256"], audience="authenticated",
             )
-        # Modern Supabase (ES256/RS256): fetch public key from JWKS
+        if alg not in _ASYMMETRIC_ALGORITHMS:
+            raise jwt.InvalidAlgorithmError(f"Unsupported algorithm: {alg}")
         key = _jwks().get_signing_key_from_jwt(token).key
         return jwt.decode(
             token, key,
             algorithms=[alg], audience="authenticated",
         )
     except jwt.PyJWTError as e:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {e}")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
 
 
 def current_user(authorization: str = Header(default="")) -> dict:
