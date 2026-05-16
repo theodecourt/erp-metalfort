@@ -34,7 +34,12 @@ Serviços:
 Primeira vez: rode `make migrate` para aplicar schema + seed.
 
 ### Login admin de dev
-Email: `admin@metalfort.tech` — senha: `metalfort2026!`
+
+O usuario admin local e criado pelo seed em `supabase/dev-seed-user.sql`
+(executado por `make migrate`). Email: `admin@metalfort.tech`.
+
+A senha **nao** fica no README — leia diretamente do arquivo de seed.
+Esse seed e apenas para ambientes locais; nunca rode em producao.
 
 ## Comandos úteis
 
