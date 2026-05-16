@@ -13,18 +13,29 @@ from app.services.estoque import (
 router = APIRouter(prefix="/api/estoque", tags=["estoque"])
 
 
+# Caracteres com significado especial no grammar de filtros do PostgREST.
+# Manter qualquer um deles permitiria sair do ilike e injetar condicoes extras.
+_POSTGREST_FILTER_SPECIAL = set(",()*\"'\\")
+
+
+def _sanitize_filter_term(term: str) -> str:
+    return "".join(ch for ch in term if ch not in _POSTGREST_FILTER_SPECIAL).strip()
+
+
 # ---------- Saldo ----------
 
 @router.get("/saldo")
 def saldo(
     abaixo_minimo: bool = Query(default=False),
-    q: str | None = Query(default=None),
+    q: str | None = Query(default=None, max_length=100),
     user=Depends(require_role("admin")),
 ):
     sb = get_admin_client()
     mats_q = sb.table("material").select("*").eq("ativo", True)
     if q:
-        mats_q = mats_q.or_(f"sku.ilike.%{q}%,nome.ilike.%{q}%")
+        safe_q = _sanitize_filter_term(q)
+        if safe_q:
+            mats_q = mats_q.or_(f"sku.ilike.%{safe_q}%,nome.ilike.%{safe_q}%")
     materiais = mats_q.order("categoria").order("nome").execute().data or []
     saldos_v = sb.table("estoque_saldo_v").select("*").execute().data or []
     rows = montar_saldos(materiais, saldos_v)
