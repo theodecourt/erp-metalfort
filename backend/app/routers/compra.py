@@ -230,21 +230,46 @@ def _match_material(
     return None
 
 
+def _sniff_mime(content: bytes) -> str | None:
+    """Detecta o mime real pelas primeiras bytes do arquivo.
+
+    Cobre apenas o que /parse-nf aceita (JPEG, PNG, WebP, PDF). Retorna None
+    se o conteudo nao bate com nenhum desses cabecalhos.
+    """
+    if len(content) < 12:
+        return None
+    if content.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if content.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if content[:4] == b"RIFF" and content[8:12] == b"WEBP":
+        return "image/webp"
+    if content.startswith(b"%PDF-"):
+        return "application/pdf"
+    return None
+
+
 @router.post("/parse-nf")
 async def parse_nf(
     file: UploadFile = File(...),
     user=Depends(require_role("admin")),
 ):
-    """Recebe imagem (JPEG/PNG) ou PDF da NF, chama Document AI, faz matching
-    contra catalogo + aliases, e retorna sugestao pra UI revisar."""
+    """Recebe imagem (JPEG/PNG/WebP) ou PDF da NF, chama Document AI, faz
+    matching contra catalogo + aliases, e retorna sugestao pra UI revisar."""
     from app.services.nf_parser import parse_nf_bytes
 
     content = await file.read()
-    mime = file.content_type or ""
-    if not mime.startswith("image/") and mime != "application/pdf":
-        raise HTTPException(400, f"tipo de arquivo nao suportado: {mime}")
     if len(content) > 20 * 1024 * 1024:
         raise HTTPException(413, "arquivo > 20MB")
+
+    # Nao confiar no content_type do cliente — detectar pelos magic bytes.
+    sniffed = _sniff_mime(content)
+    if sniffed is None:
+        raise HTTPException(
+            400,
+            "tipo de arquivo nao suportado: aceito JPEG, PNG, WebP ou PDF",
+        )
+    mime = sniffed
 
     try:
         parsed = parse_nf_bytes(content, mime)
