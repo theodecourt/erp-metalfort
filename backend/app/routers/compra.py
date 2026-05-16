@@ -6,6 +6,7 @@ material.preco_unitario com o preço da NF, mantém o atual ou usa outro valor.
 """
 from __future__ import annotations
 
+import logging
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -13,6 +14,8 @@ from pydantic import BaseModel, Field
 
 from app.lib import repository
 from app.lib.auth import require_role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/compra", tags=["admin-compra"])
 
@@ -249,9 +252,11 @@ async def parse_nf(
     try:
         parsed = parse_nf_bytes(content, mime)
     except RuntimeError as e:
-        raise HTTPException(503, str(e)) from e
+        logger.warning("Document AI not configured: %s", e)
+        raise HTTPException(503, "Document AI nao configurado") from e
     except Exception as e:
-        raise HTTPException(502, f"falha no Document AI: {type(e).__name__}: {e}") from e
+        logger.exception("Document AI processing failed")
+        raise HTTPException(502, "Falha ao processar documento") from e
 
     # Tenta casar fornecedor pelo CNPJ
     sb_fornecedor_id = None
